@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, ArrowUpDown } from 'lucide-react';
 import type { TableColumn } from '../../types';
 import { Button } from '../ui/Button';
@@ -13,29 +13,40 @@ interface DataTableProps<T> {
   loading?: boolean;
 }
 
-export const DataTable = <T extends Record<string, any>>({
-  data,
+// Componente de fila memorizado para evitar re-renders innecesarios
+const TableRow = React.memo(<T extends Record<string, any>>({
+  item,
   columns,
+  index,
+}: {
+  item: T;
+  columns: TableColumn<T>[];
+  index: number;
+}) => (
+  <tr key={index} className="transition-colors hover:bg-gray-50">
+    {columns.map((column) => (
+      <td key={String(column.key)} className="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
+        {column.render 
+          ? column.render(item[column.key], item)
+          : String(item[column.key] || '-')
+        }
+      </td>
+    ))}
+  </tr>
+));
+
+// Componente de botones de paginación memorizado
+const PaginationButtons = React.memo(({
   currentPage,
   totalPages,
-  totalItems,
   onPageChange,
-  loading = false,
-}: DataTableProps<T>) => {
-  const [sortBy, setSortBy] = useState<keyof T | null>(null);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-
-  const handleSort = (column: keyof T) => {
-    if (sortBy === column) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortBy(column);
-      setSortOrder('asc');
-    }
-  };
-
-  const renderPaginationButtons = () => {
-    const buttons = [];
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}) => {
+  const buttons = useMemo(() => {
+    const buttonList = [];
     const maxVisible = 5;
     let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
     let endPage = Math.min(totalPages, startPage + maxVisible - 1);
@@ -45,7 +56,7 @@ export const DataTable = <T extends Record<string, any>>({
     }
 
     for (let i = startPage; i <= endPage; i++) {
-      buttons.push(
+      buttonList.push(
         <button
           key={i}
           onClick={() => onPageChange(i)}
@@ -59,9 +70,50 @@ export const DataTable = <T extends Record<string, any>>({
         </button>
       );
     }
+    return buttonList;
+  }, [currentPage, totalPages, onPageChange]);
 
-    return buttons;
-  };
+  return <div className="flex space-x-1">{buttons}</div>;
+});
+
+export const DataTable = React.memo(<T extends Record<string, any>>({
+  data,
+  columns,
+  currentPage,
+  totalPages,
+  totalItems,
+  onPageChange,
+  loading = false,
+}: DataTableProps<T>) => {
+  const [sortBy, setSortBy] = useState<keyof T | null>(null);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  const handleSort = useCallback((column: keyof T) => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(column);
+      setSortOrder('asc');
+    }
+  }, [sortBy, sortOrder]);
+
+  // Memoizar las filas de la tabla
+  const tableRows = useMemo(() => 
+    data.map((item, index) => (
+      <TableRow
+        key={`${item.id || index}`}
+        item={item}
+        columns={columns}
+        index={index}
+      />
+    )), [data, columns]);
+
+  // Memoizar información de paginación
+  const paginationInfo = useMemo(() => ({
+    start: Math.min((currentPage - 1) * 10 + 1, totalItems),
+    end: Math.min(currentPage * 10, totalItems),
+    total: totalItems,
+  }), [currentPage, totalItems]);
 
   if (loading) {
     return (
@@ -73,7 +125,7 @@ export const DataTable = <T extends Record<string, any>>({
 
   return (
     <div className="space-y-4">
-      <div className="overflow-x-auto bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="overflow-x-auto bg-white border border-gray-200 rounded-lg shadow-sm">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -96,18 +148,7 @@ export const DataTable = <T extends Record<string, any>>({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {data.map((item, index) => (
-              <tr key={index} className="hover:bg-gray-50 transition-colors">
-                {columns.map((column) => (
-                  <td key={String(column.key)} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {column.render 
-                      ? column.render(item[column.key], item)
-                      : String(item[column.key] || '-')
-                    }
-                  </td>
-                ))}
-              </tr>
-            ))}
+            {tableRows}
           </tbody>
         </table>
       </div>
@@ -115,8 +156,7 @@ export const DataTable = <T extends Record<string, any>>({
       {/* Pagination */}
       <div className="flex items-center justify-between">
         <div className="text-sm text-gray-700">
-          Mostrando {Math.min((currentPage - 1) * 10 + 1, totalItems)} a{' '}
-          {Math.min(currentPage * 10, totalItems)} de {totalItems} registros
+          Mostrando {paginationInfo.start} a {paginationInfo.end} de {paginationInfo.total} registros
         </div>
         
         <div className="flex items-center space-x-2">
@@ -130,9 +170,11 @@ export const DataTable = <T extends Record<string, any>>({
             Anterior
           </Button>
           
-          <div className="flex space-x-1">
-            {renderPaginationButtons()}
-          </div>
+          <PaginationButtons
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={onPageChange}
+          />
           
           <Button
             variant="outline"
@@ -148,4 +190,4 @@ export const DataTable = <T extends Record<string, any>>({
       </div>
     </div>
   );
-};
+});

@@ -1,19 +1,121 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import { MainLayout } from '../layouts/MainLayout';
-import { Dashboard } from '../pages/Dashboard';
-import { UsuariosModule } from '../modules/usuarios';
-import { RegistroModule } from '../modules/registro';
-import { RegistroEstadoHistorialModule } from '../modules/registro_estado_historial';
+import React, { Suspense } from "react";
+import { Routes, Route } from "react-router-dom";
+import { MainLayout } from "../layouts/MainLayout";
+import { Dashboard } from "../pages/Dashboard";
+import { LoadingSpinner } from "../components/ui/LoadingSpinner";
+
+// Lazy loading de módulos
+const UsuariosModule = React.lazy(() => import("../modules/usuarios"));
+const RegistroModule = React.lazy(() => import("../modules/registro"));
+const RegistroEstadoHistorialModule = React.lazy(
+  () => import("../modules/registro_estado_historial")
+);
+
+// Componente de loading para Suspense
+const PageLoadingFallback = () => (
+  <div className="flex items-center justify-center h-64">
+    <LoadingSpinner size="lg" />
+    <span className="ml-3 text-gray-600">Cargando módulo...</span>
+  </div>
+);
+
+// Error boundary para módulos
+class ModuleErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error?: Error }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error("Module loading error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <div className="text-red-600">
+            <svg
+              className="w-12 h-12"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.96-.833-2.73 0L3.084 16.5c-.77.833.192 2.5 1.732 2.5z"
+              />
+            </svg>
+          </div>
+          <div className="text-center">
+            <h3 className="text-lg font-medium text-gray-900">
+              Error al cargar el módulo
+            </h3>
+            <p className="text-gray-600">
+              Ha ocurrido un error inesperado. Por favor, recarga la página.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 px-4 py-2 bg-[#18D043] text-white rounded-lg hover:bg-[#16a34a] transition-colors"
+            >
+              Recargar página
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 export const AppRoutes: React.FC = () => {
   return (
     <Routes>
       <Route path="/" element={<MainLayout />}>
         <Route index element={<Dashboard />} />
-        <Route path="usuarios/*" element={<UsuariosModule />} />
-        <Route path="registro/*" element={<RegistroModule />} />
-        <Route path="historial/*" element={<RegistroEstadoHistorialModule />} />
+
+        <Route
+          path="usuarios/*"
+          element={
+            <ModuleErrorBoundary>
+              <Suspense fallback={<PageLoadingFallback />}>
+                <UsuariosModule />
+              </Suspense>
+            </ModuleErrorBoundary>
+          }
+        />
+
+        <Route
+          path="registro/*"
+          element={
+            <ModuleErrorBoundary>
+              <Suspense fallback={<PageLoadingFallback />}>
+                <RegistroModule />
+              </Suspense>
+            </ModuleErrorBoundary>
+          }
+        />
+
+        <Route
+          path="historial/*"
+          element={
+            <ModuleErrorBoundary>
+              <Suspense fallback={<PageLoadingFallback />}>
+                <RegistroEstadoHistorialModule />
+              </Suspense>
+            </ModuleErrorBoundary>
+          }
+        />
       </Route>
     </Routes>
   );
