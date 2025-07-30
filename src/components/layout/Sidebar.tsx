@@ -1,6 +1,13 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Database, Users, History, ChevronLeft, ChevronRight } from 'lucide-react';
+import React from "react";
+import { NavLink } from "react-router-dom";
+import {
+  LayoutDashboard,
+  Database,
+  Users,
+  History,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -9,32 +16,34 @@ interface SidebarProps {
 
 const menuItems = [
   {
-    path: '/',
+    path: "/",
     icon: LayoutDashboard,
-    label: 'Dashboard',
+    label: "Dashboard",
   },
   {
-    path: '/registro',
+    path: "/registro",
     icon: Database,
-    label: 'Registros',
+    label: "Registros",
   },
   {
-    path: '/users',
+    path: "/usuarios",
     icon: Users,
-    label: 'Usuarios',
+    label: "Usuarios",
   },
   {
-    path: '/historial',
+    path: "/historial",
     icon: History,
-    label: 'Historial',
+    label: "Historial",
   },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
   return (
-    <div className={`bg-white border-r border-gray-200 transition-all duration-300 ${
-      isCollapsed ? 'w-16' : 'w-64'
-    }`}>
+    <div
+      className={`bg-white border-r border-gray-200 transition-all duration-300 ${
+        isCollapsed ? "w-16" : "w-64"
+      }`}
+    >
       <div className="flex flex-col h-full">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
@@ -43,9 +52,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
           )}
           <button
             onClick={onToggle}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="p-2 transition-colors rounded-lg hover:bg-gray-100"
           >
-            {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+            {isCollapsed ? (
+              <ChevronRight size={20} />
+            ) : (
+              <ChevronLeft size={20} />
+            )}
           </button>
         </div>
 
@@ -59,9 +72,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
                   className={({ isActive }) =>
                     `flex items-center px-3 py-2 rounded-lg transition-colors ${
                       isActive
-                        ? 'bg-[#18D043] text-white'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    } ${isCollapsed ? 'justify-center' : ''}`
+                        ? "bg-[#18D043] text-white"
+                        : "text-gray-700 hover:bg-gray-100"
+                    } ${isCollapsed ? "justify-center" : ""}`
                   }
                 >
                   <item.icon size={20} />

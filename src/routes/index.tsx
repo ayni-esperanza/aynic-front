@@ -2,19 +2,28 @@ import React, { Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import { MainLayout } from "../layouts/MainLayout";
 import { Dashboard } from "../pages/Dashboard";
-import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 
-// Lazy loading de módulos
-const UsuariosModule = React.lazy(() => import("../modules/usuarios"));
-const RegistroModule = React.lazy(() => import("../modules/registro"));
-const RegistroEstadoHistorialModule = React.lazy(
-  () => import("../modules/registro_estado_historial")
+// Lazy loading de módulos con dynamic imports que transforman named exports a default
+const UsuariosModule = React.lazy(() =>
+  import("../modules/usuarios").then((module) => ({
+    default: module.UsuariosModule,
+  }))
+);
+const RegistroModule = React.lazy(() =>
+  import("../modules/registro").then((module) => ({
+    default: module.RegistroModule,
+  }))
+);
+const RegistroEstadoHistorialModule = React.lazy(() =>
+  import("../modules/registro_estado_historial").then((module) => ({
+    default: module.RegistroEstadoHistorialModule,
+  }))
 );
 
 // Componente de loading para Suspense
 const PageLoadingFallback = () => (
   <div className="flex items-center justify-center h-64">
-    <LoadingSpinner size="lg" />
+    <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#18D043] border-t-transparent"></div>
     <span className="ml-3 text-gray-600">Cargando módulo...</span>
   </div>
 );

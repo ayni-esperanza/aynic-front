@@ -8,17 +8,19 @@ interface ApiState<T> {
   success: boolean;
 }
 
-interface UseApiOptions {
+interface UseApiOptions<T = unknown> {
   immediate?: boolean;
-  onSuccess?: (data: any) => void;
+  onSuccess?: (data: T) => void;
   onError?: (error: string) => void;
   retryCount?: number;
   retryDelay?: number;
 }
 
-export const useApi = <T = any>(
-  apiFunction: (...args: any[]) => Promise<T>,
-  options: UseApiOptions = {}
+type ApiFunction<T> = (...args: unknown[]) => Promise<T>;
+
+export const useApi = <T = unknown>(
+  apiFunction: ApiFunction<T>,
+  options: UseApiOptions<T> = {}
 ) => {
   const {
     immediate = false,
@@ -37,6 +39,7 @@ export const useApi = <T = any>(
 
   const mountedRef = useRef(true);
   const retryTimeoutRef = useRef<NodeJS.Timeout>();
+  const lastArgsRef = useRef<unknown[]>();
 
   useEffect(() => {
     mountedRef.current = true;
@@ -49,7 +52,8 @@ export const useApi = <T = any>(
   }, []);
 
   const execute = useCallback(
-    async (...args: any[]) => {
+    async (...args: unknown[]) => {
+      lastArgsRef.current = args;
       let currentRetry = 0;
 
       const attemptRequest = async (): Promise<void> => {
@@ -120,12 +124,18 @@ export const useApi = <T = any>(
   }, []);
 
   const retry = useCallback(() => {
-    execute();
+    if (lastArgsRef.current) {
+      return execute(...lastArgsRef.current);
+    }
+    // If no previous args, execute with empty args (this handles immediate: true case)
+    return execute();
   }, [execute]);
 
   useEffect(() => {
     if (immediate) {
-      execute();
+      // TEMPORARILY DISABLED - causing infinite loops
+      // execute();
+      console.warn("useApi immediate disabled to prevent infinite loops");
     }
   }, [immediate, execute]);
 
@@ -146,20 +156,45 @@ const shouldRetry = (error: unknown): boolean => {
   return true; // Retry on unknown errors
 };
 
+// Define pagination response interface
+interface PaginationResponse {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+interface PaginatedApiResponse<T> {
+  data: T[];
+  pagination: PaginationResponse;
+}
+
 // Specialized hook for paginated data
-export const usePaginatedApi = <T = any>(
-  apiFunction: (filters: any) => Promise<{ data: T[]; pagination: any }>,
-  initialFilters: any = {},
-  options: UseApiOptions = {}
+export const usePaginatedApi = <
+  T = unknown,
+  F extends Record<string, unknown> = Record<string, unknown>
+>(
+  apiFunction: (filters: F) => Promise<PaginatedApiResponse<T>>,
+  initialFilters: F,
+  options: UseApiOptions<PaginatedApiResponse<T>> = {}
 ) => {
   const [filters, setFilters] = useState(initialFilters);
   const [allData, setAllData] = useState<T[]>([]);
-  const [pagination, setPagination] = useState({
+  const [pagination, setPagination] = useState<PaginationResponse>({
     page: 1,
     limit: 10,
     total: 0,
     totalPages: 0,
   });
+
+  // Create a wrapper function that matches the ApiFunction signature
+  const wrappedApiFunction = useCallback(
+    (...args: unknown[]) => {
+      const filtersArg = args[0] as F;
+      return apiFunction(filtersArg);
+    },
+    [apiFunction]
+  );
 
   const {
     data,
@@ -168,10 +203,10 @@ export const usePaginatedApi = <T = any>(
     success,
     execute: originalExecute,
     reset,
-  } = useApi(apiFunction, {
+  } = useApi(wrappedApiFunction, {
     ...options,
     onSuccess: (result) => {
-      if (filters.page === 1) {
+      if ("page" in filters && (filters as F & { page?: number }).page === 1) {
         setAllData(result.data);
       } else {
         setAllData((prev) => [...prev, ...result.data]);
@@ -182,7 +217,7 @@ export const usePaginatedApi = <T = any>(
   });
 
   const execute = useCallback(
-    (newFilters?: any) => {
+    (newFilters?: Partial<F>) => {
       const updatedFilters = { ...filters, ...newFilters };
       setFilters(updatedFilters);
       return originalExecute(updatedFilters);
@@ -192,21 +227,21 @@ export const usePaginatedApi = <T = any>(
 
   const loadMore = useCallback(() => {
     if (pagination.page < pagination.totalPages) {
-      return execute({ page: pagination.page + 1 });
+      return execute({ ...filters, page: pagination.page + 1 } as F);
     }
-  }, [execute, pagination]);
+  }, [execute, pagination, filters]);
 
   const refresh = useCallback(() => {
     setAllData([]);
-    return execute({ ...filters, page: 1 });
+    return execute({ ...filters, page: 1 } as F);
   }, [execute, filters]);
 
   const updateFilters = useCallback(
-    (newFilters: any) => {
+    (newFilters: Partial<F>) => {
       setAllData([]);
-      return execute({ ...newFilters, page: 1 });
+      return execute({ ...filters, ...newFilters, page: 1 } as F);
     },
-    [execute]
+    [execute, filters]
   );
 
   return {
@@ -227,12 +262,21 @@ export const usePaginatedApi = <T = any>(
 };
 
 // Hook for mutations (create, update, delete)
-export const useMutation = <T = any, P = any>(
+export const useMutation = <T = unknown, P = unknown>(
   mutationFunction: (params: P) => Promise<T>,
-  options: UseApiOptions = {}
+  options: UseApiOptions<T> = {}
 ) => {
+  // Create a wrapper function that matches the ApiFunction signature
+  const wrappedMutationFunction = useCallback(
+    (...args: unknown[]) => {
+      const params = args[0] as P;
+      return mutationFunction(params);
+    },
+    [mutationFunction]
+  );
+
   const { data, loading, error, success, execute, reset } = useApi(
-    mutationFunction,
+    wrappedMutationFunction,
     options
   );
 
@@ -257,10 +301,10 @@ export const useMutation = <T = any, P = any>(
 };
 
 // Hook for optimistic updates
-export const useOptimisticMutation = <T = any, P = any>(
+export const useOptimisticMutation = <T = unknown, P = unknown>(
   mutationFunction: (params: P) => Promise<T>,
   optimisticUpdate: (params: P) => T,
-  options: UseApiOptions = {}
+  options: UseApiOptions<T> = {}
 ) => {
   const [optimisticData, setOptimisticData] = useState<T | null>(null);
 

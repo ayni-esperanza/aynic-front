@@ -1,15 +1,15 @@
 // Core Types
-export interface User {
+export interface User extends Record<string, unknown> {
   id: string;
   nombre: string;
   email: string;
   telefono?: string;
-  rol: 'admin' | 'usuario' | 'supervisor';
+  rol: "admin" | "usuario" | "supervisor";
   fecha_creacion: Date;
   activo: boolean;
 }
 
-export interface DataRecord {
+export interface DataRecord extends Record<string, unknown> {
   id: string;
   codigo: string;
   cliente: string;
@@ -23,7 +23,7 @@ export interface DataRecord {
   tipo_linea: string;
   ubicacion: string;
   fecha_vencimiento: Date;
-  estado_actual: 'activo' | 'inactivo' | 'mantenimiento' | 'vencido';
+  estado_actual: "activo" | "inactivo" | "mantenimiento" | "vencido";
 }
 
 // UI Types
@@ -32,7 +32,7 @@ export interface TableColumn<T> {
   label: string;
   sortable?: boolean;
   width?: string;
-  render?: (value: any, record: T) => React.ReactNode;
+  render?: (value: unknown, record: T) => React.ReactNode;
 }
 
 export interface PaginationState {
@@ -47,5 +47,5 @@ export interface UserFormData {
   nombre: string;
   email: string;
   telefono?: string;
-  rol: User['rol'];
+  rol: User["rol"];
 }

@@ -9,7 +9,7 @@ export interface ApiError {
   message: string;
   status: number;
   code?: string;
-  details?: any;
+  details?: unknown;
 }
 
 export interface PaginatedResponse<T> {
@@ -24,7 +24,7 @@ export interface PaginatedResponse<T> {
 
 // API Configuration
 const API_CONFIG = {
-  baseURL: process.env.VITE_API_URL || "/api",
+  baseURL: import.meta.env.VITE_API_URL || "/api",
   timeout: 10000,
   retries: 3,
 };
@@ -33,9 +33,14 @@ const API_CONFIG = {
 export class ApiClientError extends Error {
   public status: number;
   public code?: string;
-  public details?: any;
+  public details?: unknown;
 
-  constructor(message: string, status: number, code?: string, details?: any) {
+  constructor(
+    message: string,
+    status: number,
+    code?: string,
+    details?: unknown
+  ) {
     super(message);
     this.name = "ApiClientError";
     this.status = status;
@@ -163,10 +168,10 @@ class ApiClient {
     }
   }
 
-  private shouldRetry(error: any): boolean {
+  private shouldRetry(error: unknown): boolean {
     // Retry on network errors or 5xx server errors
     return (
-      error.name === "AbortError" ||
+      (error as Error)?.name === "AbortError" ||
       (error instanceof ApiClientError && error.status >= 500)
     );
   }
@@ -180,7 +185,7 @@ class ApiClient {
     return response.json();
   }
 
-  async post<T>(url: string, data?: any): Promise<T> {
+  async post<T>(url: string, data?: unknown): Promise<T> {
     const response = await this.executeRequest(url, {
       method: "POST",
       body: data ? JSON.stringify(data) : undefined,
@@ -188,7 +193,7 @@ class ApiClient {
     return response.json();
   }
 
-  async put<T>(url: string, data?: any): Promise<T> {
+  async put<T>(url: string, data?: unknown): Promise<T> {
     const response = await this.executeRequest(url, {
       method: "PUT",
       body: data ? JSON.stringify(data) : undefined,
@@ -196,7 +201,7 @@ class ApiClient {
     return response.json();
   }
 
-  async patch<T>(url: string, data?: any): Promise<T> {
+  async patch<T>(url: string, data?: unknown): Promise<T> {
     const response = await this.executeRequest(url, {
       method: "PATCH",
       body: data ? JSON.stringify(data) : undefined,
@@ -215,7 +220,7 @@ class ApiClient {
     file: File,
     onProgress?: (progress: number) => void
   ): Promise<T> {
-    return new Promise((resolve, reject) => {
+    return new Promise<T>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       const formData = new FormData();
       formData.append("file", file);
@@ -230,10 +235,10 @@ class ApiClient {
       xhr.addEventListener("load", () => {
         if (xhr.status >= 200 && xhr.status < 300) {
           try {
-            const result = JSON.parse(xhr.responseText);
+            const result = JSON.parse(xhr.responseText) as T;
             resolve(result);
           } catch {
-            resolve(xhr.responseText as any);
+            resolve(xhr.responseText as T);
           }
         } else {
           reject(new ApiClientError("Upload failed", xhr.status));

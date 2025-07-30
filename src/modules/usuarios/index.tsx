@@ -1,8 +1,8 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import { UsuariosList } from './pages/UsuariosList';
-import { UsuariosForm } from './pages/UsuariosForm';
-import { UsuariosDetail } from './pages/UsuariosDetail';
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import { UsuariosList } from "./pages/UsuariosList";
+import { UsuariosForm } from "./pages/UsuariosForm";
+import { UsuariosDetail } from "./pages/UsuariosDetail";
 
 export const UsuariosModule: React.FC = () => {
   return (
@@ -14,3 +14,6 @@ export const UsuariosModule: React.FC = () => {
     </Routes>
   );
 };
+
+// Default export para lazy loading
+export default UsuariosModule;

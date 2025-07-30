@@ -1,8 +1,8 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import { RegistroList } from './pages/RegistroList';
-import { RegistroForm } from './pages/RegistroForm';
-import { RegistroDetail } from './pages/RegistroDetail';
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import { RegistroList } from "./pages/RegistroList";
+import { RegistroForm } from "./pages/RegistroForm";
+import { RegistroDetail } from "./pages/RegistroDetail";
 
 export const RegistroModule: React.FC = () => {
   return (
@@ -14,3 +14,6 @@ export const RegistroModule: React.FC = () => {
     </Routes>
   );
 };
+
+// Default export para lazy loading
+export default RegistroModule;
