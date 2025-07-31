@@ -7,7 +7,6 @@ import {
   Eye,
   Search,
   Filter,
-  Download,
   Grid,
   List,
   SlidersHorizontal,
@@ -460,16 +459,6 @@ export const RegistroList: React.FC = () => {
           </div>
         </div>
         <div className="flex items-center space-x-3">
-          <Button
-            variant="outline"
-            onClick={() => {
-              /* Exportar */
-            }}
-            icon={Download}
-            className="border-[#18D043] text-[#18D043] hover:bg-[#18D043] hover:text-white"
-          >
-            Exportar
-          </Button>
           <Button
             onClick={() => navigate("nuevo")}
             icon={Plus}

@@ -46,23 +46,35 @@ export const RegistroForm: React.FC = () => {
     if (isEditing && id) {
       const registro = registros.find((r) => r.id === id);
       if (registro) {
+        // Función auxiliar para convertir fechas
+        const formatDateForInput = (date: Date | string) => {
+          if (!date) return "";
+          // Si ya es un string, asumimos que está en formato correcto
+          if (typeof date === "string") {
+            const parsedDate = new Date(date);
+            return isNaN(parsedDate.getTime())
+              ? ""
+              : parsedDate.toISOString().split("T")[0];
+          }
+          // Si es un objeto Date
+          return date instanceof Date && !isNaN(date.getTime())
+            ? date.toISOString().split("T")[0]
+            : "";
+        };
+
         setFormData({
           codigo: registro.codigo,
           cliente: registro.cliente,
           equipo: registro.equipo,
           fv_anios: registro.fv_anios,
           fv_meses: registro.fv_meses,
-          fecha_instalacion: registro.fecha_instalacion
-            .toISOString()
-            .split("T")[0],
+          fecha_instalacion: formatDateForInput(registro.fecha_instalacion),
           longitud: registro.longitud,
           observaciones: registro.observaciones || "",
           seec: registro.seec,
           tipo_linea: registro.tipo_linea,
           ubicacion: registro.ubicacion,
-          fecha_vencimiento: registro.fecha_vencimiento
-            .toISOString()
-            .split("T")[0],
+          fecha_vencimiento: formatDateForInput(registro.fecha_vencimiento),
           estado_actual: registro.estado_actual,
         });
       }
@@ -120,10 +132,17 @@ export const RegistroForm: React.FC = () => {
 
     if (!validateStep(currentStep)) return;
 
+    // Función auxiliar para crear fechas válidas
+    const createValidDate = (dateString: string) => {
+      if (!dateString) return new Date();
+      const date = new Date(dateString);
+      return isNaN(date.getTime()) ? new Date() : date;
+    };
+
     const registroData: Omit<DataRecord, "id"> = {
       ...formData,
-      fecha_instalacion: new Date(formData.fecha_instalacion),
-      fecha_vencimiento: new Date(formData.fecha_vencimiento),
+      fecha_instalacion: createValidDate(formData.fecha_instalacion),
+      fecha_vencimiento: createValidDate(formData.fecha_vencimiento),
     };
 
     if (isEditing && id) {

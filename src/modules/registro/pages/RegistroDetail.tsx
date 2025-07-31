@@ -1,28 +1,107 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { 
-  ArrowLeft, Edit, Calendar, MapPin, Settings, Zap, 
-  Clock, User, FileText, Activity, Gauge, AlertTriangle,
-  CheckCircle, XCircle, Wrench
-} from 'lucide-react';
-import { Button } from '../../../components/ui/Button';
-import { Card } from '../../../components/ui/Card';
-import { Badge } from '../../../components/ui/Badge';
-import { useAppStore } from '../../../store';
-import { formatDate, formatDateTime } from '../../../utils/formatters';
-import type { DataRecord } from '../../../types';
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  ArrowLeft,
+  Edit,
+  Calendar,
+  MapPin,
+  Settings,
+  Zap,
+  Clock,
+  User,
+  FileText,
+  Activity,
+  Gauge,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  Wrench,
+} from "lucide-react";
+import { Button } from "../../../components/ui/Button";
+import { Card } from "../../../components/ui/Card";
+import { Badge } from "../../../components/ui/Badge";
+import { useAppStore } from "../../../store";
+import { formatDate, formatDateTime } from "../../../utils/formatters";
+import type { DataRecord } from "../../../types";
+
+// Función auxiliar para manejar fechas de forma segura
+const safeFormatDate = (dateValue: Date | string | undefined): string => {
+  if (!dateValue) return "Fecha no disponible";
+
+  try {
+    if (typeof dateValue === "string") {
+      const parsed = new Date(dateValue);
+      return isNaN(parsed.getTime()) ? "Fecha inválida" : formatDate(parsed);
+    }
+
+    if (dateValue instanceof Date && !isNaN(dateValue.getTime())) {
+      return formatDate(dateValue);
+    }
+
+    return "Fecha inválida";
+  } catch (error) {
+    console.warn("Error formatting date:", error);
+    return "Error en fecha";
+  }
+};
+
+const safeFormatDateTime = (dateValue: Date | string | undefined): string => {
+  if (!dateValue) return "Fecha no disponible";
+
+  try {
+    if (typeof dateValue === "string") {
+      const parsed = new Date(dateValue);
+      return isNaN(parsed.getTime())
+        ? "Fecha inválida"
+        : formatDateTime(parsed);
+    }
+
+    if (dateValue instanceof Date && !isNaN(dateValue.getTime())) {
+      return formatDateTime(dateValue);
+    }
+
+    return "Fecha inválida";
+  } catch (error) {
+    console.warn("Error formatting datetime:", error);
+    return "Error en fecha";
+  }
+};
 
 export const RegistroDetail: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { registros } = useAppStore();
   const [registro, setRegistro] = useState<DataRecord | null>(null);
-  const [activeTab, setActiveTab] = useState('general');
+  const [activeTab, setActiveTab] = useState("general");
 
   useEffect(() => {
     if (id) {
-      const foundRegistro = registros.find(r => r.id === id);
-      setRegistro(foundRegistro || null);
+      const foundRegistro = registros.find((r) => r.id === id);
+      if (foundRegistro) {
+        // Función auxiliar para asegurar que las fechas sean objetos Date
+        const ensureDate = (dateValue: Date | string | undefined) => {
+          if (!dateValue) return new Date();
+          if (typeof dateValue === "string") {
+            const parsed = new Date(dateValue);
+            return isNaN(parsed.getTime()) ? new Date() : parsed;
+          }
+          if (dateValue instanceof Date && !isNaN(dateValue.getTime())) {
+            return dateValue;
+          }
+          return new Date();
+        };
+
+        // Normalizar el objeto registro con fechas válidas
+        const normalizedRegistro = {
+          ...foundRegistro,
+          fecha_instalacion: ensureDate(foundRegistro.fecha_instalacion),
+          fecha_vencimiento: ensureDate(foundRegistro.fecha_vencimiento),
+        };
+
+        setRegistro(normalizedRegistro);
+      } else {
+        setRegistro(null);
+      }
     }
   }, [id, registros]);
 
@@ -34,11 +113,15 @@ export const RegistroDetail: React.FC = () => {
             <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full">
               <XCircle className="w-8 h-8 text-red-600" />
             </div>
-            <h3 className="mb-2 text-lg font-semibold text-gray-900">Registro no encontrado</h3>
-            <p className="mb-6 text-gray-600">El registro que buscas no existe o ha sido eliminado.</p>
+            <h3 className="mb-2 text-lg font-semibold text-gray-900">
+              Registro no encontrado
+            </h3>
+            <p className="mb-6 text-gray-600">
+              El registro que buscas no existe o ha sido eliminado.
+            </p>
             <Button
               variant="outline"
-              onClick={() => navigate('/registro')}
+              onClick={() => navigate("/registro")}
               icon={ArrowLeft}
               className="w-full"
             >
@@ -50,39 +133,39 @@ export const RegistroDetail: React.FC = () => {
     );
   }
 
-  const getEstadoConfig = (estado: DataRecord['estado_actual']) => {
+  const getEstadoConfig = (estado: DataRecord["estado_actual"]) => {
     const configs = {
-      activo: { 
-        variant: 'success' as const, 
-        icon: CheckCircle, 
-        color: 'text-green-600', 
-        bgColor: 'bg-green-50',
-        borderColor: 'border-green-200',
-        emoji: '🟢'
+      activo: {
+        variant: "success" as const,
+        icon: CheckCircle,
+        color: "text-green-600",
+        bgColor: "bg-green-50",
+        borderColor: "border-green-200",
+        emoji: "🟢",
       },
-      inactivo: { 
-        variant: 'secondary' as const, 
-        icon: XCircle, 
-        color: 'text-gray-600', 
-        bgColor: 'bg-gray-50',
-        borderColor: 'border-gray-200',
-        emoji: '⚪'
+      inactivo: {
+        variant: "secondary" as const,
+        icon: XCircle,
+        color: "text-gray-600",
+        bgColor: "bg-gray-50",
+        borderColor: "border-gray-200",
+        emoji: "⚪",
       },
-      mantenimiento: { 
-        variant: 'warning' as const, 
-        icon: Wrench, 
-        color: 'text-yellow-600', 
-        bgColor: 'bg-yellow-50',
-        borderColor: 'border-yellow-200',
-        emoji: '🟡'
+      mantenimiento: {
+        variant: "warning" as const,
+        icon: Wrench,
+        color: "text-yellow-600",
+        bgColor: "bg-yellow-50",
+        borderColor: "border-yellow-200",
+        emoji: "🟡",
       },
-      vencido: { 
-        variant: 'danger' as const, 
-        icon: AlertTriangle, 
-        color: 'text-red-600', 
-        bgColor: 'bg-red-50',
-        borderColor: 'border-red-200',
-        emoji: '🔴'
+      vencido: {
+        variant: "danger" as const,
+        icon: AlertTriangle,
+        color: "text-red-600",
+        bgColor: "bg-red-50",
+        borderColor: "border-red-200",
+        emoji: "🔴",
       },
     };
     return configs[estado];
@@ -92,15 +175,15 @@ export const RegistroDetail: React.FC = () => {
   const EstadoIcon = estadoConfig.icon;
 
   const tabs = [
-    { id: 'general', label: 'General', icon: FileText },
-    { id: 'tecnico', label: 'Técnico', icon: Settings },
-    { id: 'fechas', label: 'Fechas', icon: Calendar },
-    { id: 'actividad', label: 'Actividad', icon: Activity },
+    { id: "general", label: "General", icon: FileText },
+    { id: "tecnico", label: "Técnico", icon: Settings },
+    { id: "fechas", label: "Fechas", icon: Calendar },
+    { id: "actividad", label: "Actividad", icon: Activity },
   ];
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'general':
+      case "general":
         return (
           <div className="space-y-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -111,7 +194,9 @@ export const RegistroDetail: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-blue-600">Código</p>
-                    <p className="font-mono text-lg font-bold text-blue-900">{registro.codigo}</p>
+                    <p className="font-mono text-lg font-bold text-blue-900">
+                      {registro.codigo}
+                    </p>
                   </div>
                 </div>
 
@@ -120,8 +205,12 @@ export const RegistroDetail: React.FC = () => {
                     <User className="w-5 h-5 text-purple-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-purple-600">Cliente</p>
-                    <p className="text-lg font-bold text-purple-900">{registro.cliente}</p>
+                    <p className="text-sm font-medium text-purple-600">
+                      Cliente
+                    </p>
+                    <p className="text-lg font-bold text-purple-900">
+                      {registro.cliente}
+                    </p>
                   </div>
                 </div>
 
@@ -131,7 +220,9 @@ export const RegistroDetail: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-green-600">Equipo</p>
-                    <p className="text-lg font-bold text-green-900">{registro.equipo}</p>
+                    <p className="text-lg font-bold text-green-900">
+                      {registro.equipo}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -143,7 +234,9 @@ export const RegistroDetail: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-orange-600">SEEC</p>
-                    <p className="font-mono text-lg font-bold text-orange-900">{registro.seec}</p>
+                    <p className="font-mono text-lg font-bold text-orange-900">
+                      {registro.seec}
+                    </p>
                   </div>
                 </div>
 
@@ -152,18 +245,34 @@ export const RegistroDetail: React.FC = () => {
                     <MapPin className="w-5 h-5 text-indigo-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-indigo-600">Ubicación</p>
-                    <p className="text-lg font-bold text-indigo-900">{registro.ubicacion}</p>
+                    <p className="text-sm font-medium text-indigo-600">
+                      Ubicación
+                    </p>
+                    <p className="text-lg font-bold text-indigo-900">
+                      {registro.ubicacion}
+                    </p>
                   </div>
                 </div>
 
-                <div className={estadoConfig.bgColor + ' p-4 rounded-xl border ' + estadoConfig.borderColor}>
+                <div
+                  className={
+                    estadoConfig.bgColor +
+                    " p-4 rounded-xl border " +
+                    estadoConfig.borderColor
+                  }
+                >
                   <div className="flex items-center space-x-3">
-                    <div className={`w-10 h-10 ${estadoConfig.bgColor} rounded-lg flex items-center justify-center`}>
+                    <div
+                      className={`w-10 h-10 ${estadoConfig.bgColor} rounded-lg flex items-center justify-center`}
+                    >
                       <EstadoIcon className={`w-5 h-5 ${estadoConfig.color}`} />
                     </div>
                     <div>
-                      <p className={`text-sm font-medium ${estadoConfig.color}`}>Estado Actual</p>
+                      <p
+                        className={`text-sm font-medium ${estadoConfig.color}`}
+                      >
+                        Estado Actual
+                      </p>
                       <div className="flex items-center space-x-2">
                         <span className="text-lg">{estadoConfig.emoji}</span>
                         <Badge variant={estadoConfig.variant} size="md">
@@ -190,7 +299,7 @@ export const RegistroDetail: React.FC = () => {
           </div>
         );
 
-      case 'tecnico':
+      case "tecnico":
         return (
           <div className="space-y-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -199,8 +308,12 @@ export const RegistroDetail: React.FC = () => {
                   <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-blue-200 rounded-full">
                     <span className="text-2xl">🔗</span>
                   </div>
-                  <h4 className="mb-2 font-semibold text-blue-900">Tipo de Línea</h4>
-                  <p className="font-medium text-blue-700">{registro.tipo_linea}</p>
+                  <h4 className="mb-2 font-semibold text-blue-900">
+                    Tipo de Línea
+                  </h4>
+                  <p className="font-medium text-blue-700">
+                    {registro.tipo_linea}
+                  </p>
                 </div>
               </Card>
 
@@ -209,8 +322,12 @@ export const RegistroDetail: React.FC = () => {
                   <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-green-200 rounded-full">
                     <Gauge className="w-8 h-8 text-green-600" />
                   </div>
-                  <h4 className="mb-2 font-semibold text-green-900">Longitud</h4>
-                  <p className="text-xl font-medium text-green-700">{registro.longitud}m</p>
+                  <h4 className="mb-2 font-semibold text-green-900">
+                    Longitud
+                  </h4>
+                  <p className="text-xl font-medium text-green-700">
+                    {registro.longitud}m
+                  </p>
                 </div>
               </Card>
 
@@ -219,9 +336,12 @@ export const RegistroDetail: React.FC = () => {
                   <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-purple-200 rounded-full">
                     <Clock className="w-8 h-8 text-purple-600" />
                   </div>
-                  <h4 className="mb-2 font-semibold text-purple-900">Vida Útil</h4>
+                  <h4 className="mb-2 font-semibold text-purple-900">
+                    Vida Útil
+                  </h4>
                   <p className="font-medium text-purple-700">
-                    {registro.fv_anios} años<br />
+                    {registro.fv_anios} años
+                    <br />
                     {registro.fv_meses} meses
                   </p>
                 </div>
@@ -238,11 +358,15 @@ export const RegistroDetail: React.FC = () => {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between py-2 border-b border-gray-100">
                       <span className="text-gray-600">Código de Equipo:</span>
-                      <span className="px-2 py-1 font-mono font-medium bg-gray-100 rounded">{registro.equipo}</span>
+                      <span className="px-2 py-1 font-mono font-medium bg-gray-100 rounded">
+                        {registro.equipo}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between py-2 border-b border-gray-100">
                       <span className="text-gray-600">Sistema SEEC:</span>
-                      <span className="px-2 py-1 font-mono font-medium bg-gray-100 rounded">{registro.seec}</span>
+                      <span className="px-2 py-1 font-mono font-medium bg-gray-100 rounded">
+                        {registro.seec}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between py-2 border-b border-gray-100">
                       <span className="text-gray-600">Tecnología:</span>
@@ -250,7 +374,9 @@ export const RegistroDetail: React.FC = () => {
                     </div>
                     <div className="flex items-center justify-between py-2">
                       <span className="text-gray-600">Extensión:</span>
-                      <span className="font-medium">{registro.longitud.toLocaleString()} metros</span>
+                      <span className="font-medium">
+                        {registro.longitud.toLocaleString()} metros
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -264,7 +390,9 @@ export const RegistroDetail: React.FC = () => {
                   </h4>
                   <div className="space-y-4">
                     <div className="p-4 rounded-lg bg-gray-50">
-                      <p className="mb-2 text-gray-700">📍 <strong>Dirección:</strong></p>
+                      <p className="mb-2 text-gray-700">
+                        📍 <strong>Dirección:</strong>
+                      </p>
                       <p className="text-gray-900">{registro.ubicacion}</p>
                     </div>
                     <div className="grid grid-cols-2 gap-4 text-sm">
@@ -284,7 +412,7 @@ export const RegistroDetail: React.FC = () => {
           </div>
         );
 
-      case 'fechas':
+      case "fechas":
         return (
           <div className="space-y-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -295,16 +423,37 @@ export const RegistroDetail: React.FC = () => {
                       <Calendar className="w-6 h-6 text-green-600" />
                     </div>
                     <div>
-                      <h4 className="text-lg font-semibold text-green-900">Fecha de Instalación</h4>
+                      <h4 className="text-lg font-semibold text-green-900">
+                        Fecha de Instalación
+                      </h4>
                       <p className="text-green-600">Inicio de operaciones</p>
                     </div>
                   </div>
                   <div className="py-4 text-center">
                     <p className="mb-2 text-3xl font-bold text-green-900">
-                      {formatDate(registro.fecha_instalacion)}
+                      {safeFormatDate(registro.fecha_instalacion)}
                     </p>
                     <p className="text-green-600">
-                      Hace {Math.floor((new Date().getTime() - registro.fecha_instalacion.getTime()) / (1000 * 60 * 60 * 24))} días
+                      Hace{" "}
+                      {(() => {
+                        try {
+                          const installDate =
+                            typeof registro.fecha_instalacion === "string"
+                              ? new Date(registro.fecha_instalacion)
+                              : registro.fecha_instalacion;
+
+                          if (installDate && !isNaN(installDate.getTime())) {
+                            return Math.floor(
+                              (new Date().getTime() - installDate.getTime()) /
+                                (1000 * 60 * 60 * 24)
+                            );
+                          }
+                          return 0;
+                        } catch {
+                          return 0;
+                        }
+                      })()}{" "}
+                      días
                     </p>
                   </div>
                 </div>
@@ -317,19 +466,42 @@ export const RegistroDetail: React.FC = () => {
                       <AlertTriangle className="w-6 h-6 text-red-600" />
                     </div>
                     <div>
-                      <h4 className="text-lg font-semibold text-red-900">Fecha de Vencimiento</h4>
+                      <h4 className="text-lg font-semibold text-red-900">
+                        Fecha de Vencimiento
+                      </h4>
                       <p className="text-red-600">Límite de operación</p>
                     </div>
                   </div>
                   <div className="py-4 text-center">
                     <p className="mb-2 text-3xl font-bold text-red-900">
-                      {formatDate(registro.fecha_vencimiento)}
+                      {safeFormatDate(registro.fecha_vencimiento)}
                     </p>
                     <p className="text-red-600">
-                      {registro.fecha_vencimiento > new Date() 
-                        ? `En ${Math.floor((registro.fecha_vencimiento.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} días`
-                        : `Vencido hace ${Math.floor((new Date().getTime() - registro.fecha_vencimiento.getTime()) / (1000 * 60 * 60 * 24))} días`
-                      }
+                      {(() => {
+                        try {
+                          const vencDate =
+                            typeof registro.fecha_vencimiento === "string"
+                              ? new Date(registro.fecha_vencimiento)
+                              : registro.fecha_vencimiento;
+
+                          if (vencDate && !isNaN(vencDate.getTime())) {
+                            const today = new Date();
+                            const diffDays = Math.floor(
+                              (vencDate.getTime() - today.getTime()) /
+                                (1000 * 60 * 60 * 24)
+                            );
+
+                            if (diffDays > 0) {
+                              return `En ${diffDays} días`;
+                            } else {
+                              return `Vencido hace ${Math.abs(diffDays)} días`;
+                            }
+                          }
+                          return "Fecha no válida";
+                        } catch {
+                          return "Error en cálculo";
+                        }
+                      })()}
                     </p>
                   </div>
                 </div>
@@ -342,64 +514,99 @@ export const RegistroDetail: React.FC = () => {
                   <Clock className="w-5 h-5 text-gray-600" />
                   <span>Línea de Tiempo</span>
                 </h4>
-                
+
                 <div className="relative">
                   <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
-                  
+
                   <div className="space-y-8">
                     <div className="flex items-center space-x-4">
                       <div className="relative z-10 flex items-center justify-center w-8 h-8 bg-green-500 rounded-full">
                         <CheckCircle className="w-4 h-4 text-white" />
                       </div>
                       <div className="flex-1 p-4 border border-green-200 rounded-lg bg-green-50">
-                        <h5 className="font-semibold text-green-900">Instalación Completada</h5>
-                        <p className="text-green-700">{formatDate(registro.fecha_instalacion)}</p>
-                        <p className="mt-1 text-sm text-green-600">Sistema puesto en funcionamiento</p>
+                        <h5 className="font-semibold text-green-900">
+                          Instalación Completada
+                        </h5>
+                        <p className="text-green-700">
+                          {formatDate(registro.fecha_instalacion)}
+                        </p>
+                        <p className="mt-1 text-sm text-green-600">
+                          Sistema puesto en funcionamiento
+                        </p>
                       </div>
                     </div>
 
                     <div className="flex items-center space-x-4">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center relative z-10 ${
-                        new Date() <= registro.fecha_vencimiento ? 'bg-blue-500' : 'bg-gray-400'
-                      }`}>
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center relative z-10 ${
+                          new Date() <= registro.fecha_vencimiento
+                            ? "bg-blue-500"
+                            : "bg-gray-400"
+                        }`}
+                      >
                         <Clock className="w-4 h-4 text-white" />
                       </div>
                       <div className="flex-1 p-4 border border-blue-200 rounded-lg bg-blue-50">
-                        <h5 className="font-semibold text-blue-900">Estado Actual</h5>
-                        <p className="text-blue-700">{formatDate(new Date())}</p>
+                        <h5 className="font-semibold text-blue-900">
+                          Estado Actual
+                        </h5>
+                        <p className="text-blue-700">
+                          {formatDate(new Date())}
+                        </p>
                         <div className="flex items-center mt-1 space-x-2">
                           <span className="text-lg">{estadoConfig.emoji}</span>
-                          <Badge variant={estadoConfig.variant}>{registro.estado_actual}</Badge>
+                          <Badge variant={estadoConfig.variant}>
+                            {registro.estado_actual}
+                          </Badge>
                         </div>
                       </div>
                     </div>
 
                     <div className="flex items-center space-x-4">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center relative z-10 ${
-                        new Date() > registro.fecha_vencimiento ? 'bg-red-500' : 'bg-gray-300'
-                      }`}>
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center relative z-10 ${
+                          new Date() > registro.fecha_vencimiento
+                            ? "bg-red-500"
+                            : "bg-gray-300"
+                        }`}
+                      >
                         <AlertTriangle className="w-4 h-4 text-white" />
                       </div>
-                      <div className={`flex-1 p-4 rounded-lg border ${
-                        new Date() > registro.fecha_vencimiento 
-                          ? 'bg-red-50 border-red-200' 
-                          : 'bg-gray-50 border-gray-200'
-                      }`}>
-                        <h5 className={`font-semibold ${
-                          new Date() > registro.fecha_vencimiento ? 'text-red-900' : 'text-gray-900'
-                        }`}>
+                      <div
+                        className={`flex-1 p-4 rounded-lg border ${
+                          new Date() > registro.fecha_vencimiento
+                            ? "bg-red-50 border-red-200"
+                            : "bg-gray-50 border-gray-200"
+                        }`}
+                      >
+                        <h5
+                          className={`font-semibold ${
+                            new Date() > registro.fecha_vencimiento
+                              ? "text-red-900"
+                              : "text-gray-900"
+                          }`}
+                        >
                           Fecha de Vencimiento
                         </h5>
-                        <p className={new Date() > registro.fecha_vencimiento ? 'text-red-700' : 'text-gray-700'}>
+                        <p
+                          className={
+                            new Date() > registro.fecha_vencimiento
+                              ? "text-red-700"
+                              : "text-gray-700"
+                          }
+                        >
                           {formatDate(registro.fecha_vencimiento)}
                         </p>
-                        <p className={`text-sm mt-1 ${
-                          new Date() > registro.fecha_vencimiento ? 'text-red-600' : 'text-gray-600'
-                        }`}>
-                          {new Date() > registro.fecha_vencimiento 
-                            ? '⚠️ Sistema vencido - Requiere renovación'
-                            : '📅 Programado para renovación'
-                          }
+                        <p
+                          className={`text-sm mt-1 ${
+                            new Date() > registro.fecha_vencimiento
+                              ? "text-red-600"
+                              : "text-gray-600"
+                          }`}
+                        >
+                          {new Date() > registro.fecha_vencimiento
+                            ? "⚠️ Sistema vencido - Requiere renovación"
+                            : "📅 Programado para renovación"}
                         </p>
                       </div>
                     </div>
@@ -411,15 +618,21 @@ export const RegistroDetail: React.FC = () => {
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <Card>
                 <div className="p-6">
-                  <h4 className="mb-4 text-lg font-semibold text-gray-900">Vida Útil Programada</h4>
+                  <h4 className="mb-4 text-lg font-semibold text-gray-900">
+                    Vida Útil Programada
+                  </h4>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Años:</span>
-                      <span className="text-2xl font-semibold text-blue-600">{registro.fv_anios}</span>
+                      <span className="text-2xl font-semibold text-blue-600">
+                        {registro.fv_anios}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Meses adicionales:</span>
-                      <span className="text-2xl font-semibold text-blue-600">{registro.fv_meses}</span>
+                      <span className="text-2xl font-semibold text-blue-600">
+                        {registro.fv_meses}
+                      </span>
                     </div>
                     <div className="pt-2 border-t border-gray-200">
                       <div className="flex items-center justify-between">
@@ -435,36 +648,75 @@ export const RegistroDetail: React.FC = () => {
 
               <Card>
                 <div className="p-6">
-                  <h4 className="mb-4 text-lg font-semibold text-gray-900">Tiempo Transcurrido</h4>
+                  <h4 className="mb-4 text-lg font-semibold text-gray-900">
+                    Tiempo Transcurrido
+                  </h4>
                   <div className="space-y-3">
                     {(() => {
-                      const totalDays = Math.floor((new Date().getTime() - registro.fecha_instalacion.getTime()) / (1000 * 60 * 60 * 24));
-                      const years = Math.floor(totalDays / 365);
-                      const months = Math.floor((totalDays % 365) / 30);
-                      const days = totalDays % 30;
-                      
-                      return (
-                        <>
-                          <div className="flex items-center justify-between">
-                            <span className="text-gray-600">Años:</span>
-                            <span className="text-2xl font-semibold text-green-600">{years}</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-gray-600">Meses:</span>
-                            <span className="text-2xl font-semibold text-green-600">{months}</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-gray-600">Días:</span>
-                            <span className="text-xl font-semibold text-green-600">{days}</span>
-                          </div>
-                          <div className="pt-2 border-t border-gray-200">
+                      try {
+                        const installDate =
+                          typeof registro.fecha_instalacion === "string"
+                            ? new Date(registro.fecha_instalacion)
+                            : registro.fecha_instalacion;
+
+                        if (!installDate || isNaN(installDate.getTime())) {
+                          return (
+                            <div className="space-y-3">
+                              <div className="text-red-600">
+                                Fecha de instalación no válida
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        const totalDays = Math.floor(
+                          (new Date().getTime() - installDate.getTime()) /
+                            (1000 * 60 * 60 * 24)
+                        );
+                        const years = Math.floor(totalDays / 365);
+                        const months = Math.floor((totalDays % 365) / 30);
+                        const days = totalDays % 30;
+
+                        return (
+                          <div className="space-y-3">
                             <div className="flex items-center justify-between">
-                              <span className="text-gray-600">Total días:</span>
-                              <span className="text-xl font-bold text-gray-900">{totalDays}</span>
+                              <span className="text-gray-600">Años:</span>
+                              <span className="text-2xl font-semibold text-green-600">
+                                {years}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-gray-600">Meses:</span>
+                              <span className="text-2xl font-semibold text-green-600">
+                                {months}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-gray-600">Días:</span>
+                              <span className="text-xl font-semibold text-green-600">
+                                {days}
+                              </span>
+                            </div>
+                            <div className="pt-2 border-t border-gray-200">
+                              <div className="flex items-center justify-between">
+                                <span className="text-gray-600">
+                                  Total días:
+                                </span>
+                                <span className="text-xl font-bold text-gray-900">
+                                  {totalDays}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </>
-                      );
+                        );
+                      } catch (error) {
+                        console.warn("Error calculating time elapsed:", error);
+                        return (
+                          <div className="text-red-600">
+                            Error calculando tiempo transcurrido
+                          </div>
+                        );
+                      }
                     })()}
                   </div>
                 </div>
@@ -473,7 +725,7 @@ export const RegistroDetail: React.FC = () => {
           </div>
         );
 
-      case 'actividad':
+      case "actividad":
         return (
           <div className="space-y-6">
             <Card>
@@ -482,24 +734,52 @@ export const RegistroDetail: React.FC = () => {
                   <Activity className="w-5 h-5 text-gray-600" />
                   <span>Actividad Reciente</span>
                 </h4>
-                
+
                 <div className="space-y-4">
                   {[
-                    { action: 'Registro creado', time: formatDateTime(registro.fecha_instalacion), type: 'create' },
-                    { action: 'Estado actualizado a ' + registro.estado_actual, time: formatDateTime(new Date()), type: 'update' },
-                    { action: 'Última revisión completada', time: formatDateTime(new Date(Date.now() - 86400000)), type: 'review' },
+                    {
+                      action: "Registro creado",
+                      time: safeFormatDateTime(registro.fecha_instalacion),
+                      type: "create",
+                    },
+                    {
+                      action: "Estado actualizado a " + registro.estado_actual,
+                      time: safeFormatDateTime(new Date()),
+                      type: "update",
+                    },
+                    {
+                      action: "Última revisión completada",
+                      time: safeFormatDateTime(new Date(Date.now() - 86400000)),
+                      type: "review",
+                    },
                   ].map((activity, index) => (
-                    <div key={index} className="flex items-start p-4 space-x-4 rounded-lg bg-gray-50">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        activity.type === 'create' ? 'bg-green-100' :
-                        activity.type === 'update' ? 'bg-blue-100' : 'bg-purple-100'
-                      }`}>
-                        {activity.type === 'create' && <CheckCircle className="w-5 h-5 text-green-600" />}
-                        {activity.type === 'update' && <Edit className="w-5 h-5 text-blue-600" />}
-                        {activity.type === 'review' && <Settings className="w-5 h-5 text-purple-600" />}
+                    <div
+                      key={index}
+                      className="flex items-start p-4 space-x-4 rounded-lg bg-gray-50"
+                    >
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          activity.type === "create"
+                            ? "bg-green-100"
+                            : activity.type === "update"
+                            ? "bg-blue-100"
+                            : "bg-purple-100"
+                        }`}
+                      >
+                        {activity.type === "create" && (
+                          <CheckCircle className="w-5 h-5 text-green-600" />
+                        )}
+                        {activity.type === "update" && (
+                          <Edit className="w-5 h-5 text-blue-600" />
+                        )}
+                        {activity.type === "review" && (
+                          <Settings className="w-5 h-5 text-purple-600" />
+                        )}
                       </div>
                       <div className="flex-1">
-                        <p className="font-medium text-gray-900">{activity.action}</p>
+                        <p className="font-medium text-gray-900">
+                          {activity.action}
+                        </p>
                         <p className="text-sm text-gray-500">{activity.time}</p>
                       </div>
                     </div>
@@ -511,20 +791,48 @@ export const RegistroDetail: React.FC = () => {
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <Card>
                 <div className="p-6">
-                  <h4 className="mb-4 text-lg font-semibold text-gray-900">Estadísticas</h4>
+                  <h4 className="mb-4 text-lg font-semibold text-gray-900">
+                    Estadísticas
+                  </h4>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50">
-                      <span className="font-medium text-blue-600">Tiempo activo</span>
+                      <span className="font-medium text-blue-600">
+                        Tiempo activo
+                      </span>
                       <span className="font-semibold text-blue-900">
-                        {Math.floor((new Date().getTime() - registro.fecha_instalacion.getTime()) / (1000 * 60 * 60 * 24))} días
+                        {(() => {
+                          try {
+                            const installDate =
+                              typeof registro.fecha_instalacion === "string"
+                                ? new Date(registro.fecha_instalacion)
+                                : registro.fecha_instalacion;
+
+                            if (installDate && !isNaN(installDate.getTime())) {
+                              return Math.floor(
+                                (new Date().getTime() - installDate.getTime()) /
+                                  (1000 * 60 * 60 * 24)
+                              );
+                            }
+                            return 0;
+                          } catch {
+                            return 0;
+                          }
+                        })()}{" "}
+                        días
                       </span>
                     </div>
                     <div className="flex items-center justify-between p-3 rounded-lg bg-green-50">
-                      <span className="font-medium text-green-600">Estado actual</span>
-                      <Badge variant={estadoConfig.variant}>{registro.estado_actual}</Badge>
+                      <span className="font-medium text-green-600">
+                        Estado actual
+                      </span>
+                      <Badge variant={estadoConfig.variant}>
+                        {registro.estado_actual}
+                      </Badge>
                     </div>
                     <div className="flex items-center justify-between p-3 rounded-lg bg-purple-50">
-                      <span className="font-medium text-purple-600">Última actualización</span>
+                      <span className="font-medium text-purple-600">
+                        Última actualización
+                      </span>
                       <span className="font-semibold text-purple-900">Hoy</span>
                     </div>
                   </div>
@@ -533,30 +841,48 @@ export const RegistroDetail: React.FC = () => {
 
               <Card>
                 <div className="p-6">
-                  <h4 className="mb-4 text-lg font-semibold text-gray-900">Próximas Acciones</h4>
+                  <h4 className="mb-4 text-lg font-semibold text-gray-900">
+                    Próximas Acciones
+                  </h4>
                   <div className="space-y-3">
-                    {registro.estado_actual === 'vencido' && (
+                    {registro.estado_actual === "vencido" && (
                       <div className="p-3 border border-red-200 rounded-lg bg-red-50">
-                        <p className="font-medium text-red-800">🚨 Renovación urgente</p>
-                        <p className="text-sm text-red-600">Sistema vencido - Contactar soporte</p>
+                        <p className="font-medium text-red-800">
+                          🚨 Renovación urgente
+                        </p>
+                        <p className="text-sm text-red-600">
+                          Sistema vencido - Contactar soporte
+                        </p>
                       </div>
                     )}
-                    
-                    {registro.estado_actual === 'mantenimiento' && (
+
+                    {registro.estado_actual === "mantenimiento" && (
                       <div className="p-3 border border-yellow-200 rounded-lg bg-yellow-50">
-                        <p className="font-medium text-yellow-800">🔧 En mantenimiento</p>
-                        <p className="text-sm text-yellow-600">Completar tareas pendientes</p>
+                        <p className="font-medium text-yellow-800">
+                          🔧 En mantenimiento
+                        </p>
+                        <p className="text-sm text-yellow-600">
+                          Completar tareas pendientes
+                        </p>
                       </div>
                     )}
-                    
+
                     <div className="p-3 border border-blue-200 rounded-lg bg-blue-50">
-                      <p className="font-medium text-blue-800">📊 Revisión programada</p>
-                      <p className="text-sm text-blue-600">Próxima revisión en 30 días</p>
+                      <p className="font-medium text-blue-800">
+                        📊 Revisión programada
+                      </p>
+                      <p className="text-sm text-blue-600">
+                        Próxima revisión en 30 días
+                      </p>
                     </div>
-                    
+
                     <div className="p-3 border border-green-200 rounded-lg bg-green-50">
-                      <p className="font-medium text-green-800">📋 Generar reporte</p>
-                      <p className="text-sm text-green-600">Reporte mensual disponible</p>
+                      <p className="font-medium text-green-800">
+                        📋 Generar reporte
+                      </p>
+                      <p className="text-sm text-green-600">
+                        Reporte mensual disponible
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -579,7 +905,7 @@ export const RegistroDetail: React.FC = () => {
             <div className="flex items-center space-x-4">
               <Button
                 variant="outline"
-                onClick={() => navigate('/registro')}
+                onClick={() => navigate("/registro")}
                 icon={ArrowLeft}
                 className="border-gray-300 hover:bg-gray-50"
               >
@@ -602,7 +928,7 @@ export const RegistroDetail: React.FC = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-3">
               <Button
                 variant="outline"
@@ -636,16 +962,18 @@ export const RegistroDetail: React.FC = () => {
                 <div>
                   <h2 className="mb-1 text-2xl font-bold">{registro.codigo}</h2>
                   <p className="text-lg text-green-100">{registro.cliente}</p>
-                  <p className="text-sm text-green-200">{registro.equipo} • {registro.tipo_linea}</p>
+                  <p className="text-sm text-green-200">
+                    {registro.equipo} • {registro.tipo_linea}
+                  </p>
                 </div>
               </div>
-              
+
               <div className="text-right">
                 <div className="flex items-center mb-2 space-x-3">
                   <span className="text-2xl">{estadoConfig.emoji}</span>
-                  <Badge 
-                    variant={estadoConfig.variant} 
-                    size="md" 
+                  <Badge
+                    variant={estadoConfig.variant}
+                    size="md"
                     className="text-white bg-white/20 border-white/30"
                   >
                     {registro.estado_actual}
@@ -671,8 +999,8 @@ export const RegistroDetail: React.FC = () => {
                     onClick={() => setActiveTab(tab.id)}
                     className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 transition-colors duration-200 ${
                       activeTab === tab.id
-                        ? 'border-[#18D043] text-[#16a34a]'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        ? "border-[#18D043] text-[#16a34a]"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                     }`}
                   >
                     <TabIcon size={16} />
