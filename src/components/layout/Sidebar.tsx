@@ -1,5 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import logoAyni from "../../assets/images/logo_ayni.png";
 import {
   LayoutDashboard,
   Database,
@@ -69,8 +70,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
       <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
         {!isCollapsed && (
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-xl flex items-center justify-center shadow-lg">
-              <span className="text-lg font-bold text-white">S</span>
+            <div className="flex items-center justify-center w-10 h-10 bg-white shadow-lg rounded-xl">
+              <img
+                src={logoAyni}
+                alt="Ayni Logo"
+                className="object-contain w-8 h-8"
+              />
             </div>
             <div>
               <h1 className="text-xl font-bold text-transparent bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text">
@@ -82,8 +87,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
         )}
 
         {isCollapsed && (
-          <div className="w-10 h-10 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-xl flex items-center justify-center shadow-lg mx-auto">
-            <span className="text-lg font-bold text-white">S</span>
+          <div className="flex items-center justify-center w-16 h-16 mx-auto my-3 bg-white shadow-lg rounded-xl">
+            <img
+              src={logoAyni}
+              alt="Ayni Logo"
+              className="object-contain w-14 h-14"
+              style={{ maxWidth: "90%", maxHeight: "90%" }}
+            />
           </div>
         )}
 

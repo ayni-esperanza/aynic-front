@@ -125,11 +125,11 @@ export const Header: React.FC = () => {
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-lg flex items-center justify-center shadow-sm">
-              <span className="text-sm font-bold text-white">S</span>
+              <span className="text-sm font-bold text-white">👷‍♂️</span>
             </div>
             <div>
               <h2 className="text-lg font-bold text-gray-900">
-                Sistema Informatico
+                Gestión de Líneas de Vida
               </h2>
               <p className="text-xs text-gray-500">Panel de Control</p>
             </div>
