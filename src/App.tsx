@@ -5,6 +5,7 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { ToastProvider } from "./components/ui/Toast";
 import { apiClient } from "./services/apiClient";
 import { useToast } from "./components/ui/Toast";
+import { useAuthStore } from "./store/authStore";
 
 // Global error handler setup
 const GlobalErrorHandler: React.FC<{ children: React.ReactNode }> = ({

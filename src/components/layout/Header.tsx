@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Bell,
   User,
@@ -9,6 +10,7 @@ import {
   Clock,
   Calendar,
 } from "lucide-react";
+import { useAuthStore } from "../../store/authStore";
 
 // Simulación de notificaciones de registros vencidos
 const mockNotifications = [
@@ -47,12 +49,19 @@ const mockNotifications = [
 ];
 
 export const Header: React.FC = () => {
+  const navigate = useNavigate();
+  const { user, logout } = useAuthStore();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [notifications, setNotifications] = useState(mockNotifications);
 
   const notificationRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   // Cerrar dropdowns cuando se hace clic fuera
   useEffect(() => {
@@ -261,9 +270,11 @@ export const Header: React.FC = () => {
               </div>
               <div className="hidden text-left md:block">
                 <p className="text-sm font-semibold text-gray-900">
-                  Usuario Sistema
+                  {user?.nombre || "Usuario Sistema"}
                 </p>
-                <p className="text-xs text-gray-500">Administrador</p>
+                <p className="text-xs text-gray-500 capitalize">
+                  {user?.rol || "Usuario"}
+                </p>
               </div>
               <ChevronDown
                 size={16}
@@ -284,10 +295,10 @@ export const Header: React.FC = () => {
                     </div>
                     <div>
                       <p className="font-semibold text-gray-900">
-                        Usuario Sistema
+                        {user?.nombre || "Usuario Sistema"}
                       </p>
                       <p className="text-sm text-gray-500">
-                        usuario@sistema.com
+                        {user?.email || "usuario@sistema.com"}
                       </p>
                       <div className="flex items-center mt-1 space-x-1">
                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -326,7 +337,10 @@ export const Header: React.FC = () => {
                   </button>
 
                   <div className="pt-2 mt-2 border-t border-gray-100">
-                    <button className="flex items-center w-full px-4 py-3 space-x-3 text-red-600 transition-colors duration-200 hover:bg-red-50">
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center w-full px-4 py-3 space-x-3 text-red-600 transition-colors duration-200 hover:bg-red-50"
+                    >
                       <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-red-50">
                         <LogOut size={16} className="text-red-600" />
                       </div>

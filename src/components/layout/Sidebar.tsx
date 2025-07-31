@@ -195,25 +195,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
         </div>
       </nav>
 
-      {/* Footer con logout */}
-      <div className="p-4 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-white">
-        {!isCollapsed ? (
-          <button className="flex items-center w-full px-3 py-2 space-x-3 text-gray-600 transition-all duration-200 rounded-lg hover:bg-red-50 hover:text-red-600 group">
-            <div className="p-1.5 rounded-lg bg-red-50 group-hover:bg-red-100 transition-colors duration-200">
-              <LogOut size={18} className="text-red-500" />
-            </div>
-            <span className="font-medium">Cerrar Sesión</span>
-          </button>
-        ) : (
-          <button
-            className="flex justify-center w-full p-2 text-gray-600 transition-all duration-200 rounded-lg hover:bg-red-50 hover:text-red-600"
-            title="Cerrar Sesión"
-          >
-            <LogOut size={20} className="text-red-500" />
-          </button>
-        )}
-      </div>
-
       {/* Versión del sistema (solo expandido) */}
       {!isCollapsed && (
         <div className="px-4 pb-2">

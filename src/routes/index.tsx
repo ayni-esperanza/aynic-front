@@ -2,6 +2,8 @@ import React, { Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import { MainLayout } from "../layouts/MainLayout";
 import { Dashboard } from "../pages/Dashboard";
+import { Login } from "../pages/Login";
+import { ProtectedRoute } from "../components/auth/ProtectedRoute";
 
 // Lazy loading de módulos con dynamic imports que transforman named exports a default
 const UsuariosModule = React.lazy(() =>
@@ -90,17 +92,30 @@ class ModuleErrorBoundary extends React.Component<
 export const AppRoutes: React.FC = () => {
   return (
     <Routes>
-      <Route path="/" element={<MainLayout />}>
+      {/* Ruta pública de login */}
+      <Route path="/login" element={<Login />} />
+
+      {/* Rutas protegidas */}
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <MainLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<Dashboard />} />
 
         <Route
           path="usuarios/*"
           element={
-            <ModuleErrorBoundary>
-              <Suspense fallback={<PageLoadingFallback />}>
-                <UsuariosModule />
-              </Suspense>
-            </ModuleErrorBoundary>
+            <ProtectedRoute requiredRoles={["admin", "supervisor"]}>
+              <ModuleErrorBoundary>
+                <Suspense fallback={<PageLoadingFallback />}>
+                  <UsuariosModule />
+                </Suspense>
+              </ModuleErrorBoundary>
+            </ProtectedRoute>
           }
         />
 
