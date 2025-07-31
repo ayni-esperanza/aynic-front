@@ -1,5 +1,12 @@
 import React, { useState, useMemo, useCallback } from "react";
-import { ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  MoreHorizontal,
+} from "lucide-react";
 import type { TableColumn } from "../../types";
 import { Button } from "../ui/Button";
 
@@ -11,25 +18,37 @@ interface DataTableProps<T extends Record<string, unknown>> {
   totalItems: number;
   onPageChange: (page: number) => void;
   loading?: boolean;
+  onSort?: (column: keyof T, direction: "asc" | "desc") => void;
+  sortColumn?: keyof T;
+  sortDirection?: "asc" | "desc";
 }
 
-// Componente de fila simple sin memo complicado
+// Componente de fila mejorado con hover y animaciones
 const TableRow = <T extends Record<string, unknown>>({
   item,
   columns,
   index,
+  isEven,
 }: {
   item: T;
   columns: TableColumn<T>[];
   index: number;
+  isEven: boolean;
 }) => (
-  <tr key={index} className="transition-colors hover:bg-gray-50">
-    {columns.map((column) => {
+  <tr
+    key={index}
+    className={`transition-all duration-200 hover:bg-gradient-to-r hover:from-[#18D043]/5 hover:to-green-50 hover:shadow-sm group ${
+      isEven ? "bg-gray-50/50" : "bg-white"
+    }`}
+  >
+    {columns.map((column, colIndex) => {
       try {
         return (
           <td
             key={String(column.key)}
-            className="px-6 py-4 text-sm text-gray-900 whitespace-nowrap"
+            className={`px-6 py-4 text-sm whitespace-nowrap transition-all duration-200 group-hover:scale-[1.02] ${
+              colIndex === 0 ? "font-medium text-gray-900" : "text-gray-700"
+            }`}
           >
             {column.render
               ? column.render(item[column.key], item)
@@ -43,7 +62,9 @@ const TableRow = <T extends Record<string, unknown>>({
             key={String(column.key)}
             className="px-6 py-4 text-sm text-gray-900 whitespace-nowrap"
           >
-            <span className="text-xs text-red-500">Error</span>
+            <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-800 bg-red-100 rounded-full">
+              Error
+            </span>
           </td>
         );
       }
@@ -51,7 +72,7 @@ const TableRow = <T extends Record<string, unknown>>({
   </tr>
 );
 
-// Componente de botones de paginación memorizado
+// Componente de botones de paginación mejorado
 const PaginationButtons = React.memo(
   ({
     currentPage,
@@ -72,14 +93,35 @@ const PaginationButtons = React.memo(
         startPage = Math.max(1, endPage - maxVisible + 1);
       }
 
+      // Botón primera página
+      if (startPage > 1) {
+        buttonList.push(
+          <button
+            key="first"
+            onClick={() => onPageChange(1)}
+            className="px-3 py-2 text-sm font-medium text-gray-700 transition-all duration-200 rounded-lg hover:bg-gray-100 hover:scale-105"
+          >
+            1
+          </button>
+        );
+        if (startPage > 2) {
+          buttonList.push(
+            <span key="ellipsis1" className="px-3 py-2 text-sm text-gray-500">
+              <MoreHorizontal size={16} />
+            </span>
+          );
+        }
+      }
+
+      // Páginas visibles
       for (let i = startPage; i <= endPage; i++) {
         buttonList.push(
           <button
             key={i}
             onClick={() => onPageChange(i)}
-            className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 transform hover:scale-105 ${
               i === currentPage
-                ? "bg-[#18D043] text-white"
+                ? "bg-gradient-to-r from-[#18D043] to-[#16a34a] text-white shadow-lg shadow-[#18D043]/25"
                 : "text-gray-700 hover:bg-gray-100"
             }`}
           >
@@ -87,10 +129,31 @@ const PaginationButtons = React.memo(
           </button>
         );
       }
+
+      // Botón última página
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+          buttonList.push(
+            <span key="ellipsis2" className="px-3 py-2 text-sm text-gray-500">
+              <MoreHorizontal size={16} />
+            </span>
+          );
+        }
+        buttonList.push(
+          <button
+            key="last"
+            onClick={() => onPageChange(totalPages)}
+            className="px-3 py-2 text-sm font-medium text-gray-700 transition-all duration-200 rounded-lg hover:bg-gray-100 hover:scale-105"
+          >
+            {totalPages}
+          </button>
+        );
+      }
+
       return buttonList;
     }, [currentPage, totalPages, onPageChange]);
 
-    return <div className="flex space-x-1">{buttons}</div>;
+    return <div className="flex items-center space-x-1">{buttons}</div>;
   }
 );
 
@@ -102,23 +165,38 @@ export const DataTable = <T extends Record<string, unknown>>({
   totalItems,
   onPageChange,
   loading = false,
+  onSort,
+  sortColumn,
+  sortDirection,
 }: DataTableProps<T>) => {
-  const [sortBy, setSortBy] = useState<keyof T | null>(null);
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [localSortBy, setLocalSortBy] = useState<keyof T | null>(
+    sortColumn || null
+  );
+  const [localSortOrder, setLocalSortOrder] = useState<"asc" | "desc">(
+    sortDirection || "asc"
+  );
 
   const handleSort = useCallback(
     (column: keyof T) => {
-      if (sortBy === column) {
-        setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-      } else {
-        setSortBy(column);
-        setSortOrder("asc");
+      if (!columns.find((col) => col.key === column)?.sortable) return;
+
+      let newSortOrder: "asc" | "desc" = "asc";
+
+      if (localSortBy === column) {
+        newSortOrder = localSortOrder === "asc" ? "desc" : "asc";
+      }
+
+      setLocalSortBy(column);
+      setLocalSortOrder(newSortOrder);
+
+      if (onSort) {
+        onSort(column, newSortOrder);
       }
     },
-    [sortBy, sortOrder]
+    [localSortBy, localSortOrder, onSort, columns]
   );
 
-  // Memoizar las filas de la tabla
+  // Memoizar las filas de la tabla con mejoras visuales
   const tableRows = useMemo(
     () =>
       data.map((item, index) => (
@@ -127,6 +205,7 @@ export const DataTable = <T extends Record<string, unknown>>({
           item={item}
           columns={columns}
           index={index}
+          isEven={index % 2 === 0}
         />
       )),
     [data, columns]
@@ -144,76 +223,165 @@ export const DataTable = <T extends Record<string, unknown>>({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#18D043] border-t-transparent"></div>
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <div className="relative">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#18D043]/20 border-t-[#18D043]"></div>
+          <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#18D043] animate-ping"></div>
+        </div>
+        <p className="font-medium text-gray-600">Cargando datos...</p>
+      </div>
+    );
+  }
+
+  if (data.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <div className="flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full">
+          <span className="text-2xl">📄</span>
+        </div>
+        <div className="text-center">
+          <p className="mb-2 text-lg font-medium text-gray-900">
+            No hay datos disponibles
+          </p>
+          <p className="text-gray-600">
+            No se encontraron registros que coincidan con los criterios de
+            búsqueda.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="overflow-x-auto bg-white border border-gray-200 rounded-lg shadow-sm">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              {columns.map((column) => (
-                <th
-                  key={String(column.key)}
-                  className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
-                    column.sortable ? "cursor-pointer hover:bg-gray-100" : ""
-                  } ${column.width ? `w-${column.width}` : ""}`}
-                  onClick={() => column.sortable && handleSort(column.key)}
-                >
-                  <div className="flex items-center space-x-1">
-                    <span>{column.label}</span>
-                    {column.sortable && (
-                      <ArrowUpDown size={14} className="text-gray-400" />
-                    )}
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {tableRows}
-          </tbody>
-        </table>
+    <div className="space-y-6">
+      {/* Tabla con diseño mejorado */}
+      <div className="overflow-hidden bg-white border border-gray-200 shadow-sm rounded-xl">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+              <tr>
+                {columns.map((column, index) => {
+                  const isSorted = localSortBy === column.key;
+                  const isAscending = isSorted && localSortOrder === "asc";
+                  const isDescending = isSorted && localSortOrder === "desc";
+
+                  return (
+                    <th
+                      key={String(column.key)}
+                      className={`px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r border-gray-200 last:border-r-0 ${
+                        column.sortable
+                          ? "cursor-pointer hover:bg-gray-200 transition-colors duration-200 group"
+                          : ""
+                      } ${column.width ? `w-${column.width}` : ""} ${
+                        index === 0 ? "sticky left-0 z-10 bg-gray-50" : ""
+                      }`}
+                      onClick={() => column.sortable && handleSort(column.key)}
+                    >
+                      <div className="flex items-center space-x-2">
+                        <span className={isSorted ? "text-[#16a34a]" : ""}>
+                          {column.label}
+                        </span>
+                        {column.sortable && (
+                          <div className="flex flex-col">
+                            {!isSorted && (
+                              <ArrowUpDown
+                                size={12}
+                                className="text-gray-400 transition-colors duration-200 group-hover:text-gray-600"
+                              />
+                            )}
+                            {isAscending && (
+                              <ArrowUp
+                                size={12}
+                                className="text-[#16a34a] animate-pulse"
+                              />
+                            )}
+                            {isDescending && (
+                              <ArrowDown
+                                size={12}
+                                className="text-[#16a34a] animate-pulse"
+                              />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </th>
+                  );
+                })}
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-100">
+              {tableRows}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-gray-700">
-          Mostrando {paginationInfo.start} a {paginationInfo.end} de{" "}
-          {paginationInfo.total} registros
+      {/* Paginación mejorada */}
+      <div className="flex flex-col items-center justify-between px-6 py-4 space-y-4 bg-white border border-gray-200 shadow-sm sm:flex-row sm:space-y-0 rounded-xl">
+        <div className="flex items-center space-x-4">
+          <div className="px-3 py-2 text-sm text-gray-700 rounded-lg bg-gray-50">
+            <span className="font-medium">
+              {paginationInfo.start} - {paginationInfo.end}
+            </span>
+            <span className="text-gray-500"> de </span>
+            <span className="font-medium">{paginationInfo.total}</span>
+            <span className="text-gray-500"> registros</span>
+          </div>
+
+          {totalPages > 1 && (
+            <div className="px-3 py-2 text-sm text-gray-500 rounded-lg bg-blue-50">
+              Página{" "}
+              <span className="font-medium text-blue-600">{currentPage}</span>{" "}
+              de <span className="font-medium text-blue-600">{totalPages}</span>
+            </div>
+          )}
         </div>
 
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            icon={ChevronLeft}
-          >
-            Anterior
-          </Button>
+        {totalPages > 1 && (
+          <div className="flex items-center space-x-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              icon={ChevronLeft}
+              className="border-gray-300 hover:border-[#18D043] hover:text-[#18D043] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+            >
+              Anterior
+            </Button>
 
-          <PaginationButtons
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={onPageChange}
-          />
+            <PaginationButtons
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={onPageChange}
+            />
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            icon={ChevronRight}
-            iconPosition="right"
-          >
-            Siguiente
-          </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              icon={ChevronRight}
+              iconPosition="right"
+              className="border-gray-300 hover:border-[#18D043] hover:text-[#18D043] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+            >
+              Siguiente
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* Información adicional */}
+      <div className="flex items-center justify-center">
+        <div className="flex items-center px-4 py-2 space-x-4 text-xs text-gray-500 rounded-full bg-gray-50">
+          <div className="flex items-center space-x-1">
+            <div className="w-2 h-2 bg-[#18D043] rounded-full"></div>
+            <span>Datos actualizados</span>
+          </div>
+          <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
+          <div className="flex items-center space-x-1">
+            <span>Mostrando resultados en tiempo real</span>
+          </div>
         </div>
       </div>
     </div>

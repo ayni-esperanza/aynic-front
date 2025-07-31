@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface SelectOption {
   value: string;
   label: string;
@@ -17,28 +15,31 @@ export const Select: React.FC<SelectProps> = ({
   error,
   options,
   placeholder,
-  className = '',
+  className = "",
   ...props
 }) => {
   return (
-    <div className="space-y-1">
+    <div className="space-y-2">
       {label && (
-        <label className="block text-sm font-medium text-gray-700">
+        <label className="block text-sm font-semibold text-gray-700">
           {label}
+          {props.required && <span className="ml-1 text-red-500">*</span>}
         </label>
       )}
       <select
         className={`
-          w-full px-3 py-2 border rounded-lg transition-colors duration-200
+          w-full px-4 py-3 border-2 rounded-xl transition-all duration-200 font-medium
           focus:outline-none focus:ring-2 focus:ring-[#18D043]/20 focus:border-[#18D043]
-          ${error ? 'border-red-300' : 'border-gray-300'}
+          ${
+            error
+              ? "border-red-300 focus:border-red-500 focus:ring-red-500/20"
+              : "border-gray-200 hover:border-gray-300"
+          }
           ${className}
         `}
         {...props}
       >
-        {placeholder && (
-          <option value="">{placeholder}</option>
-        )}
+        {placeholder && <option value="">{placeholder}</option>}
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
@@ -46,7 +47,10 @@ export const Select: React.FC<SelectProps> = ({
         ))}
       </select>
       {error && (
-        <p className="text-sm text-red-600">{error}</p>
+        <p className="flex items-center space-x-1 text-sm text-red-600">
+          <span className="text-red-500">⚠️</span>
+          <span>{error}</span>
+        </p>
       )}
     </div>
   );
