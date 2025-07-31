@@ -244,7 +244,7 @@ export const DataTable = <T extends Record<string, unknown>>({
             No hay datos disponibles
           </p>
           <p className="text-gray-600">
-            No se encontraron registros que coincidan con los criterios de
+            No se encontraron registros que coincidan with los criterios de
             búsqueda.
           </p>
         </div>
@@ -272,9 +272,7 @@ export const DataTable = <T extends Record<string, unknown>>({
                         column.sortable
                           ? "cursor-pointer hover:bg-gray-200 transition-colors duration-200 group"
                           : ""
-                      } ${column.width ? `w-${column.width}` : ""} ${
-                        index === 0 ? "sticky left-0 z-10 bg-gray-50" : ""
-                      }`}
+                      } ${column.width ? `w-${column.width}` : ""}`}
                       onClick={() => column.sortable && handleSort(column.key)}
                     >
                       <div className="flex items-center space-x-2">
