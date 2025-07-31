@@ -1,4 +1,3 @@
-// Core Types
 export interface User extends Record<string, unknown> {
   id: string;
   nombre: string;
@@ -42,10 +41,11 @@ export interface PaginationState {
   itemsPerPage: number;
 }
 
-// Form Types
 export interface UserFormData {
   nombre: string;
   email: string;
   telefono?: string;
   rol: User["rol"];
 }
+
+export * from "./auth";

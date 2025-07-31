@@ -1,8 +1,20 @@
-// API Types
 export interface ApiResponse<T> {
-  data: T;
+  data?: T;
   message?: string;
-  success: boolean;
+  success?: boolean;
+  [key: string]: any;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
 }
 
 export interface ApiError {
@@ -12,24 +24,12 @@ export interface ApiError {
   details?: unknown;
 }
 
-export interface PaginatedResponse<T> {
-  data: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
-
-// API Configuration
 const API_CONFIG = {
-  baseURL: import.meta.env.VITE_API_URL || "/api",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000",
   timeout: 10000,
   retries: 3,
 };
 
-// Custom API Error Class
 export class ApiClientError extends Error {
   public status: number;
   public code?: string;
@@ -49,7 +49,6 @@ export class ApiClientError extends Error {
   }
 }
 
-// Request/Response Interceptors
 type RequestInterceptor = (
   config: RequestInit & { url: string }
 ) => RequestInit & { url: string };
@@ -69,7 +68,6 @@ class ApiClient {
     this.timeout = API_CONFIG.timeout;
     this.retries = API_CONFIG.retries;
 
-    // Add default request interceptor for auth
     this.addRequestInterceptor((config) => {
       const token = localStorage.getItem("authToken");
       if (token) {
@@ -81,14 +79,35 @@ class ApiClient {
       return config;
     });
 
-    // Add default response interceptor for error handling
     this.addResponseInterceptor(async (response) => {
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        let errorData: any = {};
+
+        try {
+          const contentType = response.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            errorData = await response.json();
+          } else {
+            errorData = { message: response.statusText };
+          }
+        } catch {
+          errorData = { message: `HTTP ${response.status}` };
+        }
+
+        let errorMessage = "Error desconocido";
+
+        if (errorData.message) {
+          if (Array.isArray(errorData.message)) {
+            errorMessage = errorData.message.join(", ");
+          } else {
+            errorMessage = errorData.message;
+          }
+        }
+
         throw new ApiClientError(
-          errorData.message || "Request failed",
+          errorMessage,
           response.status,
-          errorData.code,
+          errorData.error || errorData.code,
           errorData
         );
       }
@@ -114,13 +133,13 @@ class ApiClient {
     retryCount = 0
   ): Promise<Response> {
     try {
-      // Apply request interceptors
+      // Aplicar interceptores de request
       let config = { url: `${this.baseURL}${url}`, ...options };
       for (const interceptor of this.requestInterceptors) {
         config = interceptor(config);
       }
 
-      // Create timeout controller
+      // Crear controlador de timeout
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
@@ -135,7 +154,7 @@ class ApiClient {
 
       clearTimeout(timeoutId);
 
-      // Apply response interceptors
+      // Aplicar interceptores de respuesta
       let processedResponse = response;
       for (const interceptor of this.responseInterceptors) {
         processedResponse = await interceptor(processedResponse);
@@ -143,23 +162,23 @@ class ApiClient {
 
       return processedResponse;
     } catch (error) {
-      // Handle network errors and retries
+      // Reintentar en caso de errores de red
       if (retryCount < this.retries && this.shouldRetry(error)) {
-        await this.delay(Math.pow(2, retryCount) * 1000); // Exponential backoff
+        await this.delay(Math.pow(2, retryCount) * 1000);
         return this.executeRequest(url, options, retryCount + 1);
       }
 
-      // Convert to ApiClientError if needed
+      // Convertir a ApiClientError
       const apiError =
         error instanceof ApiClientError
           ? error
           : new ApiClientError(
-              error instanceof Error ? error.message : "Network error",
+              error instanceof Error ? error.message : "Error de red",
               0,
               "NETWORK_ERROR"
             );
 
-      // Apply error interceptors
+      // Aplicar interceptores de error
       for (const interceptor of this.errorInterceptors) {
         await interceptor(apiError);
       }
@@ -169,7 +188,6 @@ class ApiClient {
   }
 
   private shouldRetry(error: unknown): boolean {
-    // Retry on network errors or 5xx server errors
     return (
       (error as Error)?.name === "AbortError" ||
       (error instanceof ApiClientError && error.status >= 500)
@@ -190,7 +208,14 @@ class ApiClient {
       method: "POST",
       body: data ? JSON.stringify(data) : undefined,
     });
-    return response.json();
+
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      return response.json();
+    }
+
+    // Si no hay contenido JSON, retornar respuesta básica
+    return { success: true } as T;
   }
 
   async put<T>(url: string, data?: unknown): Promise<T> {
@@ -211,59 +236,49 @@ class ApiClient {
 
   async delete<T>(url: string): Promise<T> {
     const response = await this.executeRequest(url, { method: "DELETE" });
+
+    // Para DELETE que retorna 204 No Content
+    if (response.status === 204) {
+      return { success: true } as T;
+    }
+
     return response.json();
   }
 
-  // Upload file method
-  async upload<T>(
-    url: string,
-    file: File,
-    onProgress?: (progress: number) => void
-  ): Promise<T> {
-    return new Promise<T>((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      const formData = new FormData();
-      formData.append("file", file);
-
-      xhr.upload.addEventListener("progress", (event) => {
-        if (event.lengthComputable && onProgress) {
-          const progress = (event.loaded / event.total) * 100;
-          onProgress(progress);
-        }
-      });
-
-      xhr.addEventListener("load", () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          try {
-            const result = JSON.parse(xhr.responseText) as T;
-            resolve(result);
-          } catch {
-            resolve(xhr.responseText as T);
-          }
-        } else {
-          reject(new ApiClientError("Upload failed", xhr.status));
-        }
-      });
-
-      xhr.addEventListener("error", () => {
-        reject(new ApiClientError("Upload failed", 0, "NETWORK_ERROR"));
-      });
-
-      const token = localStorage.getItem("authToken");
-      if (token) {
-        xhr.setRequestHeader("Authorization", `Bearer ${token}`);
-      }
-
-      xhr.open("POST", `${this.baseURL}${url}`);
-      xhr.send(formData);
+  async login(credentials: { username: string; password: string }) {
+    const response = await this.executeRequest("/auth/login", {
+      method: "POST",
+      body: JSON.stringify(credentials),
     });
+
+    const data = await response.json();
+
+    // Guardar token automáticamente
+    if (data.access_token) {
+      localStorage.setItem("authToken", data.access_token);
+    }
+
+    return data;
+  }
+
+  logout() {
+    localStorage.removeItem("authToken");
+  }
+
+  isAuthenticated(): boolean {
+    return !!localStorage.getItem("authToken");
+  }
+
+  // MÉTODO PARA OBTENER TOKEN 
+  getToken(): string | null {
+    return localStorage.getItem("authToken");
   }
 }
 
-// Create singleton instance
+// INSTANCIA SINGLETON 
 export const apiClient = new ApiClient();
 
-// Utility function for handling API errors in components
+// UTILIDAD PARA MANEJO DE ERRORES 
 export const handleApiError = (error: unknown): string => {
   if (error instanceof ApiClientError) {
     return error.message;
@@ -273,3 +288,26 @@ export const handleApiError = (error: unknown): string => {
   }
   return "Ha ocurrido un error inesperado";
 };
+
+export const API_ENDPOINTS = {
+  AUTH: {
+    LOGIN: "/auth/login",
+  },
+  USERS: {
+    BASE: "/users",
+    PROFILE: "/users/profile",
+    BY_ID: (id: number) => `/users/${id}`,
+  },
+  RECORDS: {
+    BASE: "/records",
+    BY_ID: (id: number) => `/records/${id}`,
+    STATISTICS: "/records/statistics",
+  },
+  HISTORY: {
+    BASE: "/record-status-history",
+  },
+  ALERTS: {
+    BASE: "/alerts",
+    UNREAD_COUNT: "/alerts/unread-count",
+  },
+} as const;
