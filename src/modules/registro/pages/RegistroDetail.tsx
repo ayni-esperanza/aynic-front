@@ -20,7 +20,10 @@ import {
 import { Button } from "../../../components/ui/Button";
 import { Card } from "../../../components/ui/Card";
 import { Badge } from "../../../components/ui/Badge";
-import { useAppStore } from "../../../store";
+import { LoadingSpinner } from "../../../components/ui/LoadingSpinner";
+import { useToast } from "../../../components/ui/Toast";
+import { useApi } from "../../../hooks/useApi";
+import { recordsService } from "../../../services/recordsService";
 import { formatDate, formatDateTime } from "../../../utils/formatters";
 import type { DataRecord } from "../../../types";
 
@@ -70,42 +73,41 @@ const safeFormatDateTime = (dateValue: Date | string | undefined): string => {
 export const RegistroDetail: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { registros } = useAppStore();
-  const [registro, setRegistro] = useState<DataRecord | null>(null);
+  const { error: showError } = useToast();
   const [activeTab, setActiveTab] = useState("general");
+
+  // Hook para cargar el registro
+  const {
+    data: registro,
+    loading,
+    error,
+    execute: loadRegistro,
+  } = useApi(recordsService.getRecordById.bind(recordsService), {
+    onError: (error) => {
+      showError("Error al cargar registro", error);
+    },
+  });
 
   useEffect(() => {
     if (id) {
-      const foundRegistro = registros.find((r) => r.id === id);
-      if (foundRegistro) {
-        // Función auxiliar para asegurar que las fechas sean objetos Date
-        const ensureDate = (dateValue: Date | string | undefined) => {
-          if (!dateValue) return new Date();
-          if (typeof dateValue === "string") {
-            const parsed = new Date(dateValue);
-            return isNaN(parsed.getTime()) ? new Date() : parsed;
-          }
-          if (dateValue instanceof Date && !isNaN(dateValue.getTime())) {
-            return dateValue;
-          }
-          return new Date();
-        };
-
-        // Normalizar el objeto registro con fechas válidas
-        const normalizedRegistro = {
-          ...foundRegistro,
-          fecha_instalacion: ensureDate(foundRegistro.fecha_instalacion),
-          fecha_vencimiento: ensureDate(foundRegistro.fecha_vencimiento),
-        };
-
-        setRegistro(normalizedRegistro);
-      } else {
-        setRegistro(null);
-      }
+      loadRegistro(id);
     }
-  }, [id, registros]);
+  }, [id]);
 
-  if (!registro) {
+  // Loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="text-center">
+          <LoadingSpinner size="lg" />
+          <p className="mt-4 text-gray-600">Cargando registro...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !registro) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         <Card className="w-full max-w-md text-center shadow-xl">
@@ -117,7 +119,7 @@ export const RegistroDetail: React.FC = () => {
               Registro no encontrado
             </h3>
             <p className="mb-6 text-gray-600">
-              El registro que buscas no existe o ha sido eliminado.
+              {error || "El registro que buscas no existe o ha sido eliminado."}
             </p>
             <Button
               variant="outline"
@@ -508,220 +510,128 @@ export const RegistroDetail: React.FC = () => {
               </Card>
             </div>
 
+            {/* Línea de tiempo y estadísticas adicionales */}
             <Card>
               <div className="p-6">
                 <h4 className="flex items-center mb-6 space-x-2 text-lg font-semibold text-gray-900">
                   <Clock className="w-5 h-5 text-gray-600" />
-                  <span>Línea de Tiempo</span>
+                  <span>Información de Vida Útil</span>
                 </h4>
 
-                <div className="relative">
-                  <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
-
-                  <div className="space-y-8">
-                    <div className="flex items-center space-x-4">
-                      <div className="relative z-10 flex items-center justify-center w-8 h-8 bg-green-500 rounded-full">
-                        <CheckCircle className="w-4 h-4 text-white" />
-                      </div>
-                      <div className="flex-1 p-4 border border-green-200 rounded-lg bg-green-50">
-                        <h5 className="font-semibold text-green-900">
-                          Instalación Completada
-                        </h5>
-                        <p className="text-green-700">
-                          {formatDate(registro.fecha_instalacion)}
-                        </p>
-                        <p className="mt-1 text-sm text-green-600">
-                          Sistema puesto en funcionamiento
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center space-x-4">
-                      <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center relative z-10 ${
-                          new Date() <= registro.fecha_vencimiento
-                            ? "bg-blue-500"
-                            : "bg-gray-400"
-                        }`}
-                      >
-                        <Clock className="w-4 h-4 text-white" />
-                      </div>
-                      <div className="flex-1 p-4 border border-blue-200 rounded-lg bg-blue-50">
-                        <h5 className="font-semibold text-blue-900">
-                          Estado Actual
-                        </h5>
-                        <p className="text-blue-700">
-                          {formatDate(new Date())}
-                        </p>
-                        <div className="flex items-center mt-1 space-x-2">
-                          <span className="text-lg">{estadoConfig.emoji}</span>
-                          <Badge variant={estadoConfig.variant}>
-                            {registro.estado_actual}
-                          </Badge>
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <Card>
+                    <div className="p-6">
+                      <h4 className="mb-4 text-lg font-semibold text-gray-900">
+                        Vida Útil Programada
+                      </h4>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-600">Años:</span>
+                          <span className="text-2xl font-semibold text-blue-600">
+                            {registro.fv_anios}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-600">
+                            Meses adicionales:
+                          </span>
+                          <span className="text-2xl font-semibold text-blue-600">
+                            {registro.fv_meses}
+                          </span>
+                        </div>
+                        <div className="pt-2 border-t border-gray-200">
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-600">Total:</span>
+                            <span className="text-xl font-bold text-gray-900">
+                              {registro.fv_anios * 12 + registro.fv_meses} meses
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
+                  </Card>
 
-                    <div className="flex items-center space-x-4">
-                      <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center relative z-10 ${
-                          new Date() > registro.fecha_vencimiento
-                            ? "bg-red-500"
-                            : "bg-gray-300"
-                        }`}
-                      >
-                        <AlertTriangle className="w-4 h-4 text-white" />
-                      </div>
-                      <div
-                        className={`flex-1 p-4 rounded-lg border ${
-                          new Date() > registro.fecha_vencimiento
-                            ? "bg-red-50 border-red-200"
-                            : "bg-gray-50 border-gray-200"
-                        }`}
-                      >
-                        <h5
-                          className={`font-semibold ${
-                            new Date() > registro.fecha_vencimiento
-                              ? "text-red-900"
-                              : "text-gray-900"
-                          }`}
-                        >
-                          Fecha de Vencimiento
-                        </h5>
-                        <p
-                          className={
-                            new Date() > registro.fecha_vencimiento
-                              ? "text-red-700"
-                              : "text-gray-700"
+                  <Card>
+                    <div className="p-6">
+                      <h4 className="mb-4 text-lg font-semibold text-gray-900">
+                        Tiempo Transcurrido
+                      </h4>
+                      <div className="space-y-3">
+                        {(() => {
+                          try {
+                            const installDate =
+                              typeof registro.fecha_instalacion === "string"
+                                ? new Date(registro.fecha_instalacion)
+                                : registro.fecha_instalacion;
+
+                            if (!installDate || isNaN(installDate.getTime())) {
+                              return (
+                                <div className="space-y-3">
+                                  <div className="text-red-600">
+                                    Fecha de instalación no válida
+                                  </div>
+                                </div>
+                              );
+                            }
+
+                            const totalDays = Math.floor(
+                              (new Date().getTime() - installDate.getTime()) /
+                                (1000 * 60 * 60 * 24)
+                            );
+                            const years = Math.floor(totalDays / 365);
+                            const months = Math.floor((totalDays % 365) / 30);
+                            const days = totalDays % 30;
+
+                            return (
+                              <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-gray-600">Años:</span>
+                                  <span className="text-2xl font-semibold text-green-600">
+                                    {years}
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-gray-600">Meses:</span>
+                                  <span className="text-2xl font-semibold text-green-600">
+                                    {months}
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-gray-600">Días:</span>
+                                  <span className="text-xl font-semibold text-green-600">
+                                    {days}
+                                  </span>
+                                </div>
+                                <div className="pt-2 border-t border-gray-200">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-gray-600">
+                                      Total días:
+                                    </span>
+                                    <span className="text-xl font-bold text-gray-900">
+                                      {totalDays}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          } catch (error) {
+                            console.warn(
+                              "Error calculating time elapsed:",
+                              error
+                            );
+                            return (
+                              <div className="text-red-600">
+                                Error calculando tiempo transcurrido
+                              </div>
+                            );
                           }
-                        >
-                          {formatDate(registro.fecha_vencimiento)}
-                        </p>
-                        <p
-                          className={`text-sm mt-1 ${
-                            new Date() > registro.fecha_vencimiento
-                              ? "text-red-600"
-                              : "text-gray-600"
-                          }`}
-                        >
-                          {new Date() > registro.fecha_vencimiento
-                            ? "⚠️ Sistema vencido - Requiere renovación"
-                            : "📅 Programado para renovación"}
-                        </p>
+                        })()}
                       </div>
                     </div>
-                  </div>
+                  </Card>
                 </div>
               </div>
             </Card>
-
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <Card>
-                <div className="p-6">
-                  <h4 className="mb-4 text-lg font-semibold text-gray-900">
-                    Vida Útil Programada
-                  </h4>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Años:</span>
-                      <span className="text-2xl font-semibold text-blue-600">
-                        {registro.fv_anios}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Meses adicionales:</span>
-                      <span className="text-2xl font-semibold text-blue-600">
-                        {registro.fv_meses}
-                      </span>
-                    </div>
-                    <div className="pt-2 border-t border-gray-200">
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-600">Total:</span>
-                        <span className="text-xl font-bold text-gray-900">
-                          {registro.fv_anios * 12 + registro.fv_meses} meses
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-
-              <Card>
-                <div className="p-6">
-                  <h4 className="mb-4 text-lg font-semibold text-gray-900">
-                    Tiempo Transcurrido
-                  </h4>
-                  <div className="space-y-3">
-                    {(() => {
-                      try {
-                        const installDate =
-                          typeof registro.fecha_instalacion === "string"
-                            ? new Date(registro.fecha_instalacion)
-                            : registro.fecha_instalacion;
-
-                        if (!installDate || isNaN(installDate.getTime())) {
-                          return (
-                            <div className="space-y-3">
-                              <div className="text-red-600">
-                                Fecha de instalación no válida
-                              </div>
-                            </div>
-                          );
-                        }
-
-                        const totalDays = Math.floor(
-                          (new Date().getTime() - installDate.getTime()) /
-                            (1000 * 60 * 60 * 24)
-                        );
-                        const years = Math.floor(totalDays / 365);
-                        const months = Math.floor((totalDays % 365) / 30);
-                        const days = totalDays % 30;
-
-                        return (
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                              <span className="text-gray-600">Años:</span>
-                              <span className="text-2xl font-semibold text-green-600">
-                                {years}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-gray-600">Meses:</span>
-                              <span className="text-2xl font-semibold text-green-600">
-                                {months}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-gray-600">Días:</span>
-                              <span className="text-xl font-semibold text-green-600">
-                                {days}
-                              </span>
-                            </div>
-                            <div className="pt-2 border-t border-gray-200">
-                              <div className="flex items-center justify-between">
-                                <span className="text-gray-600">
-                                  Total días:
-                                </span>
-                                <span className="text-xl font-bold text-gray-900">
-                                  {totalDays}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      } catch (error) {
-                        console.warn("Error calculating time elapsed:", error);
-                        return (
-                          <div className="text-red-600">
-                            Error calculando tiempo transcurrido
-                          </div>
-                        );
-                      }
-                    })()}
-                  </div>
-                </div>
-              </Card>
-            </div>
           </div>
         );
 

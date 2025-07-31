@@ -10,6 +10,7 @@ import {
   Grid,
   List,
   SlidersHorizontal,
+  RefreshCw,
 } from "lucide-react";
 import { DataTable } from "../../../components/common/DataTable";
 import { Button } from "../../../components/ui/Button";
@@ -17,15 +18,17 @@ import { Badge } from "../../../components/ui/Badge";
 import { Card } from "../../../components/ui/Card";
 import { Input } from "../../../components/ui/Input";
 import { Select } from "../../../components/ui/Select";
+import { LoadingSpinner } from "../../../components/ui/LoadingSpinner";
+import { useToast } from "../../../components/ui/Toast";
 import { usePagination } from "../../../hooks/usePagination";
-import { useAppStore } from "../../../store";
-import { mockDataRecords } from "../../../services/mockData";
+import { useApi } from "../../../hooks/useApi";
+import { recordsService } from "../../../services/recordsService";
 import { formatDate } from "../../../utils/formatters";
 import type { DataRecord, TableColumn } from "../../../types";
 
 export const RegistroList: React.FC = () => {
   const navigate = useNavigate();
-  const { registros, setRegistros, deleteRegistro } = useAppStore();
+  const { success, error: showError } = useToast();
 
   // Estados para filtros y vista
   const [searchTerm, setSearchTerm] = useState("");
@@ -34,52 +37,115 @@ export const RegistroList: React.FC = () => {
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
   const [showFilters, setShowFilters] = useState(false);
 
-  useEffect(() => {
-    if (registros.length === 0) {
-      setRegistros(mockDataRecords);
-    }
-  }, [registros.length, setRegistros]);
-
-  // Filtros aplicados
-  const filteredRegistros = useMemo(() => {
-    let filtered = registros;
-
-    if (searchTerm.trim()) {
-      const search = searchTerm.toLowerCase();
-      filtered = filtered.filter(
-        (registro) =>
-          registro.codigo.toLowerCase().includes(search) ||
-          registro.cliente.toLowerCase().includes(search) ||
-          registro.equipo.toLowerCase().includes(search) ||
-          registro.ubicacion.toLowerCase().includes(search)
-      );
-    }
-
-    if (statusFilter) {
-      filtered = filtered.filter(
-        (registro) => registro.estado_actual === statusFilter
-      );
-    }
-
-    if (typeFilter) {
-      filtered = filtered.filter(
-        (registro) => registro.tipo_linea === typeFilter
-      );
-    }
-
-    return filtered;
-  }, [registros, searchTerm, statusFilter, typeFilter]);
-
-  const { paginatedData, paginationState, goToPage } = usePagination({
-    data: filteredRegistros,
+  // Estado para datos de registros
+  const [registros, setRegistros] = useState<DataRecord[]>([]);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
     itemsPerPage: 10,
   });
 
-  const handleDeleteRegistro = (registroId: string, codigo: string) => {
+  // Hook para cargar registros
+  const {
+    loading,
+    error: apiError,
+    execute: loadRegistros,
+  } = useApi(recordsService.getRecords.bind(recordsService), {
+    onSuccess: (data) => {
+      setRegistros(data.data);
+      setPagination(data.pagination);
+    },
+    onError: (error) => {
+      showError("Error al cargar registros", error);
+    },
+  });
+
+  // Hook para estadísticas
+  const {
+    data: estadisticas,
+    loading: loadingStats,
+    execute: loadStats,
+  } = useApi(recordsService.getStatistics.bind(recordsService));
+
+  // Hook para eliminar registro
+  const { loading: deleting, execute: deleteRegistro } = useApi(
+    recordsService.deleteRecord.bind(recordsService),
+    {
+      onSuccess: () => {
+        success("Registro eliminado exitosamente");
+        refreshData();
+      },
+      onError: (error) => {
+        showError("Error al eliminar registro", error);
+      },
+    }
+  );
+
+  // Cargar datos inicial
+  useEffect(() => {
+    loadInitialData();
+  }, []);
+
+  const loadInitialData = async () => {
+    await Promise.all([
+      loadRegistros({
+        page: 1,
+        limit: 10,
+        sortBy: "codigo",
+        sortOrder: "ASC",
+      }),
+      loadStats(),
+    ]);
+  };
+
+  const refreshData = async () => {
+    await loadRegistros({
+      page: pagination.currentPage,
+      limit: pagination.itemsPerPage,
+      codigo: searchTerm || undefined,
+      estado_actual: statusFilter || undefined,
+      tipo_linea: typeFilter || undefined,
+      sortBy: "codigo",
+      sortOrder: "ASC",
+    });
+    await loadStats();
+  };
+
+  // Aplicar filtros cuando cambien
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      loadRegistros({
+        page: 1, // Resetear a página 1 cuando cambien los filtros
+        limit: pagination.itemsPerPage,
+        codigo: searchTerm || undefined,
+        estado_actual: statusFilter || undefined,
+        tipo_linea: typeFilter || undefined,
+        sortBy: "codigo",
+        sortOrder: "ASC",
+      });
+    }, 500); // Debounce de 500ms
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, statusFilter, typeFilter]);
+
+  const handlePageChange = (newPage: number) => {
+    loadRegistros({
+      page: newPage,
+      limit: pagination.itemsPerPage,
+      codigo: searchTerm || undefined,
+      estado_actual: statusFilter || undefined,
+      tipo_linea: typeFilter || undefined,
+      sortBy: "codigo",
+      sortOrder: "ASC",
+    });
+  };
+
+  const handleDeleteRegistro = async (registroId: string, codigo: string) => {
     if (
       confirm(`¿Estás seguro de que quieres eliminar el registro "${codigo}"?`)
     ) {
-      deleteRegistro(registroId);
+      await deleteRegistro(registroId);
     }
   };
 
@@ -322,18 +388,19 @@ export const RegistroList: React.FC = () => {
               icon={Trash2}
               className="text-red-600 hover:text-red-700 hover:bg-red-50"
               title="Eliminar registro"
+              disabled={deleting}
             ></Button>
           </div>
         ),
       },
     ],
-    [navigate]
+    [navigate, deleting]
   );
 
   // Vista en cuadrícula
   const GridView = () => (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {paginatedData.map((registro) => {
+      {registros.map((registro) => {
         const estadoConfig = getEstadoConfig(registro.estado_actual);
         return (
           <Card
@@ -422,21 +489,33 @@ export const RegistroList: React.FC = () => {
     </div>
   );
 
-  // Estadísticas rápidas
-  const estadisticasResumen = useMemo(() => {
-    const total = filteredRegistros.length;
-    const activos = filteredRegistros.filter(
-      (r) => r.estado_actual === "activo"
-    ).length;
-    const mantenimiento = filteredRegistros.filter(
-      (r) => r.estado_actual === "mantenimiento"
-    ).length;
-    const vencidos = filteredRegistros.filter(
-      (r) => r.estado_actual === "vencido"
-    ).length;
+  // Loading state
+  if (loading && registros.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <LoadingSpinner size="lg" />
+          <p className="mt-4 text-gray-600">Cargando registros...</p>
+        </div>
+      </div>
+    );
+  }
 
-    return { total, activos, mantenimiento, vencidos };
-  }, [filteredRegistros]);
+  // Error state
+  if (apiError && registros.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="mb-4 text-red-600">⚠️</div>
+          <p className="font-medium text-gray-900">Error al cargar registros</p>
+          <p className="mb-4 text-gray-600">{apiError}</p>
+          <Button onClick={loadInitialData} icon={RefreshCw}>
+            Reintentar
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -453,12 +532,21 @@ export const RegistroList: React.FC = () => {
             <p className="flex items-center space-x-2 text-gray-600">
               <span>Administra todos los registros del sistema</span>
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#18D043]/10 text-[#16a34a]">
-                {estadisticasResumen.total} registros
+                {pagination.totalItems} registros
               </span>
             </p>
           </div>
         </div>
         <div className="flex items-center space-x-3">
+          <Button
+            onClick={refreshData}
+            variant="outline"
+            icon={RefreshCw}
+            loading={loading}
+            className="border-gray-300 hover:bg-gray-50"
+          >
+            Actualizar
+          </Button>
           <Button
             onClick={() => navigate("nuevo")}
             icon={Plus}
@@ -476,7 +564,11 @@ export const RegistroList: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-blue-600">Total</p>
               <p className="text-2xl font-bold text-blue-900">
-                {estadisticasResumen.total}
+                {loadingStats ? (
+                  <LoadingSpinner size="sm" />
+                ) : (
+                  estadisticas?.total || 0
+                )}
               </p>
             </div>
             <div className="text-2xl">📊</div>
@@ -487,7 +579,11 @@ export const RegistroList: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-green-600">Activos</p>
               <p className="text-2xl font-bold text-green-900">
-                {estadisticasResumen.activos}
+                {loadingStats ? (
+                  <LoadingSpinner size="sm" />
+                ) : (
+                  estadisticas?.activos || 0
+                )}
               </p>
             </div>
             <div className="text-2xl">🟢</div>
@@ -496,11 +592,13 @@ export const RegistroList: React.FC = () => {
         <Card className="border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100">
           <div className="flex items-center justify-between p-4">
             <div>
-              <p className="text-sm font-medium text-yellow-600">
-                Mantenimiento
-              </p>
+              <p className="text-sm font-medium text-yellow-600">Por Vencer</p>
               <p className="text-2xl font-bold text-yellow-900">
-                {estadisticasResumen.mantenimiento}
+                {loadingStats ? (
+                  <LoadingSpinner size="sm" />
+                ) : (
+                  estadisticas?.por_vencer || 0
+                )}
               </p>
             </div>
             <div className="text-2xl">🟡</div>
@@ -511,7 +609,11 @@ export const RegistroList: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-red-600">Vencidos</p>
               <p className="text-2xl font-bold text-red-900">
-                {estadisticasResumen.vencidos}
+                {loadingStats ? (
+                  <LoadingSpinner size="sm" />
+                ) : (
+                  estadisticas?.vencidos || 0
+                )}
               </p>
             </div>
             <div className="text-2xl">🔴</div>
@@ -531,7 +633,7 @@ export const RegistroList: React.FC = () => {
                   size={20}
                 />
                 <Input
-                  placeholder="Buscar por código, cliente, equipo o ubicación..."
+                  placeholder="Buscar por código..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 border-gray-300 focus:border-[#18D043] focus:ring-[#18D043]/20"
@@ -633,51 +735,63 @@ export const RegistroList: React.FC = () => {
         {viewMode === "table" ? (
           <div className="p-6">
             <DataTable
-              data={paginatedData}
+              data={registros}
               columns={columns}
-              currentPage={paginationState.currentPage}
-              totalPages={paginationState.totalPages}
-              totalItems={paginationState.totalItems}
-              onPageChange={goToPage}
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              totalItems={pagination.totalItems}
+              onPageChange={handlePageChange}
+              loading={loading}
             />
           </div>
         ) : (
           <div className="p-6">
-            <GridView />
-            {/* Paginación para vista grid */}
-            <div className="flex items-center justify-between mt-6">
-              <div className="text-sm text-gray-700">
-                Mostrando{" "}
-                {Math.min(
-                  (paginationState.currentPage - 1) * 10 + 1,
-                  paginationState.totalItems
-                )}{" "}
-                a{" "}
-                {Math.min(
-                  paginationState.currentPage * 10,
-                  paginationState.totalItems
-                )}{" "}
-                de {paginationState.totalItems} registros
+            {loading ? (
+              <div className="flex items-center justify-center h-64">
+                <LoadingSpinner size="lg" />
               </div>
-              <div className="flex items-center space-x-2">
-                {Array.from(
-                  { length: paginationState.totalPages },
-                  (_, i) => i + 1
-                ).map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => goToPage(page)}
-                    className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                      page === paginationState.currentPage
-                        ? "bg-[#18D043] text-white"
-                        : "text-gray-700 hover:bg-gray-100"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ))}
-              </div>
-            </div>
+            ) : (
+              <>
+                <GridView />
+                {/* Paginación para vista grid */}
+                {pagination.totalPages > 1 && (
+                  <div className="flex items-center justify-between mt-6">
+                    <div className="text-sm text-gray-700">
+                      Mostrando{" "}
+                      {Math.min(
+                        (pagination.currentPage - 1) * pagination.itemsPerPage +
+                          1,
+                        pagination.totalItems
+                      )}{" "}
+                      a{" "}
+                      {Math.min(
+                        pagination.currentPage * pagination.itemsPerPage,
+                        pagination.totalItems
+                      )}{" "}
+                      de {pagination.totalItems} registros
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      {Array.from(
+                        { length: pagination.totalPages },
+                        (_, i) => i + 1
+                      ).map((page) => (
+                        <button
+                          key={page}
+                          onClick={() => handlePageChange(page)}
+                          className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                            page === pagination.currentPage
+                              ? "bg-[#18D043] text-white"
+                              : "text-gray-700 hover:bg-gray-100"
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         )}
       </Card>
