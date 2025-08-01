@@ -563,13 +563,13 @@ export const RegistroList: React.FC = () => {
           <div className="flex items-center justify-between p-4">
             <div>
               <p className="text-sm font-medium text-blue-600">Total</p>
-              <p className="text-2xl font-bold text-blue-900">
+              <div className="text-2xl font-bold text-blue-900 min-h-[1.6rem] flex items-center justify-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
                   estadisticas?.total || 0
                 )}
-              </p>
+              </div>
             </div>
             <div className="text-2xl">📊</div>
           </div>
@@ -578,13 +578,13 @@ export const RegistroList: React.FC = () => {
           <div className="flex items-center justify-between p-4">
             <div>
               <p className="text-sm font-medium text-green-600">Activos</p>
-              <p className="text-2xl font-bold text-green-900">
+              <div className="text-2xl font-bold text-green-900 min-h-[1.6rem] flex items-center justify-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
                   estadisticas?.activos || 0
                 )}
-              </p>
+              </div>
             </div>
             <div className="text-2xl">🟢</div>
           </div>
@@ -593,13 +593,13 @@ export const RegistroList: React.FC = () => {
           <div className="flex items-center justify-between p-4">
             <div>
               <p className="text-sm font-medium text-yellow-600">Por Vencer</p>
-              <p className="text-2xl font-bold text-yellow-900">
+              <div className="text-2xl font-bold text-yellow-900 min-h-[1.6rem] flex items-center justify-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
                   estadisticas?.por_vencer || 0
                 )}
-              </p>
+              </div>
             </div>
             <div className="text-2xl">🟡</div>
           </div>
@@ -608,13 +608,13 @@ export const RegistroList: React.FC = () => {
           <div className="flex items-center justify-between p-4">
             <div>
               <p className="text-sm font-medium text-red-600">Vencidos</p>
-              <p className="text-2xl font-bold text-red-900">
+              <div className="text-2xl font-bold text-red-900 min-h-[1.6rem] flex items-center justify-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
                   estadisticas?.vencidos || 0
                 )}
-              </p>
+              </div>
             </div>
             <div className="text-2xl">🔴</div>
           </div>
