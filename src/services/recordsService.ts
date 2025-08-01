@@ -13,6 +13,8 @@ export interface RecordFilters {
   estado_actual?: string;
   tipo_linea?: string;
   ubicacion?: string;
+  fecha_instalacion_desde?: string;
+  fecha_instalacion_hasta?: string;
   seec?: string;
   page?: number;
   limit?: number;
@@ -69,6 +71,38 @@ class RecordsService {
   private readonly basePath = "/records";
 
   /**
+   * Mapear estado del backend al frontend
+   */
+  private mapBackendStatusToFrontend(
+    backendStatus: string
+  ): DataRecord["estado_actual"] {
+    const statusMap: Record<string, DataRecord["estado_actual"]> = {
+      ACTIVO: "activo",
+      POR_VENCER: "por_vencer",
+      VENCIDO: "vencido",
+      INACTIVO: "inactivo",
+      MANTENIMIENTO: "mantenimiento",
+    };
+    return statusMap[backendStatus] || "activo";
+  }
+
+  /**
+   * Mapear estado del frontend al backend
+   */
+  private mapFrontendStatusToBackend(
+    frontendStatus: DataRecord["estado_actual"]
+  ): string {
+    const statusMap: Record<DataRecord["estado_actual"], string> = {
+      activo: "ACTIVO",
+      por_vencer: "POR_VENCER",
+      vencido: "VENCIDO",
+      inactivo: "INACTIVO",
+      mantenimiento: "MANTENIMIENTO",
+    };
+    return statusMap[frontendStatus] || "ACTIVO";
+  }
+
+  /**
    * Mapear registro del backend al formato del frontend
    */
   private mapBackendToFrontend(backendRecord: BackendRecord): DataRecord {
@@ -90,9 +124,9 @@ class RecordsService {
       fecha_vencimiento: backendRecord.fecha_vencimiento
         ? new Date(backendRecord.fecha_vencimiento)
         : new Date(),
-      estado_actual:
-        (backendRecord.estado_actual as DataRecord["estado_actual"]) ||
-        "activo",
+      estado_actual: this.mapBackendStatusToFrontend(
+        backendRecord.estado_actual || "ACTIVO"
+      ),
     };
   }
 
@@ -126,21 +160,6 @@ class RecordsService {
   }
 
   /**
-   * Mapear estados del frontend al backend
-   */
-  private mapFrontendStatusToBackend(
-    frontendStatus: DataRecord["estado_actual"]
-  ): string {
-    const statusMap: Record<DataRecord["estado_actual"], string> = {
-      activo: "ACTIVO",
-      inactivo: "INACTIVO",
-      mantenimiento: "MANTENIMIENTO",
-      vencido: "VENCIDO",
-    };
-    return statusMap[frontendStatus] || "ACTIVO";
-  }
-
-  /**
    * Obtener registros con filtros y paginación
    */
   async getRecords(filters?: RecordFilters): Promise<{
@@ -167,6 +186,16 @@ class RecordsService {
       }
       if (filters?.tipo_linea) params.append("tipo_linea", filters.tipo_linea);
       if (filters?.ubicacion) params.append("ubicacion", filters.ubicacion);
+      if (filters?.fecha_instalacion_desde)
+        params.append(
+          "fecha_instalacion_desde",
+          filters.fecha_instalacion_desde
+        );
+      if (filters?.fecha_instalacion_hasta)
+        params.append(
+          "fecha_instalacion_hasta",
+          filters.fecha_instalacion_hasta
+        );
       if (filters?.seec) params.append("seec", filters.seec);
       if (filters?.page) params.append("page", filters.page.toString());
       if (filters?.limit) params.append("limit", filters.limit.toString());
@@ -319,6 +348,7 @@ class RecordsService {
     vencidos: number;
     por_vencer: number;
     inactivos: number;
+    mantenimiento: number;
   }> {
     try {
       return await apiClient.get<{
@@ -327,6 +357,7 @@ class RecordsService {
         vencidos: number;
         por_vencer: number;
         inactivos: number;
+        mantenimiento: number;
       }>(`${this.basePath}/statistics`);
     } catch (error) {
       console.error("Error fetching statistics:", error);
@@ -337,6 +368,7 @@ class RecordsService {
         vencidos: 0,
         por_vencer: 0,
         inactivos: 0,
+        mantenimiento: 0,
       };
     }
   }

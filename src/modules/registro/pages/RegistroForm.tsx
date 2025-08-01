@@ -463,9 +463,10 @@ export const RegistroForm: React.FC = () => {
                     }
                     options={[
                       { value: "activo", label: "🟢 Activo" },
-                      { value: "inactivo", label: "⚪ Inactivo" },
-                      { value: "mantenimiento", label: "🟡 Mantenimiento" },
+                      { value: "por_vencer", label: "🟡 Por Vencer" },
                       { value: "vencido", label: "🔴 Vencido" },
+                      { value: "inactivo", label: "⚪ Inactivo" },
+                      { value: "mantenimiento", label: "🔧 Mantenimiento" },
                     ]}
                   />
                 </div>

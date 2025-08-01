@@ -22,7 +22,12 @@ export interface DataRecord extends Record<string, unknown> {
   tipo_linea: string;
   ubicacion: string;
   fecha_vencimiento: Date;
-  estado_actual: "activo" | "inactivo" | "mantenimiento" | "vencido";
+  estado_actual:
+    | "activo"
+    | "por_vencer"
+    | "vencido"
+    | "inactivo"
+    | "mantenimiento";
 }
 
 // UI Types

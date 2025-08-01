@@ -33,7 +33,8 @@ export const RegistroList: React.FC = () => {
   // Estados para filtros y vista
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [typeFilter, setTypeFilter] = useState("");
+  const [installDateFrom, setInstallDateFrom] = useState("");
+  const [installDateTo, setInstallDateTo] = useState("");
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
   const [showFilters, setShowFilters] = useState(false);
 
@@ -105,29 +106,11 @@ export const RegistroList: React.FC = () => {
       limit: pagination.itemsPerPage,
       codigo: searchTerm || undefined,
       estado_actual: statusFilter || undefined,
-      tipo_linea: typeFilter || undefined,
       sortBy: "codigo",
       sortOrder: "ASC",
     });
     await loadStats();
   };
-
-  // Aplicar filtros cuando cambien
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      loadRegistros({
-        page: 1, // Resetear a página 1 cuando cambien los filtros
-        limit: pagination.itemsPerPage,
-        codigo: searchTerm || undefined,
-        estado_actual: statusFilter || undefined,
-        tipo_linea: typeFilter || undefined,
-        sortBy: "codigo",
-        sortOrder: "ASC",
-      });
-    }, 500); // Debounce de 500ms
-
-    return () => clearTimeout(timeoutId);
-  }, [searchTerm, statusFilter, typeFilter]);
 
   const handlePageChange = (newPage: number) => {
     loadRegistros({
@@ -135,7 +118,6 @@ export const RegistroList: React.FC = () => {
       limit: pagination.itemsPerPage,
       codigo: searchTerm || undefined,
       estado_actual: statusFilter || undefined,
-      tipo_linea: typeFilter || undefined,
       sortBy: "codigo",
       sortOrder: "ASC",
     });
@@ -162,6 +144,11 @@ export const RegistroList: React.FC = () => {
         color: "text-gray-600",
       },
       mantenimiento: {
+        variant: "warning" as const,
+        icon: "🔧",
+        color: "text-orange-600",
+      },
+      por_vencer: {
         variant: "warning" as const,
         icon: "🟡",
         color: "text-yellow-600",
@@ -427,7 +414,9 @@ export const RegistroList: React.FC = () => {
                     {estadoConfig.icon}
                   </span>
                   <Badge variant={estadoConfig.variant} size="sm">
-                    {registro.estado_actual}
+                    {registro.estado_actual === "por_vencer"
+                      ? "Por Vencer"
+                      : registro.estado_actual}
                   </Badge>
                 </div>
               </div>
@@ -558,7 +547,7 @@ export const RegistroList: React.FC = () => {
       </div>
 
       {/* Estadísticas rápidas */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
         <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
           <div className="flex items-center justify-between p-4">
             <div>
@@ -617,6 +606,23 @@ export const RegistroList: React.FC = () => {
               </div>
             </div>
             <div className="text-2xl">🔴</div>
+          </div>
+        </Card>
+        <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100">
+          <div className="flex items-center justify-between p-4">
+            <div>
+              <p className="text-sm font-medium text-orange-600">
+                Mantenimiento
+              </p>
+              <div className="text-2xl font-bold text-orange-900 min-h-[1.6rem] flex items-center justify-center">
+                {loadingStats ? (
+                  <LoadingSpinner size="sm" />
+                ) : (
+                  estadisticas?.mantenimiento || 0
+                )}
+              </div>
+            </div>
+            <div className="text-2xl">🔧</div>
           </div>
         </Card>
       </div>
@@ -685,46 +691,103 @@ export const RegistroList: React.FC = () => {
           {/* Filtros expandidos */}
           {showFilters && (
             <div className="pt-4 mt-4 border-t border-gray-200">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <Select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  options={[
-                    { value: "", label: "Todos los estados" },
-                    { value: "activo", label: "🟢 Activo" },
-                    { value: "inactivo", label: "⚪ Inactivo" },
-                    { value: "mantenimiento", label: "🟡 Mantenimiento" },
-                    { value: "vencido", label: "🔴 Vencido" },
-                  ]}
-                />
-                <Select
-                  value={typeFilter}
-                  onChange={(e) => setTypeFilter(e.target.value)}
-                  options={[
-                    { value: "", label: "Todos los tipos" },
-                    { value: "Fibra Óptica", label: "🔗 Fibra Óptica" },
-                    { value: "Cobre", label: "🔗 Cobre" },
-                    { value: "Inalámbrica", label: "📡 Inalámbrica" },
-                    { value: "Satelital", label: "🛰️ Satelital" },
-                  ]}
-                />
-                <div className="flex items-center space-x-2">
-                  {(searchTerm || statusFilter || typeFilter) && (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  loadRegistros({
+                    page: 1,
+                    limit: pagination.itemsPerPage,
+                    codigo: searchTerm || undefined,
+                    estado_actual: statusFilter || undefined,
+                    fecha_instalacion_desde: installDateFrom || undefined,
+                    fecha_instalacion_hasta: installDateTo || undefined,
+                    sortBy: "codigo",
+                    sortOrder: "ASC",
+                  });
+                }}
+                className="grid items-end grid-cols-1 gap-4 md:grid-cols-4"
+              >
+                {/* Estado */}
+                <div>
+                  <label className="block mb-1 text-xs font-semibold text-gray-700">
+                    Estado
+                  </label>
+                  <Select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    options={[
+                      { value: "", label: "Todos los estados" },
+                      { value: "activo", label: "🟢 Activo" },
+                      { value: "por_vencer", label: "🟡 Por Vencer" },
+                      { value: "vencido", label: "🔴 Vencido" },
+                      { value: "inactivo", label: "⚪ Inactivo" },
+                      { value: "mantenimiento", label: "🔧 Mantenimiento" },
+                    ]}
+                  />
+                </div>
+
+                {/* Fecha instalación desde */}
+                <div>
+                  <label className="block mb-1 text-xs font-semibold text-gray-700">
+                    Fecha instalación (desde)
+                  </label>
+                  <Input
+                    type="date"
+                    value={installDateFrom}
+                    onChange={(e) => setInstallDateFrom(e.target.value)}
+                    className="border-gray-300"
+                    max={installDateTo || undefined}
+                  />
+                </div>
+
+                {/* Fecha instalación hasta */}
+                <div>
+                  <label className="block mb-1 text-xs font-semibold text-gray-700">
+                    Fecha instalación (hasta)
+                  </label>
+                  <Input
+                    type="date"
+                    value={installDateTo}
+                    onChange={(e) => setInstallDateTo(e.target.value)}
+                    className="border-gray-300"
+                    min={installDateFrom || undefined}
+                  />
+                </div>
+
+                {/* Acciones */}
+                <div className="flex space-x-2">
+                  <Button
+                    type="submit"
+                    className="bg-[#18D043] text-white hover:bg-[#16a34a] flex-1"
+                  >
+                    <span className="font-semibold">Aplicar filtros</span>
+                  </Button>
+                  {(searchTerm ||
+                    statusFilter ||
+                    installDateFrom ||
+                    installDateTo) && (
                     <Button
                       variant="ghost"
-                      size="sm"
-                      onClick={() => {
+                      className="text-gray-500 hover:text-gray-700"
+                      onClick={(e) => {
+                        e.preventDefault();
                         setSearchTerm("");
                         setStatusFilter("");
-                        setTypeFilter("");
+                        setInstallDateFrom("");
+                        setInstallDateTo("");
+                        loadRegistros({
+                          page: 1,
+                          limit: pagination.itemsPerPage,
+                          sortBy: "codigo",
+                          sortOrder: "ASC",
+                        });
                       }}
-                      className="text-gray-500 hover:text-gray-700"
                     >
-                      Limpiar filtros
+                      Limpiar
                     </Button>
                   )}
                 </div>
-              </div>
+              </form>
             </div>
           )}
         </div>

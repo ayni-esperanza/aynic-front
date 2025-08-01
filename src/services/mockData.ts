@@ -14,7 +14,6 @@ const createValidDate = (
   return new Date(validYear, validMonth, validDay);
 };
 
-// Mock data for demonstration
 export const mockDataRecords: DataRecord[] = Array.from(
   { length: 47 },
   (_, i) => {
@@ -49,8 +48,14 @@ export const mockDataRecords: DataRecord[] = Array.from(
         Math.floor(Math.random() * 28) + 1
       ),
       estado_actual: (
-        ["activo", "inactivo", "mantenimiento", "vencido"] as const
-      )[Math.floor(Math.random() * 4)],
+        [
+          "activo",
+          "inactivo",
+          "mantenimiento",
+          "por_vencer",
+          "vencido",
+        ] as const
+      )[Math.floor(Math.random() * 5)],
     };
   }
 );

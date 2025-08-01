@@ -135,7 +135,7 @@ export const RegistroDetail: React.FC = () => {
     );
   }
 
-  const getEstadoConfig = (estado: DataRecord["estado_actual"]) => {
+  const getEstadoConfig = (estado: DataRecord["estado_actual"] | string) => {
     const configs = {
       activo: {
         variant: "success" as const,
@@ -144,6 +144,7 @@ export const RegistroDetail: React.FC = () => {
         bgColor: "bg-green-50",
         borderColor: "border-green-200",
         emoji: "🟢",
+        label: "Activo",
       },
       inactivo: {
         variant: "secondary" as const,
@@ -152,14 +153,25 @@ export const RegistroDetail: React.FC = () => {
         bgColor: "bg-gray-50",
         borderColor: "border-gray-200",
         emoji: "⚪",
+        label: "Inactivo",
       },
       mantenimiento: {
         variant: "warning" as const,
         icon: Wrench,
+        color: "text-orange-600",
+        bgColor: "bg-orange-50",
+        borderColor: "border-orange-200",
+        emoji: "🔧",
+        label: "Mantenimiento",
+      },
+      por_vencer: {
+        variant: "warning" as const,
+        icon: AlertTriangle,
         color: "text-yellow-600",
         bgColor: "bg-yellow-50",
         borderColor: "border-yellow-200",
         emoji: "🟡",
+        label: "Por Vencer",
       },
       vencido: {
         variant: "danger" as const,
@@ -168,9 +180,11 @@ export const RegistroDetail: React.FC = () => {
         bgColor: "bg-red-50",
         borderColor: "border-red-200",
         emoji: "🔴",
+        label: "Vencido",
       },
-    };
-    return configs[estado];
+    } as const;
+
+    return configs[estado as keyof typeof configs] || configs["activo"];
   };
 
   const estadoConfig = getEstadoConfig(registro.estado_actual);
@@ -277,8 +291,8 @@ export const RegistroDetail: React.FC = () => {
                       </p>
                       <div className="flex items-center space-x-2">
                         <span className="text-lg">{estadoConfig.emoji}</span>
-                        <Badge variant={estadoConfig.variant} size="md">
-                          {registro.estado_actual}
+                        <Badge variant={estadoConfig.variant}>
+                          {estadoConfig.label}
                         </Badge>
                       </div>
                     </div>
@@ -755,23 +769,35 @@ export const RegistroDetail: React.FC = () => {
                     Próximas Acciones
                   </h4>
                   <div className="space-y-3">
+                    {/* Acciones según el estado */}
                     {registro.estado_actual === "vencido" && (
                       <div className="p-3 border border-red-200 rounded-lg bg-red-50">
                         <p className="font-medium text-red-800">
                           🚨 Renovación urgente
                         </p>
                         <p className="text-sm text-red-600">
-                          Sistema vencido - Contactar soporte
+                          Linea vencido - Contactar soporte
+                        </p>
+                      </div>
+                    )}
+
+                    {registro.estado_actual === "por_vencer" && (
+                      <div className="p-3 border border-yellow-200 rounded-lg bg-yellow-50">
+                        <p className="font-medium text-yellow-800">
+                          ⚠️ Próximo a vencer
+                        </p>
+                        <p className="text-sm text-yellow-600">
+                          Planificar renovación o mantenimiento
                         </p>
                       </div>
                     )}
 
                     {registro.estado_actual === "mantenimiento" && (
-                      <div className="p-3 border border-yellow-200 rounded-lg bg-yellow-50">
-                        <p className="font-medium text-yellow-800">
+                      <div className="p-3 border border-orange-200 rounded-lg bg-orange-50">
+                        <p className="font-medium text-orange-800">
                           🔧 En mantenimiento
                         </p>
-                        <p className="text-sm text-yellow-600">
+                        <p className="text-sm text-orange-600">
                           Completar tareas pendientes
                         </p>
                       </div>
@@ -785,7 +811,6 @@ export const RegistroDetail: React.FC = () => {
                         Próxima revisión en 30 días
                       </p>
                     </div>
-
                     <div className="p-3 border border-green-200 rounded-lg bg-green-50">
                       <p className="font-medium text-green-800">
                         📋 Generar reporte
