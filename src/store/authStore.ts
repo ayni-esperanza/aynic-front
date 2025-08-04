@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import { apiClient, handleApiError } from "../services/apiClient";
+import { userService } from "../services/userService";
 import type { User, LoginCredentials, LoginResponse } from "../types/auth";
 import { AuthMappers } from "../types/auth";
 
@@ -17,9 +18,10 @@ interface AuthState {
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
   clearError: () => void;
-  checkAuthStatus: () => Promise<void>; // Cambiar a async
-  initializeAuth: () => Promise<void>; // verificación inicial
-  handleTokenExpired: () => void; // manejo de token expirado
+  checkAuthStatus: () => Promise<void>;
+  initializeAuth: () => Promise<void>;
+  handleTokenExpired: () => void;
+  loadCurrentUser: () => Promise<void>; // Nueva función para cargar datos del usuario actual
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -65,6 +67,17 @@ export const useAuthStore = create<AuthState>()(
               error: null,
               isInitialized: true,
             });
+
+            // Después del login exitoso, cargar datos completos del usuario
+            try {
+              await get().loadCurrentUser();
+            } catch (userError) {
+              // Si falla cargar el perfil, no es crítico
+              console.warn(
+                "Error loading user profile after login:",
+                userError
+              );
+            }
           } catch (error) {
             const errorMessage = handleApiError(error);
             set({
@@ -124,6 +137,18 @@ export const useAuthStore = create<AuthState>()(
           });
         },
 
+        // Cargar datos completos del usuario actual desde la API
+        loadCurrentUser: async () => {
+          try {
+            const userProfile = await userService.getCurrentUserProfile();
+            set({ user: userProfile });
+          } catch (error) {
+            console.error("Error loading current user profile:", error);
+            // Si no se carga el perfil, mantener los datos básicos del login
+            throw error;
+          }
+        },
+
         // verificación asíncrona del estado
         checkAuthStatus: async () => {
           const token = apiClient.getToken();
@@ -143,14 +168,17 @@ export const useAuthStore = create<AuthState>()(
             set({ loading: true });
 
             // Hacer una petición simple para verificar si el token es válido
-            await apiClient.get("/auth/profile");
+            // y cargar datos actualizados del usuario
+            const userProfile = await userService.getCurrentUserProfile();
 
             // Si la petición es exitosa, el token es válido
             set({
+              user: userProfile,
               isAuthenticated: true,
               token,
               loading: false,
               isInitialized: true,
+              error: null,
             });
           } catch (error) {
             // Si falla, el token es inválido o el backend no está disponible
@@ -183,15 +211,15 @@ export const useAuthStore = create<AuthState>()(
       {
         name: "auth-storage",
         partialize: (state) => ({
-          user: state.user,
           token: state.token,
-          // NO persistir isAuthenticated - siempre verificar al cargar
+          // NO persistir user ni isAuthenticated - siempre verificar al cargar
         }),
         // Verificar estado al cargar desde localStorage
         onRehydrateStorage: () => (state) => {
           if (state) {
             // No marcar como autenticado automáticamente
             state.isAuthenticated = false;
+            state.user = null;
             state.isInitialized = false;
             // La verificación se hará en initializeAuth
           }

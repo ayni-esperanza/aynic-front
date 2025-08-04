@@ -1,198 +1,380 @@
-import {
-  apiClient,
-  ApiResponse,
-  PaginatedResponse,
-  ApiClientError,
-} from "./apiClient";
-import type { User, UserFormData } from "../types";
+import { apiClient, ApiResponse, ApiClientError } from "./apiClient";
 
-export interface UserFilters {
-  search?: string;
-  rol?: User["rol"];
-  activo?: boolean;
-  page?: number;
-  limit?: number;
+// ===== INTERFACES PARA EL BACKEND =====
+export interface BackendUser {
+  id: number;
+  usuario: string;
+  apellidos?: string;
+  cargo?: string;
+  celular?: string;
+  contrasenia?: string; // No se incluye en las respuestas
+  email: string;
+  empresa: string;
+  nombre: string;
+  rol: string;
 }
 
-export interface UserCreateData extends UserFormData {
-  password: string;
+export interface CreateUserBackendDto {
+  usuario: string;
+  apellidos?: string;
+  cargo?: string;
+  celular?: string;
+  contrasenia: string;
+  email: string;
+  empresa: string;
+  nombre: string;
+  rol: string;
 }
 
-export interface UserUpdateData extends Partial<UserFormData> {
-  activo?: boolean;
+export interface UpdateUserBackendDto {
+  usuario?: string;
+  apellidos?: string;
+  cargo?: string;
+  celular?: string;
+  contrasenia?: string;
+  email?: string;
+  empresa?: string;
+  nombre?: string;
+  rol?: string;
+}
+
+// ===== INTERFACES PARA EL FRONTEND =====
+export interface FrontendUser {
+  id: string; // Convertir number a string
+  usuario: string;
+  nombre: string;
+  apellidos?: string;
+  email: string;
+  telefono?: string; // Mapear celular -> telefono
+  cargo?: string;
+  empresa: string;
+  rol: "admin" | "supervisor" | "usuario"; // Mapear roles
+  fecha_creacion: Date; // Valor calculado
+  activo: boolean; // Valor calculado
+}
+
+export interface CreateUserFrontendDto {
+  usuario: string;
+  nombre: string;
+  apellidos?: string;
+  email: string;
+  telefono?: string;
+  cargo?: string;
+  empresa: string;
+  rol: "admin" | "supervisor" | "usuario";
+  contrasenia: string;
+}
+
+export interface UpdateUserFrontendDto {
+  usuario?: string;
+  nombre?: string;
+  apellidos?: string;
+  email?: string;
+  telefono?: string;
+  cargo?: string;
+  empresa?: string;
+  rol?: "admin" | "supervisor" | "usuario";
+  contrasenia?: string;
 }
 
 class UserService {
   private readonly basePath = "/users";
 
-  async getUsers(filters?: UserFilters): Promise<PaginatedResponse<User>> {
-    const params = new URLSearchParams();
-
-    if (filters?.search) params.append("search", filters.search);
-    if (filters?.rol) params.append("rol", filters.rol);
-    if (filters?.activo !== undefined)
-      params.append("activo", filters.activo.toString());
-    if (filters?.page) params.append("page", filters.page.toString());
-    if (filters?.limit) params.append("limit", filters.limit.toString());
-
-    const queryString = params.toString();
-    const url = `${this.basePath}${queryString ? `?${queryString}` : ""}`;
-
-    return apiClient.get<PaginatedResponse<User>>(url);
+  /**
+   * Mapear usuario del backend al formato del frontend
+   */
+  private mapBackendToFrontend(backendUser: BackendUser): FrontendUser {
+    return {
+      id: backendUser.id.toString(),
+      usuario: backendUser.usuario,
+      nombre: backendUser.nombre,
+      apellidos: backendUser.apellidos,
+      email: backendUser.email,
+      telefono: backendUser.celular, // celular -> telefono
+      cargo: backendUser.cargo,
+      empresa: backendUser.empresa,
+      rol: this.mapBackendRoleToFrontend(backendUser.rol),
+      fecha_creacion: new Date(), // Por ahora valor por defecto
+      activo: true, // Por ahora valor por defecto
+    };
   }
 
-  async getUserById(id: string): Promise<User> {
+  /**
+   * Mapear usuario del frontend al formato del backend
+   */
+  private mapFrontendToBackend(
+    frontendUser: CreateUserFrontendDto
+  ): CreateUserBackendDto;
+  private mapFrontendToBackend(
+    frontendUser: UpdateUserFrontendDto
+  ): UpdateUserBackendDto;
+  private mapFrontendToBackend(
+    frontendUser: CreateUserFrontendDto | UpdateUserFrontendDto
+  ): CreateUserBackendDto | UpdateUserBackendDto {
+    const result: any = {};
+
+    if (frontendUser.usuario !== undefined)
+      result.usuario = frontendUser.usuario;
+    if (frontendUser.nombre !== undefined) result.nombre = frontendUser.nombre;
+    if (frontendUser.apellidos !== undefined)
+      result.apellidos = frontendUser.apellidos;
+    if (frontendUser.email !== undefined) result.email = frontendUser.email;
+    if (frontendUser.telefono !== undefined)
+      result.celular = frontendUser.telefono; // telefono -> celular
+    if (frontendUser.cargo !== undefined) result.cargo = frontendUser.cargo;
+    if (frontendUser.empresa !== undefined)
+      result.empresa = frontendUser.empresa;
+    if (frontendUser.rol !== undefined)
+      result.rol = this.mapFrontendRoleToBackend(frontendUser.rol);
+    if (
+      "contrasenia" in frontendUser &&
+      frontendUser.contrasenia !== undefined
+    ) {
+      result.contrasenia = frontendUser.contrasenia;
+    }
+
+    return result;
+  }
+
+  /**
+   * Mapear roles del backend al frontend
+   */
+  private mapBackendRoleToFrontend(
+    backendRole: string
+  ): "admin" | "supervisor" | "usuario" {
+    const roleMap: Record<string, "admin" | "supervisor" | "usuario"> = {
+      ADMINISTRADOR: "admin",
+      SUPERVISOR: "supervisor",
+      USUARIO: "usuario",
+    };
+    return roleMap[backendRole] || "usuario";
+  }
+
+  /**
+   * Mapear roles del frontend al backend
+   */
+  private mapFrontendRoleToBackend(
+    frontendRole: "admin" | "supervisor" | "usuario"
+  ): string {
+    const roleMap: Record<string, string> = {
+      admin: "ADMINISTRADOR",
+      supervisor: "SUPERVISOR",
+      usuario: "USUARIO",
+    };
+    return roleMap[frontendRole] || "USUARIO";
+  }
+
+  /**
+   * Obtener todos los usuarios (solo para administradores)
+   */
+  async getUsers(): Promise<FrontendUser[]> {
     try {
-      const response = await apiClient.get<ApiResponse<User>>(
+      const response = await apiClient.get<BackendUser[]>(this.basePath);
+      return response.map((user) => this.mapBackendToFrontend(user));
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      if (error instanceof ApiClientError && error.status === 403) {
+        throw new Error("No tienes permisos para ver la lista de usuarios");
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Obtener usuario por ID
+   */
+  async getUserById(id: string): Promise<FrontendUser> {
+    try {
+      const response = await apiClient.get<BackendUser>(
         `${this.basePath}/${id}`
       );
-      return response.data;
+      return this.mapBackendToFrontend(response);
     } catch (error) {
       if (error instanceof ApiClientError && error.status === 404) {
         throw new Error("Usuario no encontrado");
+      }
+      if (error instanceof ApiClientError && error.status === 403) {
+        throw new Error("No tienes permisos para ver este usuario");
       }
       throw error;
     }
   }
 
-  async createUser(userData: UserCreateData): Promise<User> {
+  /**
+   * Obtener perfil del usuario actual
+   */
+  async getCurrentUserProfile(): Promise<FrontendUser> {
     try {
-      const response = await apiClient.post<ApiResponse<User>>(
+      const response = await apiClient.get<BackendUser>(
+        `${this.basePath}/profile`
+      );
+      return this.mapBackendToFrontend(response);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Crear nuevo usuario (solo administradores)
+   */
+  async createUser(userData: CreateUserFrontendDto): Promise<FrontendUser> {
+    try {
+      const backendData = this.mapFrontendToBackend(
+        userData
+      ) as CreateUserBackendDto;
+      const response = await apiClient.post<BackendUser>(
         this.basePath,
-        userData
+        backendData
       );
-      return response.data;
+      return this.mapBackendToFrontend(response);
     } catch (error) {
       if (error instanceof ApiClientError && error.status === 409) {
-        throw new Error("El email ya está en uso");
+        throw new Error("El usuario o email ya existe");
+      }
+      if (error instanceof ApiClientError && error.status === 403) {
+        throw new Error("No tienes permisos para crear usuarios");
       }
       throw error;
     }
   }
 
-  async updateUser(id: string, userData: UserUpdateData): Promise<User> {
+  /**
+   * Actualizar usuario
+   */
+  async updateUser(
+    id: string,
+    userData: UpdateUserFrontendDto
+  ): Promise<FrontendUser> {
     try {
-      const response = await apiClient.put<ApiResponse<User>>(
-        `${this.basePath}/${id}`,
+      const backendData = this.mapFrontendToBackend(
         userData
+      ) as UpdateUserBackendDto;
+      const response = await apiClient.patch<BackendUser>(
+        `${this.basePath}/${id}`,
+        backendData
       );
-      return response.data;
+      return this.mapBackendToFrontend(response);
     } catch (error) {
       if (error instanceof ApiClientError && error.status === 404) {
         throw new Error("Usuario no encontrado");
       }
       if (error instanceof ApiClientError && error.status === 409) {
-        throw new Error("El email ya está en uso");
+        throw new Error("El usuario o email ya existe");
+      }
+      if (error instanceof ApiClientError && error.status === 403) {
+        throw new Error("No tienes permisos para actualizar este usuario");
       }
       throw error;
     }
   }
 
+  /**
+   * Actualizar perfil propio
+   */
+  async updateProfile(userData: UpdateUserFrontendDto): Promise<FrontendUser> {
+    try {
+      const backendData = this.mapFrontendToBackend(
+        userData
+      ) as UpdateUserBackendDto;
+      const response = await apiClient.patch<BackendUser>(
+        `${this.basePath}/profile`,
+        backendData
+      );
+      return this.mapBackendToFrontend(response);
+    } catch (error) {
+      if (error instanceof ApiClientError && error.status === 409) {
+        throw new Error("El usuario o email ya existe");
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Eliminar usuario (solo administradores)
+   */
   async deleteUser(id: string): Promise<void> {
     try {
-      await apiClient.delete<ApiResponse<void>>(`${this.basePath}/${id}`);
+      await apiClient.delete<void>(`${this.basePath}/${id}`);
     } catch (error) {
       if (error instanceof ApiClientError && error.status === 404) {
         throw new Error("Usuario no encontrado");
       }
-      if (error instanceof ApiClientError && error.status === 409) {
-        throw new Error(
-          "No se puede eliminar el usuario porque tiene datos asociados"
-        );
+      if (error instanceof ApiClientError && error.status === 403) {
+        throw new Error("No tienes permisos para eliminar usuarios");
       }
       throw error;
     }
   }
 
-  async toggleUserStatus(id: string): Promise<User> {
-    try {
-      const response = await apiClient.patch<ApiResponse<User>>(
-        `${this.basePath}/${id}/toggle-status`
-      );
-      return response.data;
-    } catch (error) {
-      if (error instanceof ApiClientError && error.status === 404) {
-        throw new Error("Usuario no encontrado");
-      }
-      throw error;
-    }
-  }
-
-  async changePassword(
-    id: string,
-    currentPassword: string,
-    newPassword: string
-  ): Promise<void> {
-    try {
-      await apiClient.patch<ApiResponse<void>>(
-        `${this.basePath}/${id}/password`,
-        {
-          currentPassword,
-          newPassword,
-        }
-      );
-    } catch (error) {
-      if (error instanceof ApiClientError && error.status === 400) {
-        throw new Error("La contraseña actual es incorrecta");
-      }
-      if (error instanceof ApiClientError && error.status === 404) {
-        throw new Error("Usuario no encontrado");
-      }
-      throw error;
-    }
-  }
-
-  async uploadAvatar(
-    id: string,
-    file: File,
-    onProgress?: (progress: number) => void
-  ): Promise<string> {
-    try {
-      const response = await apiClient.upload<
-        ApiResponse<{ avatarUrl: string }>
-      >(`${this.basePath}/${id}/avatar`, file, onProgress);
-      return response.data.avatarUrl;
-    } catch (error) {
-      if (error instanceof ApiClientError && error.status === 413) {
-        throw new Error("El archivo es demasiado grande");
-      }
-      if (error instanceof ApiClientError && error.status === 415) {
-        throw new Error("Formato de archivo no válido");
-      }
-      throw error;
-    }
-  }
-
-  // Validation helpers
-  validateUserData(userData: UserFormData): string[] {
+  /**
+   * Validar datos de usuario
+   */
+  validateUserData(
+    userData: CreateUserFrontendDto | UpdateUserFrontendDto
+  ): string[] {
     const errors: string[] = [];
 
-    if (!userData.nombre.trim()) {
-      errors.push("El nombre es requerido");
+    if ("nombre" in userData && userData.nombre !== undefined) {
+      if (!userData.nombre.trim()) {
+        errors.push("El nombre es requerido");
+      }
     }
 
-    if (!userData.email.trim()) {
-      errors.push("El email es requerido");
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userData.email)) {
-      errors.push("El email no es válido");
+    if ("usuario" in userData && userData.usuario !== undefined) {
+      if (!userData.usuario.trim()) {
+        errors.push("El usuario es requerido");
+      } else if (userData.usuario.length < 3) {
+        errors.push("El usuario debe tener al menos 3 caracteres");
+      }
     }
 
-    if (userData.telefono && !/^\+?[\d\s-()]+$/.test(userData.telefono)) {
-      errors.push("El teléfono no es válido");
+    if ("email" in userData && userData.email !== undefined) {
+      if (!userData.email.trim()) {
+        errors.push("El email es requerido");
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userData.email)) {
+        errors.push("El email no es válido");
+      }
     }
 
-    if (!["admin", "supervisor", "usuario"].includes(userData.rol)) {
-      errors.push("El rol no es válido");
+    if (
+      "telefono" in userData &&
+      userData.telefono !== undefined &&
+      userData.telefono.trim()
+    ) {
+      if (!/^\+?[\d\s-()]+$/.test(userData.telefono)) {
+        errors.push("El teléfono no es válido");
+      }
+    }
+
+    if ("empresa" in userData && userData.empresa !== undefined) {
+      if (!userData.empresa.trim()) {
+        errors.push("La empresa es requerida");
+      }
+    }
+
+    if ("rol" in userData && userData.rol !== undefined) {
+      if (!["admin", "supervisor", "usuario"].includes(userData.rol)) {
+        errors.push("El rol no es válido");
+      }
+    }
+
+    if ("contrasenia" in userData && userData.contrasenia !== undefined) {
+      const passwordErrors = this.validatePassword(userData.contrasenia);
+      errors.push(...passwordErrors);
     }
 
     return errors;
   }
 
+  /**
+   * Validar contraseña
+   */
   validatePassword(password: string): string[] {
     const errors: string[] = [];
 
-    if (password.length < 8) {
-      errors.push("La contraseña debe tener al menos 8 caracteres");
+    if (password.length < 6) {
+      errors.push("La contraseña debe tener al menos 6 caracteres");
     }
 
     if (!/(?=.*[a-z])/.test(password)) {
@@ -211,157 +393,15 @@ class UserService {
   }
 }
 
-// Create singleton instance
+// Exportar instancia singleton
 export const userService = new UserService();
 
-// Mock service for development/testing
-export class MockUserService extends UserService {
-  private mockUsers: User[] = [];
-  private nextId = 1;
+// Tipos para exportar
+export type {
+  FrontendUser as User,
+  CreateUserFrontendDto as CreateUserDto,
+  UpdateUserFrontendDto as UpdateUserDto,
+};
 
-  constructor() {
-    super();
-    // Initialize with mock data
-    this.initializeMockData();
-  }
-
-  private initializeMockData() {
-    this.mockUsers = Array.from({ length: 15 }, (_, i) => ({
-      id: `user-${i + 1}`,
-      nombre: `Usuario ${i + 1}`,
-      email: `usuario${i + 1}@ejemplo.com`,
-      telefono: Math.random() > 0.3 ? `+1234567890${i}` : undefined,
-      rol: (["admin", "usuario", "supervisor"] as const)[
-        Math.floor(Math.random() * 3)
-      ],
-      fecha_creacion: new Date(
-        2024,
-        Math.floor(Math.random() * 12),
-        Math.floor(Math.random() * 28) + 1
-      ),
-      activo: Math.random() > 0.2,
-    }));
-    this.nextId = this.mockUsers.length + 1;
-  }
-
-  async getUsers(filters?: UserFilters): Promise<PaginatedResponse<User>> {
-    let filteredUsers = [...this.mockUsers];
-
-    // Apply filters
-    if (filters?.search) {
-      const search = filters.search.toLowerCase();
-      filteredUsers = filteredUsers.filter(
-        (user) =>
-          user.nombre.toLowerCase().includes(search) ||
-          user.email.toLowerCase().includes(search)
-      );
-    }
-
-    if (filters?.rol) {
-      filteredUsers = filteredUsers.filter((user) => user.rol === filters.rol);
-    }
-
-    if (filters?.activo !== undefined) {
-      filteredUsers = filteredUsers.filter(
-        (user) => user.activo === filters.activo
-      );
-    }
-
-    // Pagination
-    const page = filters?.page || 1;
-    const limit = filters?.limit || 10;
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
-
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    return {
-      data: paginatedUsers,
-      pagination: {
-        page,
-        limit,
-        total: filteredUsers.length,
-        totalPages: Math.ceil(filteredUsers.length / limit),
-      },
-    };
-  }
-
-  async getUserById(id: string): Promise<User> {
-    const user = this.mockUsers.find((u) => u.id === id);
-    if (!user) {
-      throw new Error("Usuario no encontrado");
-    }
-
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
-    return user;
-  }
-
-  async createUser(userData: UserCreateData): Promise<User> {
-    // Check for duplicate email
-    if (this.mockUsers.some((u) => u.email === userData.email)) {
-      throw new Error("El email ya está en uso");
-    }
-
-    const newUser: User = {
-      id: `user-${this.nextId++}`,
-      nombre: userData.nombre,
-      email: userData.email,
-      telefono: userData.telefono,
-      rol: userData.rol,
-      fecha_creacion: new Date(),
-      activo: true,
-    };
-
-    this.mockUsers.push(newUser);
-
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
-    return newUser;
-  }
-
-  async updateUser(id: string, userData: UserUpdateData): Promise<User> {
-    const userIndex = this.mockUsers.findIndex((u) => u.id === id);
-    if (userIndex === -1) {
-      throw new Error("Usuario no encontrado");
-    }
-
-    // Check for duplicate email
-    if (
-      userData.email &&
-      this.mockUsers.some((u) => u.id !== id && u.email === userData.email)
-    ) {
-      throw new Error("El email ya está en uso");
-    }
-
-    this.mockUsers[userIndex] = {
-      ...this.mockUsers[userIndex],
-      ...userData,
-    };
-
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
-    return this.mockUsers[userIndex];
-  }
-
-  async deleteUser(id: string): Promise<void> {
-    const userIndex = this.mockUsers.findIndex((u) => u.id === id);
-    if (userIndex === -1) {
-      throw new Error("Usuario no encontrado");
-    }
-
-    this.mockUsers.splice(userIndex, 1);
-
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 300));
-  }
-}
-
-// Export the service instance (use mock in development, real service in production)
-export const activeUserService =
-  process.env.NODE_ENV === "development" ? new MockUserService() : userService;
+// Re-exportar tipos adicionales si son necesarios
+export type { BackendUser, CreateUserBackendDto, UpdateUserBackendDto };
