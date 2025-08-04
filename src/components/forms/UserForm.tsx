@@ -155,7 +155,7 @@ export const UserForm: React.FC<UserFormProps> = ({
             value={formData.cargo || ""}
             onChange={(e) => handleChange("cargo", e.target.value)}
             error={errors.cargo}
-            placeholder="Desarrollador Senior"
+            placeholder="Electricidad"
           />
 
           <Input

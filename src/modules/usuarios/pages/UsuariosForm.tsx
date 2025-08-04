@@ -5,6 +5,7 @@ import {
   Save,
   Eye,
   EyeOff,
+  User,
   Mail,
   Phone,
   Building,
@@ -17,12 +18,34 @@ import { Select } from "../../../components/ui/Select";
 import { LoadingSpinner } from "../../../components/ui/LoadingSpinner";
 import { useToast } from "../../../components/ui/Toast";
 import { useApi } from "../../../hooks/useApi";
-import {
-  userService,
-  type User,
-  type CreateUserDto,
-  type UpdateUserDto,
-} from "../../../services/userService";
+import { userService } from "../../../services/userService";
+
+// Definir tipos localmente para evitar problemas de importación
+type UserRole = "admin" | "supervisor" | "usuario";
+
+interface CreateUserData {
+  usuario: string;
+  nombre: string;
+  apellidos?: string;
+  email: string;
+  telefono?: string;
+  cargo?: string;
+  empresa: string;
+  rol: UserRole;
+  contrasenia: string;
+}
+
+interface UpdateUserData {
+  usuario?: string;
+  nombre?: string;
+  apellidos?: string;
+  email?: string;
+  telefono?: string;
+  cargo?: string;
+  empresa?: string;
+  rol?: UserRole;
+  contrasenia?: string;
+}
 
 export const UsuariosForm: React.FC = () => {
   const navigate = useNavigate();
@@ -41,14 +64,14 @@ export const UsuariosForm: React.FC = () => {
     telefono: "",
     cargo: "",
     empresa: "",
-    rol: "usuario" as User["rol"],
+    rol: "usuario" as UserRole,
     contrasenia: "",
     confirmarContrasenia: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Hook para cargar usuario (si se esta editando)
+  // Hook para cargar usuario (si estamos editando)
   const { loading: loadingUser, execute: loadUser } = useApi(
     userService.getUserById.bind(userService),
     {
@@ -161,7 +184,7 @@ export const UsuariosForm: React.FC = () => {
 
     if (isEditing && id) {
       // Actualizar usuario
-      const updateData: UpdateUserDto = {
+      const updateData: UpdateUserData = {
         usuario: formData.usuario,
         nombre: formData.nombre,
         apellidos: formData.apellidos || undefined,
@@ -180,7 +203,7 @@ export const UsuariosForm: React.FC = () => {
       await updateUser(id, updateData);
     } else {
       // Crear usuario
-      const createData: CreateUserDto = {
+      const createData: CreateUserData = {
         usuario: formData.usuario,
         nombre: formData.nombre,
         apellidos: formData.apellidos || undefined,
@@ -324,7 +347,7 @@ export const UsuariosForm: React.FC = () => {
                   value={formData.cargo}
                   onChange={(e) => handleChange("cargo", e.target.value)}
                   error={errors.cargo}
-                  placeholder="Desarrollador Senior"
+                  placeholder="Electricidad"
                   disabled={isSubmitting}
                 />
 
