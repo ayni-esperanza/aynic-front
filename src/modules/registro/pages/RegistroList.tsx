@@ -38,6 +38,8 @@ export const RegistroList: React.FC = () => {
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
   const [showFilters, setShowFilters] = useState(false);
 
+  const [searchDebounce, setSearchDebounce] = useState<NodeJS.Timeout>();
+
   // Estado para datos de registros
   const [registros, setRegistros] = useState<DataRecord[]>([]);
   const [pagination, setPagination] = useState({
@@ -85,8 +87,12 @@ export const RegistroList: React.FC = () => {
 
   // Cargar datos inicial
   useEffect(() => {
-    loadInitialData();
-  }, []);
+    return () => {
+      if (searchDebounce) {
+        clearTimeout(searchDebounce);
+      }
+    };
+  }, [searchDebounce]);
 
   const loadInitialData = async () => {
     await Promise.all([
@@ -110,6 +116,30 @@ export const RegistroList: React.FC = () => {
       sortOrder: "ASC",
     });
     await loadStats();
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+
+    // Limpiar timeout anterior
+    if (searchDebounce) {
+      clearTimeout(searchDebounce);
+    }
+
+    // Solo hacer búsqueda automática si no hay filtros activos
+    if (!statusFilter && !installDateFrom && !installDateTo) {
+      const newTimeout = setTimeout(() => {
+        loadRegistros({
+          page: 1,
+          limit: pagination.itemsPerPage,
+          codigo: value || undefined,
+          sortBy: "codigo",
+          sortOrder: "ASC",
+        });
+      }, 500); // Debounce de 500ms
+      setSearchDebounce(newTimeout);
+    }
   };
 
   const handlePageChange = (newPage: number) => {
@@ -641,7 +671,7 @@ export const RegistroList: React.FC = () => {
                 <Input
                   placeholder="Buscar por código..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={handleSearchChange}
                   className="pl-10 border-gray-300 focus:border-[#18D043] focus:ring-[#18D043]/20"
                 />
               </div>
