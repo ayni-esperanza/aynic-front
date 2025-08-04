@@ -66,18 +66,261 @@ export const RegistroForm: React.FC = () => {
     estado_actual: "activo" as DataRecord["estado_actual"],
   });
 
-  // Opciones para el tipo de línea
+  // Opciones para el tipo de línea con estructura jerárquica
   const tipoLineaOptions = [
-    { value: "horizontal", label: "🔗 Horizontal" },
-    { value: "oblicua", label: "📐 Oblicua" },
-    { value: "vertical", label: "⬆️ Vertical" },
+    {
+      value: "permanente_horizontal",
+      label: "🔗 Línea de Vida Permanente - Horizontal",
+      category: "permanente",
+      orientation: "horizontal",
+    },
+    {
+      value: "permanente_vertical",
+      label: "⬆️ Línea de Vida Permanente - Vertical",
+      category: "permanente",
+      orientation: "vertical",
+    },
+    {
+      value: "temporal_horizontal",
+      label: "🔗 Línea de Vida Temporal - Horizontal",
+      category: "temporal",
+      orientation: "horizontal",
+    },
+    {
+      value: "temporal_vertical",
+      label: "⬆️ Línea de Vida Temporal - Vertical",
+      category: "temporal",
+      orientation: "vertical",
+    },
   ];
 
-  // Opciones para clientes
-  const clientesOptions = clientesList.map((cliente) => ({
-    value: cliente,
-    label: cliente,
-  }));
+  // Componente HierarchicalSelect para tipos de línea
+  const HierarchicalLineTypeSelect: React.FC<{
+    value: string;
+    onChange: (value: string) => void;
+    error?: string;
+    required?: boolean;
+  }> = ({ value, onChange, error, required = false }) => {
+    const [selectedCategory, setSelectedCategory] = useState<string>("");
+    const [selectedOrientation, setSelectedOrientation] = useState<string>("");
+
+    // Opciones de categorías
+    const categories = [
+      { value: "permanente", label: "Línea de Vida Permanente", icon: "🔒" },
+      { value: "temporal", label: "Línea de Vida Temporal", icon: "⏱️" },
+    ];
+
+    // Opciones de orientación (depende de la categoría)
+    const getOrientations = (category: string) => {
+      if (category === "temporal") {
+        // Solo horizontal para temporal
+        return [{ value: "horizontal", label: "Horizontal", icon: "🔗" }];
+      } else {
+        // Ambas opciones para permanente
+        return [
+          { value: "horizontal", label: "Horizontal", icon: "🔗" },
+          { value: "vertical", label: "Vertical", icon: "⬆️" },
+        ];
+      }
+    };
+
+    // Efecto para sincronizar con el valor externo
+    React.useEffect(() => {
+      if (value && typeof value === "string" && value.includes("_")) {
+        const parts = value.split("_");
+        if (parts.length === 2) {
+          setSelectedCategory(parts[0]);
+          setSelectedOrientation(parts[1]);
+        }
+      } else {
+        // Si el valor no tiene el formato esperado, limpiar
+        if (!value) {
+          setSelectedCategory("");
+          setSelectedOrientation("");
+        }
+      }
+    }, [value]);
+
+    // Manejar cambio de categoría
+    const handleCategoryClick = (categoryValue: string) => {
+      setSelectedCategory(categoryValue);
+      setSelectedOrientation(""); // Reset orientation
+
+      // Si es temporal, auto-seleccionar horizontal ya que es la única opción
+      if (categoryValue === "temporal") {
+        setSelectedOrientation("horizontal");
+        const finalValue = `${categoryValue}_horizontal`;
+        onChange(finalValue);
+      }
+      // Para permanente, esperar a que el usuario seleccione
+    };
+
+    // Manejar cambio de orientación
+    const handleOrientationClick = (orientationValue: string) => {
+      setSelectedOrientation(orientationValue);
+      if (selectedCategory) {
+        const finalValue = `${selectedCategory}_${orientationValue}`;
+        onChange(finalValue);
+      }
+    };
+
+    const availableOrientations = getOrientations(selectedCategory);
+
+    return (
+      <div className="space-y-6">
+        <div>
+          <label className="block mb-2 text-sm font-semibold text-gray-700">
+            Tipo de Línea
+            {required && <span className="ml-1 text-red-500">*</span>}
+          </label>
+          <p className="mb-4 text-sm text-gray-600">
+            Paso 1: Selecciona el tipo de línea de vida
+          </p>
+        </div>
+
+        {/* Paso 1: Seleccionar categoría */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {categories.map((category) => (
+            <div
+              key={category.value}
+              className={`p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 ${
+                selectedCategory === category.value
+                  ? "border-[#18D043] bg-[#18D043]/10 text-[#16a34a] shadow-md"
+                  : "border-gray-200 hover:border-gray-300 text-gray-700 hover:shadow-sm"
+              }`}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleCategoryClick(category.value);
+              }}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <span className="text-2xl">{category.icon}</span>
+                  <div>
+                    <p className="font-medium">{category.label}</p>
+                    <p className="text-xs text-gray-500">
+                      {category.value === "permanente"
+                        ? "Instalación fija"
+                        : "Instalación temporal"}
+                    </p>
+                  </div>
+                </div>
+                {selectedCategory === category.value && (
+                  <div className="w-6 h-6 bg-[#18D043] rounded-full flex items-center justify-center">
+                    <span className="text-sm font-bold text-white">✓</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Paso 2: Seleccionar orientación (solo si hay categoría seleccionada y es permanente) */}
+        {selectedCategory === "permanente" && (
+          <div className="space-y-4 duration-300 animate-in fade-in">
+            <p className="text-sm text-gray-600">
+              Paso 2: Selecciona la orientación
+            </p>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {availableOrientations.map((orientation) => (
+                <div
+                  key={orientation.value}
+                  className={`p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 ${
+                    selectedOrientation === orientation.value
+                      ? "border-[#18D043] bg-[#18D043]/10 text-[#16a34a] shadow-md"
+                      : "border-gray-200 hover:border-gray-300 text-gray-700 hover:shadow-sm"
+                  }`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleOrientationClick(orientation.value);
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <span className="text-2xl">{orientation.icon}</span>
+                      <div>
+                        <p className="font-medium">{orientation.label}</p>
+                        <p className="text-xs text-gray-500">
+                          {orientation.value === "horizontal"
+                            ? "Línea paralela al suelo"
+                            : "Línea perpendicular al suelo"}
+                        </p>
+                      </div>
+                    </div>
+                    {selectedOrientation === orientation.value && (
+                      <div className="w-6 h-6 bg-[#18D043] rounded-full flex items-center justify-center">
+                        <span className="text-sm font-bold text-white">✓</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Información adicional para temporal */}
+        {selectedCategory === "temporal" && (
+          <div className="p-4 duration-300 border border-blue-200 bg-blue-50 rounded-xl animate-in fade-in">
+            <div className="flex items-center space-x-3">
+              <span className="text-2xl">ℹ️</span>
+              <div>
+                <p className="text-sm font-medium text-blue-800">
+                  Orientación automática: Horizontal
+                </p>
+                <p className="text-xs text-blue-600">
+                  Las líneas de vida temporales solo están disponibles en
+                  orientación horizontal
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Resumen de selección */}
+        {selectedCategory && selectedOrientation && (
+          <div className="p-4 border border-[#18D043] bg-[#18D043]/5 rounded-xl animate-in fade-in duration-300">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-[#18D043] rounded-full flex items-center justify-center">
+                <span className="font-bold text-white">✓</span>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-[#16a34a]">
+                  Selección completa:
+                </p>
+                <p className="text-sm text-gray-700">
+                  {categories.find((c) => c.value === selectedCategory)?.icon}{" "}
+                  Línea de Vida{" "}
+                  {selectedCategory === "permanente"
+                    ? "Permanente"
+                    : "Temporal"}{" "}
+                  -{" "}
+                  {
+                    availableOrientations.find(
+                      (o) => o.value === selectedOrientation
+                    )?.icon
+                  }{" "}
+                  {selectedOrientation === "horizontal"
+                    ? "Horizontal"
+                    : "Vertical"}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Error message */}
+        {error && (
+          <p className="flex items-center space-x-1 text-sm text-red-600">
+            <span className="text-red-500">⚠️</span>
+            <span>{error}</span>
+          </p>
+        )}
+      </div>
+    );
+  };
 
   const {
     data: registro,
@@ -486,16 +729,16 @@ export const RegistroForm: React.FC = () => {
 
             {currentStep === 2 && (
               <div className="space-y-6">
-                <div className="grid gap-6 md:grid-cols-2">
-                  <Select
-                    label="Tipo de Línea"
+                <div className="grid gap-6 md:grid-cols-1">
+                  <HierarchicalLineTypeSelect
                     value={formData.tipo_linea}
-                    onChange={(e) => handleChange("tipo_linea", e.target.value)}
+                    onChange={(value) => handleChange("tipo_linea", value)}
                     error={errors.tipo_linea}
-                    options={tipoLineaOptions}
-                    placeholder="Selecciona el tipo de línea"
                     required
                   />
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-2">
                   <Input
                     label="Longitud (m)"
                     type="text"
@@ -507,15 +750,16 @@ export const RegistroForm: React.FC = () => {
                     inputMode="decimal"
                     pattern="[0-9]*[.]?[0-9]*"
                   />
+                  <Input
+                    label="Ubicación"
+                    value={formData.ubicacion}
+                    onChange={(e) => handleChange("ubicacion", e.target.value)}
+                    error={errors.ubicacion}
+                    placeholder="Dirección o coordenadas"
+                    required
+                  />
                 </div>
-                <Input
-                  label="Ubicación"
-                  value={formData.ubicacion}
-                  onChange={(e) => handleChange("ubicacion", e.target.value)}
-                  error={errors.ubicacion}
-                  placeholder="Dirección o coordenadas"
-                  required
-                />
+
                 <div>
                   <label className="block mb-2 text-sm font-semibold text-gray-700">
                     Observaciones{" "}
