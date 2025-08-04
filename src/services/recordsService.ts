@@ -67,6 +67,27 @@ export interface BackendPaginatedRecords {
   };
 }
 
+export interface BackendStatistics {
+  total: number;
+  activos: number;
+  vencidos: number;
+  por_vencer: number;
+  inactivos: number;
+  mantenimiento: number;
+  statusBreakdown?: any;
+  lastUpdate?: string;
+}
+
+// Interface para estadísticas del frontend
+export interface FrontendStatistics {
+  total: number;
+  activos: number;
+  por_vencer: number;
+  vencidos: number;
+  inactivos: number;
+  mantenimiento: number;
+}
+
 class RecordsService {
   private readonly basePath = "/records";
 
@@ -100,6 +121,22 @@ class RecordsService {
       mantenimiento: "MANTENIMIENTO",
     };
     return statusMap[frontendStatus] || "ACTIVO";
+  }
+
+  /**
+   * Mapear estadísticas del backend al frontend
+   */
+  private mapBackendStatisticsToFrontend(
+    backendStats: BackendStatistics
+  ): FrontendStatistics {
+    return {
+      total: backendStats.total || 0,
+      activos: backendStats.activos || 0,
+      por_vencer: backendStats.por_vencer || 0,
+      vencidos: backendStats.vencidos || 0,
+      inactivos: backendStats.inactivos || 0,
+      mantenimiento: backendStats.mantenimiento || 0,
+    };
   }
 
   /**
@@ -340,28 +377,21 @@ class RecordsService {
   }
 
   /**
-   * Obtener estadísticas
+   * Obtener estadísticas de registros
+   * Mapea directamente la respuesta del backend al formato del frontend
    */
-  async getStatistics(): Promise<{
-    total: number;
-    activos: number;
-    vencidos: number;
-    por_vencer: number;
-    inactivos: number;
-    mantenimiento: number;
-  }> {
+  async getStatistics(): Promise<FrontendStatistics> {
     try {
-      return await apiClient.get<{
-        total: number;
-        activos: number;
-        vencidos: number;
-        por_vencer: number;
-        inactivos: number;
-        mantenimiento: number;
-      }>(`${this.basePath}/statistics`);
+      const response = await apiClient.get<BackendStatistics>(
+        `${this.basePath}/statistics`
+      );
+
+      // Mapear directamente la respuesta del backend
+      return this.mapBackendStatisticsToFrontend(response);
     } catch (error) {
       console.error("Error fetching statistics:", error);
-      // Retornar valores por defecto en caso de error
+
+      // En caso de error, retornar valores por defecto
       return {
         total: 0,
         activos: 0,
