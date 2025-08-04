@@ -55,6 +55,9 @@ type RequestInterceptor = (
 type ResponseInterceptor = (response: Response) => Promise<Response>;
 type ErrorInterceptor = (error: ApiClientError) => Promise<never>;
 
+// Callback para manejar tokens expirados desde el store
+type TokenExpiredCallback = () => void;
+
 class ApiClient {
   private baseURL: string;
   private timeout: number;
@@ -62,6 +65,7 @@ class ApiClient {
   private requestInterceptors: RequestInterceptor[] = [];
   private responseInterceptors: ResponseInterceptor[] = [];
   private errorInterceptors: ErrorInterceptor[] = [];
+  private tokenExpiredCallback: TokenExpiredCallback | null = null;
 
   constructor() {
     this.baseURL = API_CONFIG.baseURL;
@@ -79,6 +83,7 @@ class ApiClient {
       return config;
     });
 
+    // Interceptor mejorado para manejar tokens expirados
     this.addResponseInterceptor(async (response) => {
       if (!response.ok) {
         let errorData: any = {};
@@ -94,6 +99,19 @@ class ApiClient {
           errorData = { message: `HTTP ${response.status}` };
         }
 
+        // Manejar token expirado (401 Unauthorized)
+        if (response.status === 401) {
+          console.warn("Token expirado o inválido detectado");
+
+          // Llamar al callback si está configurado
+          if (this.tokenExpiredCallback) {
+            this.tokenExpiredCallback();
+          }
+
+          // Limpiar token automáticamente
+          this.logout();
+        }
+
         let errorMessage = "Error desconocido";
 
         if (errorData.message) {
@@ -102,6 +120,12 @@ class ApiClient {
           } else {
             errorMessage = errorData.message;
           }
+        }
+
+        // Personalizar mensaje para errores de autenticación
+        if (response.status === 401) {
+          errorMessage =
+            "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.";
         }
 
         throw new ApiClientError(
@@ -113,6 +137,11 @@ class ApiClient {
       }
       return response;
     });
+  }
+
+  // configurar callback para tokens expirados
+  setTokenExpiredCallback(callback: TokenExpiredCallback) {
+    this.tokenExpiredCallback = callback;
   }
 
   addRequestInterceptor(interceptor: RequestInterceptor) {
@@ -162,8 +191,11 @@ class ApiClient {
 
       return processedResponse;
     } catch (error) {
-      // Reintentar en caso de errores de red
-      if (retryCount < this.retries && this.shouldRetry(error)) {
+      if (
+        retryCount < this.retries &&
+        this.shouldRetry(error) &&
+        !(error instanceof ApiClientError && error.status === 401)
+      ) {
         await this.delay(Math.pow(2, retryCount) * 1000);
         return this.executeRequest(url, options, retryCount + 1);
       }
@@ -177,6 +209,12 @@ class ApiClient {
               0,
               "NETWORK_ERROR"
             );
+
+      // Para errores de red, sugerir verificar conexión
+      if (apiError.status === 0) {
+        apiError.message =
+          "No se puede conectar al servidor. Verifica tu conexión a internet.";
+      }
 
       // Aplicar interceptores de error
       for (const interceptor of this.errorInterceptors) {
@@ -214,7 +252,6 @@ class ApiClient {
       return response.json();
     }
 
-    // Si no hay contenido JSON, retornar respuesta básica
     return { success: true } as T;
   }
 
@@ -237,7 +274,6 @@ class ApiClient {
   async delete<T>(url: string): Promise<T> {
     const response = await this.executeRequest(url, { method: "DELETE" });
 
-    // Para DELETE que retorna 204 No Content
     if (response.status === 204) {
       return { success: true } as T;
     }
@@ -269,16 +305,36 @@ class ApiClient {
     return !!localStorage.getItem("authToken");
   }
 
-  // MÉTODO PARA OBTENER TOKEN 
   getToken(): string | null {
     return localStorage.getItem("authToken");
   }
+
+  // verificar si el token es válido haciendo una petición al backend
+  async verifyToken(): Promise<boolean> {
+    try {
+      const token = this.getToken();
+      if (!token) {
+        return false;
+      }
+
+      // Hacer una petición simple para verificar el token
+      await this.get("/auth/profile");
+      return true;
+    } catch (error) {
+      console.warn("Token verification failed:", error);
+      return false;
+    }
+  }
 }
 
-// INSTANCIA SINGLETON 
+// INSTANCIA SINGLETON
 export const apiClient = new ApiClient();
 
-// UTILIDAD PARA MANEJO DE ERRORES 
+// Configurar el callback de token expirado
+export const setupTokenExpiredHandler = (callback: TokenExpiredCallback) => {
+  apiClient.setTokenExpiredCallback(callback);
+};
+
 export const handleApiError = (error: unknown): string => {
   if (error instanceof ApiClientError) {
     return error.message;
@@ -292,6 +348,8 @@ export const handleApiError = (error: unknown): string => {
 export const API_ENDPOINTS = {
   AUTH: {
     LOGIN: "/auth/login",
+    PROFILE: "/auth/profile",
+    VERIFY: "/auth/verify",
   },
   USERS: {
     BASE: "/users",

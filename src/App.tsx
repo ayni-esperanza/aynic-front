@@ -1,11 +1,12 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import { AppRoutes } from "./routes";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { ToastProvider } from "./components/ui/Toast";
-import { apiClient } from "./services/apiClient";
 import { useToast } from "./components/ui/Toast";
 import { useAuthStore } from "./store/authStore";
+import { setupTokenExpiredHandler } from "./services/apiClient";
+import { LoadingSpinner } from "./components/ui/LoadingSpinner";
 
 // Global error handler setup
 const GlobalErrorHandler: React.FC<{ children: React.ReactNode }> = ({
@@ -48,12 +49,59 @@ const GlobalErrorHandler: React.FC<{ children: React.ReactNode }> = ({
   return <>{children}</>;
 };
 
-// API interceptor setup - TEMPORARILY DISABLED
-const ApiInterceptorSetup: React.FC<{ children: React.ReactNode }> = ({
+// Componente de inicialización de autenticación
+const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  // Temporarily disable API interceptors to prevent loops
-  console.log("API interceptors disabled to prevent infinite loops");
+  const { initializeAuth, handleTokenExpired, isInitialized, loading } =
+    useAuthStore();
+  const { error: showError } = useToast();
+
+  useEffect(() => {
+    // Configurar el manejo de tokens expirados en el API client
+    setupTokenExpiredHandler(() => {
+      handleTokenExpired();
+      showError(
+        "Sesión expirada",
+        "Tu sesión ha expirado. Por favor, inicia sesión nuevamente."
+      );
+    });
+
+    // Inicializar autenticación
+    const init = async () => {
+      try {
+        await initializeAuth();
+      } catch (error) {
+        console.error(
+          "Error durante la inicialización de autenticación:",
+          error
+        );
+      }
+    };
+
+    init();
+  }, [initializeAuth, handleTokenExpired, showError]);
+
+  // Mostrar loading mientras se inicializa
+  if (!isInitialized || loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="text-center">
+          <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6">
+            <div className="w-16 h-16 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-2xl flex items-center justify-center shadow-lg">
+              <span className="text-2xl text-white">⚡</span>
+            </div>
+          </div>
+          <LoadingSpinner size="lg" className="mb-4" />
+          <h2 className="mb-2 text-xl font-semibold text-gray-900">
+            Iniciando AyniLine
+          </h2>
+          <p className="text-gray-600">Verificando autenticación...</p>
+        </div>
+      </div>
+    );
+  }
+
   return <>{children}</>;
 };
 
@@ -74,11 +122,11 @@ function App() {
       <ToastProvider>
         <Router>
           <GlobalErrorHandler>
-            <ApiInterceptorSetup>
+            <AuthInitializer>
               <div id="app-container">
                 <AppRoutes />
               </div>
-            </ApiInterceptorSetup>
+            </AuthInitializer>
           </GlobalErrorHandler>
         </Router>
       </ToastProvider>
