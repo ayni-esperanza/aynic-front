@@ -8,11 +8,14 @@ import {
   MapPin,
   Settings,
   Info,
+  Plus,
+  Check,
 } from "lucide-react";
 import { Button } from "../../../components/ui/Button";
 import { Card } from "../../../components/ui/Card";
 import { Input } from "../../../components/ui/Input";
 import { Select } from "../../../components/ui/Select";
+import { SearchableSelect } from "../../../components/ui/SearchableSelect";
 import { LoadingSpinner } from "../../../components/ui/LoadingSpinner";
 import { useToast } from "../../../components/ui/Toast";
 import { useApi } from "../../../hooks/useApi";
@@ -27,6 +30,25 @@ export const RegistroForm: React.FC = () => {
   const isEditing = Boolean(id);
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showNewClientForm, setShowNewClientForm] = useState(false);
+  const [newClientName, setNewClientName] = useState("");
+  const [clientesList, setClientesList] = useState([
+    "Danper",
+    "Chimu",
+    "Cartavio",
+    "Cartavio Rum Company",
+    "Casa Grande",
+    "Siderperu",
+    "UPAO",
+    "Universidad Nacional de Trujillo (UNT)",
+    "AgroAurora",
+    "Nexa Resources",
+    "Jardines de la Paz",
+    "Camposol",
+    "Glucom",
+    "AgrOlmos",
+    "TRUPAL",
+  ]);
 
   const [formData, setFormData] = useState({
     codigo: "",
@@ -50,6 +72,12 @@ export const RegistroForm: React.FC = () => {
     { value: "oblicua", label: "📐 Oblicua" },
     { value: "vertical", label: "⬆️ Vertical" },
   ];
+
+  // Opciones para clientes
+  const clientesOptions = clientesList.map((cliente) => ({
+    value: cliente,
+    label: cliente,
+  }));
 
   const {
     data: registro,
@@ -201,6 +229,27 @@ export const RegistroForm: React.FC = () => {
     if (errors[field]) setErrors((p) => ({ ...p, [field]: "" }));
   };
 
+  // Manejar agregar nuevo cliente
+  const handleAddNewClient = () => {
+    if (newClientName.trim()) {
+      const trimmedName = newClientName.trim();
+      if (!clientesList.includes(trimmedName)) {
+        setClientesList((prev) => [...prev, trimmedName]);
+        setFormData((prev) => ({ ...prev, cliente: trimmedName }));
+      } else {
+        // Si ya existe, simplemente seleccionarlo
+        setFormData((prev) => ({ ...prev, cliente: trimmedName }));
+      }
+      setNewClientName("");
+      setShowNewClientForm(false);
+    }
+  };
+
+  const handleCancelNewClient = () => {
+    setNewClientName("");
+    setShowNewClientForm(false);
+  };
+
   /* -------------------------------------------------
      UI helpers
   ------------------------------------------------- */
@@ -347,14 +396,74 @@ export const RegistroForm: React.FC = () => {
                     placeholder="COD-0001"
                     required
                   />
-                  <Input
-                    label="Cliente"
-                    value={formData.cliente}
-                    onChange={(e) => handleChange("cliente", e.target.value)}
-                    error={errors.cliente}
-                    placeholder="Nombre del cliente"
-                    required
-                  />
+
+                  {/* Cliente con SearchableSelect y funcionalidad de agregar */}
+                  <div>
+                    {showNewClientForm ? (
+                      <div>
+                        <label className="block mb-2 text-sm font-semibold text-gray-700">
+                          Nuevo Cliente
+                          <span className="ml-1 text-red-500">*</span>
+                        </label>
+                        <div className="flex items-center space-x-2">
+                          <Input
+                            value={newClientName}
+                            onChange={(e) => setNewClientName(e.target.value)}
+                            placeholder="Nombre del nuevo cliente"
+                            className="flex-1"
+                            onKeyPress={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleAddNewClient();
+                              }
+                            }}
+                          />
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={handleAddNewClient}
+                            disabled={!newClientName.trim()}
+                            className="px-3"
+                            icon={Check}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleCancelNewClient}
+                            className="px-3"
+                            icon={X}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-start space-x-2">
+                        <div className="flex-1">
+                          <SearchableSelect
+                            options={clientesList}
+                            value={formData.cliente}
+                            onChange={(value) => handleChange("cliente", value)}
+                            placeholder="Buscar cliente..."
+                            label="Cliente"
+                            error={errors.cliente}
+                            required
+                          />
+                        </div>
+                        <div className="pt-8">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowNewClientForm(true)}
+                            className="px-3 border-[#18D043] text-[#18D043] hover:bg-[#18D043] hover:text-white"
+                            icon={Plus}
+                            title="Agregar nuevo cliente"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   <Input
                     label="Equipo"
                     value={formData.equipo}
