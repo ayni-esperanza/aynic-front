@@ -44,6 +44,13 @@ export const RegistroForm: React.FC = () => {
     estado_actual: "activo" as DataRecord["estado_actual"],
   });
 
+  // Opciones para el tipo de línea
+  const tipoLineaOptions = [
+    { value: "horizontal", label: "🔗 Horizontal" },
+    { value: "oblicua", label: "📐 Oblicua" },
+    { value: "vertical", label: "⬆️ Vertical" },
+  ];
+
   const {
     data: registro,
     loading: loadingRegistro,
@@ -177,8 +184,17 @@ export const RegistroForm: React.FC = () => {
 
   const handleChange = (field: string, value: any) => {
     if (field === "longitud") {
-      // Permitir cadena vacía o número válido
-      setFormData((p) => ({ ...p, [field]: value }));
+      // Solo permitir números, punto decimal y cadena vacía
+      const numericValue = value.replace(/[^0-9.]/g, "");
+
+      // Prevenir múltiples puntos decimales
+      const parts = numericValue.split(".");
+      const sanitizedValue =
+        parts.length > 2
+          ? parts[0] + "." + parts.slice(1).join("")
+          : numericValue;
+
+      setFormData((p) => ({ ...p, [field]: sanitizedValue }));
     } else {
       setFormData((p) => ({ ...p, [field]: value }));
     }
@@ -362,24 +378,25 @@ export const RegistroForm: React.FC = () => {
             {currentStep === 2 && (
               <div className="space-y-6">
                 <div className="grid gap-6 md:grid-cols-2">
-                  <Input
+                  <Select
                     label="Tipo de Línea"
                     value={formData.tipo_linea}
                     onChange={(e) => handleChange("tipo_linea", e.target.value)}
                     error={errors.tipo_linea}
-                    placeholder="Ej: horizontales, verticales, etc."
+                    options={tipoLineaOptions}
+                    placeholder="Selecciona el tipo de línea"
                     required
                   />
                   <Input
                     label="Longitud (m)"
-                    type="number"
-                    step="0.01"
+                    type="text"
                     value={formData.longitud}
                     onChange={(e) => handleChange("longitud", e.target.value)}
                     error={errors.longitud}
-                    placeholder="1000.50"
-                    min="0.01"
+                    placeholder="100.50"
                     required
+                    inputMode="decimal"
+                    pattern="[0-9]*[.]?[0-9]*"
                   />
                 </div>
                 <Input
@@ -390,19 +407,21 @@ export const RegistroForm: React.FC = () => {
                   placeholder="Dirección o coordenadas"
                   required
                 />
-                <label className="block text-sm font-medium text-gray-700">
-                  Observaciones{" "}
-                  <span className="text-gray-400">(opcional)</span>
-                </label>
-                <textarea
-                  rows={4}
-                  value={formData.observaciones}
-                  onChange={(e) =>
-                    handleChange("observaciones", e.target.value)
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#18D043]/20 focus:border-[#18D043] resize-none"
-                  placeholder="Notas adicionales..."
-                />
+                <div>
+                  <label className="block mb-2 text-sm font-semibold text-gray-700">
+                    Observaciones{" "}
+                    <span className="text-gray-400">(opcional)</span>
+                  </label>
+                  <textarea
+                    rows={4}
+                    value={formData.observaciones}
+                    onChange={(e) =>
+                      handleChange("observaciones", e.target.value)
+                    }
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl transition-all duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-[#18D043]/20 focus:border-[#18D043] resize-none hover:border-gray-300"
+                    placeholder="Notas adicionales sobre el registro..."
+                  />
+                </div>
               </div>
             )}
 
