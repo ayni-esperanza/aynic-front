@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Plus,
@@ -85,7 +85,28 @@ export const RegistroList: React.FC = () => {
     }
   );
 
-  // Cargar datos inicial
+  // Cargar datos inicial automáticamente al montar el componente
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        await Promise.all([
+          loadRegistros({
+            page: 1,
+            limit: 10,
+            sortBy: "codigo",
+            sortOrder: "ASC",
+          }),
+          loadStats(),
+        ]);
+      } catch (error) {
+        console.error("Error loading initial data:", error);
+      }
+    };
+
+    loadInitialData();
+  }, []); // Array de dependencias vacío = solo se ejecuta al montar
+
+  // Cleanup del debounce cuando se desmonta el componente
   useEffect(() => {
     return () => {
       if (searchDebounce) {
@@ -94,74 +115,93 @@ export const RegistroList: React.FC = () => {
     };
   }, [searchDebounce]);
 
-  const loadInitialData = async () => {
-    await Promise.all([
-      loadRegistros({
-        page: 1,
-        limit: 10,
-        sortBy: "codigo",
-        sortOrder: "ASC",
-      }),
-      loadStats(),
-    ]);
-  };
-
-  const refreshData = async () => {
-    await loadRegistros({
-      page: pagination.currentPage,
-      limit: pagination.itemsPerPage,
-      codigo: searchTerm || undefined,
-      estado_actual: statusFilter || undefined,
-      sortBy: "codigo",
-      sortOrder: "ASC",
-    });
-    await loadStats();
-  };
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-
-    // Limpiar timeout anterior
-    if (searchDebounce) {
-      clearTimeout(searchDebounce);
-    }
-
-    // Solo hacer búsqueda automática si no hay filtros activos
-    if (!statusFilter && !installDateFrom && !installDateTo) {
-      const newTimeout = setTimeout(() => {
+  const refreshData = useCallback(async () => {
+    try {
+      await Promise.all([
         loadRegistros({
-          page: 1,
+          page: pagination.currentPage,
           limit: pagination.itemsPerPage,
-          codigo: value || undefined,
+          codigo: searchTerm || undefined,
+          estado_actual: statusFilter || undefined,
           sortBy: "codigo",
           sortOrder: "ASC",
-        });
-      }, 500); // Debounce de 500ms
-      setSearchDebounce(newTimeout);
+        }),
+        loadStats(),
+      ]);
+    } catch (error) {
+      console.error("Error refreshing data:", error);
     }
-  };
+  }, [
+    pagination.currentPage,
+    pagination.itemsPerPage,
+    searchTerm,
+    statusFilter,
+    loadRegistros,
+    loadStats,
+  ]);
 
-  const handlePageChange = (newPage: number) => {
-    loadRegistros({
-      page: newPage,
-      limit: pagination.itemsPerPage,
-      codigo: searchTerm || undefined,
-      estado_actual: statusFilter || undefined,
-      sortBy: "codigo",
-      sortOrder: "ASC",
-    });
-  };
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setSearchTerm(value);
 
-  const handleDeleteRegistro = async (registroId: string, codigo: string) => {
-    if (
-      confirm(`¿Estás seguro de que quieres eliminar el registro "${codigo}"?`)
-    ) {
-      await deleteRegistro(registroId);
-    }
-  };
+      // Limpiar timeout anterior
+      if (searchDebounce) {
+        clearTimeout(searchDebounce);
+      }
 
-  const getEstadoConfig = (estado: DataRecord["estado_actual"]) => {
+      // Solo hacer búsqueda automática si no hay filtros activos
+      if (!statusFilter && !installDateFrom && !installDateTo) {
+        const newTimeout = setTimeout(() => {
+          loadRegistros({
+            page: 1,
+            limit: pagination.itemsPerPage,
+            codigo: value || undefined,
+            sortBy: "codigo",
+            sortOrder: "ASC",
+          });
+        }, 500); // Debounce de 500ms
+        setSearchDebounce(newTimeout);
+      }
+    },
+    [
+      searchDebounce,
+      statusFilter,
+      installDateFrom,
+      installDateTo,
+      pagination.itemsPerPage,
+      loadRegistros,
+    ]
+  );
+
+  const handlePageChange = useCallback(
+    (newPage: number) => {
+      loadRegistros({
+        page: newPage,
+        limit: pagination.itemsPerPage,
+        codigo: searchTerm || undefined,
+        estado_actual: statusFilter || undefined,
+        sortBy: "codigo",
+        sortOrder: "ASC",
+      });
+    },
+    [pagination.itemsPerPage, searchTerm, statusFilter, loadRegistros]
+  );
+
+  const handleDeleteRegistro = useCallback(
+    async (registroId: string, codigo: string) => {
+      if (
+        confirm(
+          `¿Estás seguro de que quieres eliminar el registro "${codigo}"?`
+        )
+      ) {
+        await deleteRegistro(registroId);
+      }
+    },
+    [deleteRegistro]
+  );
+
+  const getEstadoConfig = useCallback((estado: DataRecord["estado_actual"]) => {
     const configs = {
       activo: {
         variant: "success" as const,
@@ -190,7 +230,7 @@ export const RegistroList: React.FC = () => {
       },
     };
     return configs[estado];
-  };
+  }, []);
 
   const columns: TableColumn<DataRecord>[] = useMemo(
     () => [
@@ -411,7 +451,7 @@ export const RegistroList: React.FC = () => {
         ),
       },
     ],
-    [navigate, deleting]
+    [navigate, deleting, handleDeleteRegistro, getEstadoConfig]
   );
 
   // Vista en cuadrícula
@@ -508,7 +548,7 @@ export const RegistroList: React.FC = () => {
     </div>
   );
 
-  // Loading state
+  // Loading state inicial
   if (loading && registros.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -528,7 +568,7 @@ export const RegistroList: React.FC = () => {
           <div className="mb-4 text-red-600">⚠️</div>
           <p className="font-medium text-gray-900">Error al cargar registros</p>
           <p className="mb-4 text-gray-600">{apiError}</p>
-          <Button onClick={loadInitialData} icon={RefreshCw}>
+          <Button onClick={refreshData} icon={RefreshCw}>
             Reintentar
           </Button>
         </div>
