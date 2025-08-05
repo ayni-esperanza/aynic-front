@@ -71,10 +71,12 @@ export const Header: React.FC = () => {
   useEffect(() => {
     loadAlerts();
 
-    // Configurar intervalo para actualizar alertas cada 5 minutos
+    // Intervalo más largo y con verificación de mounted
     const interval = setInterval(() => {
-      loadAlerts();
-    }, 5 * 60 * 1000);
+      if (document.visibilityState === "visible") {
+        loadAlerts();
+      }
+    }, 10 * 60 * 1000); // Cambiar a 10 minutos en lugar de 5
 
     return () => clearInterval(interval);
   }, []);

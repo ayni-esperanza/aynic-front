@@ -168,7 +168,6 @@ export const useAuthStore = create<AuthState>()(
             set({ loading: true });
 
             // Hacer una petición simple para verificar si el token es válido
-            // y cargar datos actualizados del usuario
             const userProfile = await userService.getCurrentUserProfile();
 
             // Si la petición es exitosa, el token es válido
@@ -181,17 +180,17 @@ export const useAuthStore = create<AuthState>()(
               error: null,
             });
           } catch (error) {
-            // Si falla, el token es inválido o el backend no está disponible
-            console.warn("Token inválido o backend no disponible:", error);
+            // Si falla, el token es inválido - NO mostrar error de servidor
+            console.warn("Token validacion fallo:", error);
 
-            // Limpiar estado de autenticación
+            // Limpiar estado de autenticación silenciosamente
             apiClient.logout();
             set({
               user: null,
               isAuthenticated: false,
               token: null,
               loading: false,
-              error: "Tu sesión ha expirado o el servidor no está disponible.",
+              error: null, // No mostrar error al usuario
               isInitialized: true,
             });
           }
@@ -205,7 +204,11 @@ export const useAuthStore = create<AuthState>()(
             return;
           }
 
-          await get().checkAuthStatus();
+          try {
+            await get().checkAuthStatus();
+          } catch (error) {
+            console.error("Error in auth initialization:", error);
+          }
         },
       }),
       {

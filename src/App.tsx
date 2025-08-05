@@ -58,13 +58,10 @@ const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({
   const { error: showError } = useToast();
 
   useEffect(() => {
-    // Configurar el manejo de tokens expirados en el API client
+    // Configurar el manejo de tokens expirados sin mostrar error automático
     setupTokenExpiredHandler(() => {
+      console.warn("Token caducado, manejo silencioso");
       handleTokenExpired();
-      showError(
-        "Sesión expirada",
-        "Tu sesión ha expirado. Por favor, inicia sesión nuevamente."
-      );
     });
 
     // Inicializar autenticación

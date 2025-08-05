@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Plus,
@@ -38,7 +38,9 @@ export const RegistroList: React.FC = () => {
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
   const [showFilters, setShowFilters] = useState(false);
 
-  const [searchDebounce, setSearchDebounce] = useState<NodeJS.Timeout>();
+  // Referencias para el debounce y carga inicial
+  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const isInitialLoadRef = useRef(true);
 
   // Estado para datos de registros
   const [registros, setRegistros] = useState<DataRecord[]>([]);
@@ -49,12 +51,17 @@ export const RegistroList: React.FC = () => {
     itemsPerPage: 10,
   });
 
-  // Hook para cargar registros
+  // Hook para cargar registros con función estable
+  const loadRegistrosFunction = useCallback(
+    (params: any) => recordsService.getRecords(params),
+    []
+  );
+
   const {
     loading,
     error: apiError,
     execute: loadRegistros,
-  } = useApi(recordsService.getRecords.bind(recordsService), {
+  } = useApi(loadRegistrosFunction, {
     onSuccess: (data) => {
       setRegistros(data.data);
       setPagination(data.pagination);
@@ -64,16 +71,26 @@ export const RegistroList: React.FC = () => {
     },
   });
 
-  // Hook para estadísticas
+  // Hook para estadísticas con función estable
+  const loadStatsFunction = useCallback(
+    () => recordsService.getStatistics(),
+    []
+  );
+
   const {
     data: estadisticas,
     loading: loadingStats,
     execute: loadStats,
-  } = useApi(recordsService.getStatistics.bind(recordsService));
+  } = useApi(loadStatsFunction);
 
-  // Hook para eliminar registro
+  // Hook para eliminar registro con función estable
+  const deleteRegistroFunction = useCallback(
+    (id: string) => recordsService.deleteRecord(id),
+    []
+  );
+
   const { loading: deleting, execute: deleteRegistro } = useApi(
-    recordsService.deleteRecord.bind(recordsService),
+    deleteRegistroFunction,
     {
       onSuccess: () => {
         success("Registro eliminado exitosamente");
@@ -85,36 +102,39 @@ export const RegistroList: React.FC = () => {
     }
   );
 
-  // Cargar datos inicial automáticamente al montar el componente
+  // Cargar datos inicial solo una vez
   useEffect(() => {
-    const loadInitialData = async () => {
-      try {
-        await Promise.all([
-          loadRegistros({
-            page: 1,
-            limit: 10,
-            sortBy: "codigo",
-            sortOrder: "ASC",
-          }),
-          loadStats(),
-        ]);
-      } catch (error) {
-        console.error("Error loading initial data:", error);
-      }
-    };
+    if (isInitialLoadRef.current) {
+      isInitialLoadRef.current = false;
+      const loadInitialData = async () => {
+        try {
+          await Promise.all([
+            loadRegistros({
+              page: 1,
+              limit: 10,
+              sortBy: "codigo",
+              sortOrder: "ASC",
+            }),
+            loadStats(),
+          ]);
+        } catch (error) {
+          console.error("Error loading initial data:", error);
+        }
+      };
+      loadInitialData();
+    }
+  }, []); // Sin dependencias para ejecutar solo una vez
 
-    loadInitialData();
-  }, []); // Array de dependencias vacío = solo se ejecuta al montar
-
-  // Cleanup del debounce cuando se desmonta el componente
+  // Limpiar timeout al desmontar
   useEffect(() => {
     return () => {
-      if (searchDebounce) {
-        clearTimeout(searchDebounce);
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [searchDebounce]);
+  }, []);
 
+  // refreshData con dependencias estables
   const refreshData = useCallback(async () => {
     try {
       await Promise.all([
@@ -146,13 +166,13 @@ export const RegistroList: React.FC = () => {
       setSearchTerm(value);
 
       // Limpiar timeout anterior
-      if (searchDebounce) {
-        clearTimeout(searchDebounce);
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
       }
 
       // Solo hacer búsqueda automática si no hay filtros activos
       if (!statusFilter && !installDateFrom && !installDateTo) {
-        const newTimeout = setTimeout(() => {
+        searchTimeoutRef.current = setTimeout(() => {
           loadRegistros({
             page: 1,
             limit: pagination.itemsPerPage,
@@ -161,11 +181,9 @@ export const RegistroList: React.FC = () => {
             sortOrder: "ASC",
           });
         }, 500); // Debounce de 500ms
-        setSearchDebounce(newTimeout);
       }
     },
     [
-      searchDebounce,
       statusFilter,
       installDateFrom,
       installDateTo,

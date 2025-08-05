@@ -40,6 +40,7 @@ export const useApi = <T = unknown>(
   const mountedRef = useRef(true);
   const retryTimeoutRef = useRef<NodeJS.Timeout>();
   const lastArgsRef = useRef<unknown[]>();
+  const executedRef = useRef(false); // Para evitar ejecuciones múltiples
 
   useEffect(() => {
     mountedRef.current = true;
@@ -127,17 +128,16 @@ export const useApi = <T = unknown>(
     if (lastArgsRef.current) {
       return execute(...lastArgsRef.current);
     }
-    // If no previous args, execute with empty args (this handles immediate: true case)
     return execute();
   }, [execute]);
 
+  // Solo ejecutar immediate una vez
   useEffect(() => {
-    if (immediate) {
-      // TEMPORARILY DISABLED - causing infinite loops
-      // execute();
-      console.warn("useApi immediate disabled to prevent infinite loops");
+    if (immediate && !executedRef.current) {
+      executedRef.current = true;
+      execute();
     }
-  }, [immediate, execute]);
+  }, []); // Dependencias vacías para ejecutar solo una vez
 
   return {
     ...state,
@@ -187,13 +187,18 @@ export const usePaginatedApi = <
     totalPages: 0,
   });
 
-  // Create a wrapper function that matches the ApiFunction signature
+  // Crear función estable que no cambie en cada render
+  const stableApiFunction = useCallback(
+    (filtersArg: F) => apiFunction(filtersArg),
+    [apiFunction]
+  );
+
   const wrappedApiFunction = useCallback(
     (...args: unknown[]) => {
       const filtersArg = args[0] as F;
-      return apiFunction(filtersArg);
+      return stableApiFunction(filtersArg);
     },
-    [apiFunction]
+    [stableApiFunction]
   );
 
   const {
@@ -206,7 +211,8 @@ export const usePaginatedApi = <
   } = useApi(wrappedApiFunction, {
     ...options,
     onSuccess: (result) => {
-      if ("page" in filters && (filters as F & { page?: number }).page === 1) {
+      const currentFilters = filters as F & { page?: number };
+      if (currentFilters.page === 1) {
         setAllData(result.data);
       } else {
         setAllData((prev) => [...prev, ...result.data]);
@@ -266,13 +272,18 @@ export const useMutation = <T = unknown, P = unknown>(
   mutationFunction: (params: P) => Promise<T>,
   options: UseApiOptions<T> = {}
 ) => {
-  // Create a wrapper function that matches the ApiFunction signature
+  // Crear función estable
+  const stableMutationFunction = useCallback(
+    (params: P) => mutationFunction(params),
+    [mutationFunction]
+  );
+
   const wrappedMutationFunction = useCallback(
     (...args: unknown[]) => {
       const params = args[0] as P;
-      return mutationFunction(params);
+      return stableMutationFunction(params);
     },
-    [mutationFunction]
+    [stableMutationFunction]
   );
 
   const { data, loading, error, success, execute, reset } = useApi(
@@ -308,6 +319,12 @@ export const useOptimisticMutation = <T = unknown, P = unknown>(
 ) => {
   const [optimisticData, setOptimisticData] = useState<T | null>(null);
 
+  // Crear función estable para optimistic update
+  const stableOptimisticUpdate = useCallback(
+    (params: P) => optimisticUpdate(params),
+    [optimisticUpdate]
+  );
+
   const {
     data,
     loading,
@@ -329,11 +346,11 @@ export const useOptimisticMutation = <T = unknown, P = unknown>(
 
   const mutate = useCallback(
     (params: P) => {
-      const optimisticResult = optimisticUpdate(params);
+      const optimisticResult = stableOptimisticUpdate(params);
       setOptimisticData(optimisticResult);
       return originalMutate(params);
     },
-    [originalMutate, optimisticUpdate]
+    [originalMutate, stableOptimisticUpdate]
   );
 
   const reset = useCallback(() => {

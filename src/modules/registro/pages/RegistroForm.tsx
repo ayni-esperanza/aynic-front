@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -22,106 +22,7 @@ import { useApi } from "../../../hooks/useApi";
 import { recordsService } from "../../../services/recordsService";
 import type { DataRecord } from "../../../types";
 
-export const RegistroForm: React.FC = () => {
-  const navigate = useNavigate();
-  const { id } = useParams();
-  const { success, error: showError } = useToast();
-
-  const isEditing = Boolean(id);
-  const [currentStep, setCurrentStep] = useState(1);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [showNewClientForm, setShowNewClientForm] = useState(false);
-  const [newClientName, setNewClientName] = useState("");
-  const [clientesList, setClientesList] = useState([
-    "Danper",
-    "Chimu",
-    "Cartavio",
-    "Cartavio Rum Company",
-    "Casa Grande",
-    "Siderperu",
-    "UPAO",
-    "Universidad Nacional de Trujillo (UNT)",
-    "AgroAurora",
-    "Nexa Resources",
-    "Jardines de la Paz",
-    "Camposol",
-    "Glucom",
-    "AgrOlmos",
-    "TRUPAL",
-  ]);
-
-  const [formData, setFormData] = useState({
-    codigo: "",
-    cliente: "",
-    equipo: "",
-    fv_anios: 0,
-    fv_meses: 0,
-    fecha_instalacion: "",
-    longitud: "" as string | number,
-    observaciones: "",
-    seec: "",
-    tipo_linea: "",
-    ubicacion: "",
-    fecha_caducidad: "",
-    estado_actual: "activo" as DataRecord["estado_actual"],
-  });
-
-  // Lógica automática de fecha de caducidad
-  useEffect(() => {
-    const { fecha_instalacion, fv_anios, fv_meses } = formData;
-    // Solo si hay fecha y al menos 1 año o 1 mes de vida útil
-    if (fecha_instalacion && (Number(fv_anios) > 0 || Number(fv_meses) > 0)) {
-      const inst = new Date(fecha_instalacion);
-      if (!isNaN(inst.getTime())) {
-        const venc = new Date(inst);
-        venc.setFullYear(venc.getFullYear() + Number(fv_anios));
-        venc.setMonth(venc.getMonth() + Number(fv_meses));
-        // Maneja días de fin de mes (por si se desfasa)
-        if (inst.getDate() !== venc.getDate()) {
-          venc.setDate(0);
-        }
-        const fechaVenc = venc.toISOString().split("T")[0];
-        // Solo actualiza si no es igual (para evitar loops innecesarios)
-        if (formData.fecha_caducidad !== fechaVenc) {
-          setFormData((f) => ({
-            ...f,
-            fecha_caducidad: fechaVenc,
-          }));
-        }
-      }
-    }
-    // eslint-disable-next-line
-  }, [formData.fecha_instalacion, formData.fv_anios, formData.fv_meses]);
-
-  // Opciones para el tipo de línea con estructura jerárquica
-  const tipoLineaOptions = [
-    {
-      value: "permanente_horizontal",
-      label: "🔗 Línea de Vida Permanente - Horizontal",
-      category: "permanente",
-      orientation: "horizontal",
-    },
-    {
-      value: "permanente_vertical",
-      label: "⬆️ Línea de Vida Permanente - Vertical",
-      category: "permanente",
-      orientation: "vertical",
-    },
-    {
-      value: "temporal_horizontal",
-      label: "🔗 Línea de Vida Temporal - Horizontal",
-      category: "temporal",
-      orientation: "horizontal",
-    },
-    {
-      value: "temporal_vertical",
-      label: "⬆️ Línea de Vida Temporal - Vertical",
-      category: "temporal",
-      orientation: "vertical",
-    },
-  ];
-
-  // Componente HierarchicalSelect para tipos de línea
+// Componente HierarchicalSelect para tipos de línea
   const HierarchicalLineTypeSelect: React.FC<{
     value: string;
     onChange: (value: string) => void;
@@ -151,45 +52,50 @@ export const RegistroForm: React.FC = () => {
       }
     };
 
-    // Efecto para sincronizar con el valor externo
+    // Efecto para sincronizar con el valor externo sin loops
     React.useEffect(() => {
       if (value && typeof value === "string" && value.includes("_")) {
         const parts = value.split("_");
         if (parts.length === 2) {
-          setSelectedCategory(parts[0]);
-          setSelectedOrientation(parts[1]);
+          const [category, orientation] = parts;
+          setSelectedCategory((prev) => (prev !== category ? category : prev));
+          setSelectedOrientation((prev) =>
+            prev !== orientation ? orientation : prev
+          );
         }
-      } else {
-        // Si el valor no tiene el formato esperado, limpiar
-        if (!value) {
-          setSelectedCategory("");
-          setSelectedOrientation("");
-        }
+      } else if (!value) {
+        setSelectedCategory((prev) => (prev !== "" ? "" : prev));
+        setSelectedOrientation((prev) => (prev !== "" ? "" : prev));
       }
     }, [value]);
 
-    // Manejar cambio de categoría
-    const handleCategoryClick = (categoryValue: string) => {
-      setSelectedCategory(categoryValue);
-      setSelectedOrientation(""); // Reset orientation
+    // Manejar cambio de categoría sin re-renders
+    const handleCategoryClick = React.useCallback(
+      (categoryValue: string) => {
+        setSelectedCategory(categoryValue);
+        setSelectedOrientation(""); // Reset orientation
 
-      // Si es temporal, auto-seleccionar horizontal ya que es la única opción
-      if (categoryValue === "temporal") {
-        setSelectedOrientation("horizontal");
-        const finalValue = `${categoryValue}_horizontal`;
-        onChange(finalValue);
-      }
-      // Para permanente, esperar a que el usuario seleccione
-    };
+        // Si es temporal, auto-seleccionar horizontal ya que es la única opción
+        if (categoryValue === "temporal") {
+          setSelectedOrientation("horizontal");
+          const finalValue = `${categoryValue}_horizontal`;
+          onChange(finalValue);
+        }
+      },
+      [onChange]
+    );
 
-    // Manejar cambio de orientación
-    const handleOrientationClick = (orientationValue: string) => {
-      setSelectedOrientation(orientationValue);
-      if (selectedCategory) {
-        const finalValue = `${selectedCategory}_${orientationValue}`;
-        onChange(finalValue);
-      }
-    };
+    // Manejar cambio de orientación sin re-renders
+    const handleOrientationClick = React.useCallback(
+      (orientationValue: string) => {
+        setSelectedOrientation(orientationValue);
+        if (selectedCategory) {
+          const finalValue = `${selectedCategory}_${orientationValue}`;
+          onChange(finalValue);
+        }
+      },
+      [selectedCategory, onChange]
+    );
 
     const availableOrientations = getOrientations(selectedCategory);
 
@@ -349,11 +255,124 @@ export const RegistroForm: React.FC = () => {
     );
   };
 
+export const RegistroForm: React.FC = () => {
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const { success, error: showError } = useToast();
+
+  const isEditing = Boolean(id);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showNewClientForm, setShowNewClientForm] = useState(false);
+  const [newClientName, setNewClientName] = useState("");
+  const [clientesList, setClientesList] = useState([
+    "Danper",
+    "Chimu",
+    "Cartavio",
+    "Cartavio Rum Company",
+    "Casa Grande",
+    "Siderperu",
+    "UPAO",
+    "Universidad Nacional de Trujillo (UNT)",
+    "AgroAurora",
+    "Nexa Resources",
+    "Jardines de la Paz",
+    "Camposol",
+    "Glucom",
+    "AgrOlmos",
+    "TRUPAL",
+  ]);
+
+  const [formData, setFormData] = useState({
+    codigo: "",
+    cliente: "",
+    equipo: "",
+    fv_anios: 0,
+    fv_meses: 0,
+    fecha_instalacion: "",
+    longitud: "" as string | number,
+    observaciones: "",
+    seec: "",
+    tipo_linea: "",
+    ubicacion: "",
+    fecha_caducidad: "",
+    estado_actual: "activo" as DataRecord["estado_actual"],
+  });
+
+  // Lógica automática de fecha de caducidad
+  useEffect(() => {
+    const { fecha_instalacion, fv_anios, fv_meses, fecha_caducidad } = formData;
+
+    // Solo si hay fecha y al menos 1 año o 1 mes de vida útil
+    if (fecha_instalacion && (Number(fv_anios) > 0 || Number(fv_meses) > 0)) {
+      const inst = new Date(fecha_instalacion);
+      if (!isNaN(inst.getTime())) {
+        const venc = new Date(inst);
+        venc.setFullYear(venc.getFullYear() + Number(fv_anios));
+        venc.setMonth(venc.getMonth() + Number(fv_meses));
+
+        // Maneja días de fin de mes (por si se desfasa)
+        if (inst.getDate() !== venc.getDate()) {
+          venc.setDate(0);
+        }
+
+        const fechaVenc = venc.toISOString().split("T")[0];
+
+        // Solo actualiza si no es igual
+        if (fecha_caducidad !== fechaVenc) {
+          setFormData((f) => ({
+            ...f,
+            fecha_caducidad: fechaVenc,
+          }));
+        }
+      }
+    }
+  }, [
+    formData.fecha_instalacion,
+    formData.fv_anios,
+    formData.fv_meses,
+    formData.fecha_caducidad,
+  ]);
+
+  // Opciones para el tipo de línea con estructura jerárquica
+  const tipoLineaOptions = [
+    {
+      value: "permanente_horizontal",
+      label: "🔗 Línea de Vida Permanente - Horizontal",
+      category: "permanente",
+      orientation: "horizontal",
+    },
+    {
+      value: "permanente_vertical",
+      label: "⬆️ Línea de Vida Permanente - Vertical",
+      category: "permanente",
+      orientation: "vertical",
+    },
+    {
+      value: "temporal_horizontal",
+      label: "🔗 Línea de Vida Temporal - Horizontal",
+      category: "temporal",
+      orientation: "horizontal",
+    },
+    {
+      value: "temporal_vertical",
+      label: "⬆️ Línea de Vida Temporal - Vertical",
+      category: "temporal",
+      orientation: "vertical",
+    },
+  ];
+
+  // Hook para cargar registro con función estable
+  const loadRegistroFunction = useCallback(
+    (id: string) => recordsService.getRecordById(id),
+    []
+  );
+
   const {
     data: registro,
     loading: loadingRegistro,
     execute: loadRegistro,
-  } = useApi(recordsService.getRecordById.bind(recordsService), {
+  } = useApi(loadRegistroFunction, {
     onSuccess: (data) => {
       const formatDateForInput = (d: Date | string | null) => {
         if (!d) return "";
@@ -383,19 +402,31 @@ export const RegistroForm: React.FC = () => {
     },
   });
 
+  // Hook para crear registro con función estable
+  const createRecordFunction = useCallback(
+    (data: any) => recordsService.createRecord(data),
+    []
+  );
+
   const { execute: createRecord, loading: creating } = useApi(
-    recordsService.createRecord.bind(recordsService),
+    createRecordFunction,
     {
       onSuccess: () => {
-        success(isEditing ? "Registro actualizado" : "Registro creado");
+        success("Registro creado");
         navigate("/registro");
       },
       onError: (err) => showError("Error al guardar", err),
     }
   );
 
+  // Hook para actualizar registro con función estable
+  const updateRecordFunction = useCallback(
+    (id: string, data: any) => recordsService.updateRecord(id, data),
+    []
+  );
+
   const { execute: updateRecord, loading: updating } = useApi(
-    recordsService.updateRecord.bind(recordsService),
+    updateRecordFunction,
     {
       onSuccess: () => {
         success("Registro actualizado");
@@ -408,9 +439,12 @@ export const RegistroForm: React.FC = () => {
   /* -------------------------------------------------
      Efectos
   ------------------------------------------------- */
+  // Cargar registro solo una vez cuando se está editando
   useEffect(() => {
-    if (isEditing && id) loadRegistro(id);
-  }, [isEditing, id]);
+    if (isEditing && id) {
+      loadRegistro(id);
+    }
+  }, [isEditing, id, loadRegistro]);
 
   /* -------------------------------------------------
      Validaciones por paso
@@ -438,8 +472,7 @@ export const RegistroForm: React.FC = () => {
 
       const inst = new Date(formData.fecha_instalacion);
       const venc = new Date(formData.fecha_caducidad);
-      if (inst >= venc)
-        e.fecha_caducidad = "Debe ser posterior a instalación";
+      if (inst >= venc) e.fecha_caducidad = "Debe ser posterior a instalación";
     }
 
     setErrors(e);
@@ -449,12 +482,15 @@ export const RegistroForm: React.FC = () => {
   /* -------------------------------------------------
      Handlers
   ------------------------------------------------- */
-  const handleNext = () =>
-    validateStep(currentStep) && setCurrentStep((c) => c + 1);
-  const handlePrev = () => {
+  const handleNext = useCallback(
+    () => validateStep(currentStep) && setCurrentStep((c) => c + 1),
+    [currentStep]
+  );
+
+  const handlePrev = useCallback(() => {
     setCurrentStep((c) => c - 1);
     setErrors({});
-  };
+  }, []);
 
   const handleSubmit = async (ev: React.FormEvent) => {
     ev.preventDefault();
@@ -480,24 +516,29 @@ export const RegistroForm: React.FC = () => {
     else await createRecord(payload);
   };
 
-  const handleChange = (field: string, value: any) => {
-    if (field === "longitud") {
-      // Solo permitir números, punto decimal y cadena vacía
-      const numericValue = value.replace(/[^0-9.]/g, "");
+  const handleChange = useCallback(
+    (field: string, value: any) => {
+      if (field === "longitud") {
+        // Solo permitir números, punto decimal y cadena vacía
+        const numericValue = value.replace(/[^0-9.]/g, "");
 
-      // Prevenir múltiples puntos decimales
-      const parts = numericValue.split(".");
-      const sanitizedValue =
-        parts.length > 2
-          ? parts[0] + "." + parts.slice(1).join("")
-          : numericValue;
+        // Prevenir múltiples puntos decimales
+        const parts = numericValue.split(".");
+        const sanitizedValue =
+          parts.length > 2
+            ? parts[0] + "." + parts.slice(1).join("")
+            : numericValue;
 
-      setFormData((p) => ({ ...p, [field]: sanitizedValue }));
-    } else {
-      setFormData((p) => ({ ...p, [field]: value }));
-    }
-    if (errors[field]) setErrors((p) => ({ ...p, [field]: "" }));
-  };
+        setFormData((p) => ({ ...p, [field]: sanitizedValue }));
+      } else {
+        setFormData((p) => ({ ...p, [field]: value }));
+      }
+      if (errors[field]) {
+        setErrors((p) => ({ ...p, [field]: "" }));
+      }
+    },
+    [errors]
+  );
 
   // Manejar agregar nuevo cliente
   const handleAddNewClient = () => {

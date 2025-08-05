@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useRef ,useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   AlertTriangle,
@@ -393,9 +393,15 @@ export const Dashboard: React.FC = () => {
     }
   );
 
-  // Cargar datos inicial
+  // Referencias para controlar carga inicial
+  const isInitialLoadRef = useRef(true);
+
+  // CORREGIDO: Cargar datos inicial solo una vez
   useEffect(() => {
-    loadAlertStats();
+    if (isInitialLoadRef.current) {
+      isInitialLoadRef.current = false;
+      loadAlertStats();
+    }
   }, []);
 
   // Funciones
