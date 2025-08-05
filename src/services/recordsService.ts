@@ -34,7 +34,7 @@ export interface CreateRecordData {
   seec?: string;
   tipo_linea?: string;
   ubicacion?: string;
-  fecha_vencimiento?: string; // ISO string
+  fecha_caducidad?: string; // ISO string
   estado_actual?: string;
 }
 
@@ -51,7 +51,7 @@ export interface BackendRecord {
   seec?: string;
   tipo_linea?: string;
   ubicacion?: string;
-  fecha_vencimiento?: string;
+  fecha_caducidad?: string;
   estado_actual?: string;
 }
 
@@ -158,8 +158,8 @@ class RecordsService {
       seec: backendRecord.seec || "",
       tipo_linea: backendRecord.tipo_linea || "",
       ubicacion: backendRecord.ubicacion || "",
-      fecha_vencimiento: backendRecord.fecha_vencimiento
-        ? new Date(backendRecord.fecha_vencimiento)
+      fecha_caducidad: backendRecord.fecha_caducidad
+        ? new Date(backendRecord.fecha_caducidad)
         : new Date(),
       estado_actual: this.mapBackendStatusToFrontend(
         backendRecord.estado_actual || "ACTIVO"
@@ -187,8 +187,8 @@ class RecordsService {
       seec: frontendData.seec || undefined,
       tipo_linea: frontendData.tipo_linea || undefined,
       ubicacion: frontendData.ubicacion || undefined,
-      fecha_vencimiento: frontendData.fecha_vencimiento
-        ? new Date(frontendData.fecha_vencimiento).toISOString().split("T")[0]
+      fecha_caducidad: frontendData.fecha_caducidad
+        ? new Date(frontendData.fecha_caducidad).toISOString().split("T")[0]
         : undefined,
       estado_actual: this.mapFrontendStatusToBackend(
         frontendData.estado_actual
@@ -335,8 +335,8 @@ class RecordsService {
         backendData.tipo_linea = recordData.tipo_linea;
       if (recordData.ubicacion !== undefined)
         backendData.ubicacion = recordData.ubicacion;
-      if (recordData.fecha_vencimiento !== undefined) {
-        backendData.fecha_vencimiento = new Date(recordData.fecha_vencimiento)
+      if (recordData.fecha_caducidad !== undefined) {
+        backendData.fecha_caducidad = new Date(recordData.fecha_caducidad)
           .toISOString()
           .split("T")[0];
       }

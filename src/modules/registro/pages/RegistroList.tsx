@@ -278,26 +278,6 @@ export const RegistroList: React.FC = () => {
         ),
       },
       {
-        key: "fv_anios",
-        label: "FV Años",
-        width: "100",
-        render: (value: any) => (
-          <span className="inline-flex items-center px-2 py-1 font-mono text-sm text-purple-800 bg-purple-100 rounded-md">
-            {value}
-          </span>
-        ),
-      },
-      {
-        key: "fv_meses",
-        label: "FV Meses",
-        width: "100",
-        render: (value: any) => (
-          <span className="inline-flex items-center px-2 py-1 font-mono text-sm text-purple-800 bg-purple-100 rounded-md">
-            {value}
-          </span>
-        ),
-      },
-      {
         key: "fecha_instalacion",
         label: "F. Instalación",
         render: (value: any) => (
@@ -378,8 +358,8 @@ export const RegistroList: React.FC = () => {
         ),
       },
       {
-        key: "fecha_vencimiento",
-        label: "F. Vencimiento",
+        key: "fecha_caducidad",
+        label: "F. Caducidad",
         render: (value: any) => {
           const fecha = value as Date;
           const isVencido = fecha < new Date();

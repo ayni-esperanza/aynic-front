@@ -346,22 +346,6 @@ export const RegistroDetail: React.FC = () => {
                   </p>
                 </div>
               </Card>
-
-              <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100">
-                <div className="p-6 text-center">
-                  <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-purple-200 rounded-full">
-                    <Clock className="w-8 h-8 text-purple-600" />
-                  </div>
-                  <h4 className="mb-2 font-semibold text-purple-900">
-                    Vida Útil
-                  </h4>
-                  <p className="font-medium text-purple-700">
-                    {registro.fv_anios} años
-                    <br />
-                    {registro.fv_meses} meses
-                  </p>
-                </div>
-              </Card>
             </div>
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -483,22 +467,22 @@ export const RegistroDetail: React.FC = () => {
                     </div>
                     <div>
                       <h4 className="text-lg font-semibold text-red-900">
-                        Fecha de Vencimiento
+                        Fecha de Caducidad
                       </h4>
                       <p className="text-red-600">Límite de operación</p>
                     </div>
                   </div>
                   <div className="py-4 text-center">
                     <p className="mb-2 text-3xl font-bold text-red-900">
-                      {safeFormatDate(registro.fecha_vencimiento)}
+                      {safeFormatDate(registro.fecha_caducidad)}
                     </p>
                     <p className="text-red-600">
                       {(() => {
                         try {
                           const vencDate =
-                            typeof registro.fecha_vencimiento === "string"
-                              ? new Date(registro.fecha_vencimiento)
-                              : registro.fecha_vencimiento;
+                            typeof registro.fecha_caducidad === "string"
+                              ? new Date(registro.fecha_caducidad)
+                              : registro.fecha_caducidad;
 
                           if (vencDate && !isNaN(vencDate.getTime())) {
                             const today = new Date();
@@ -533,38 +517,6 @@ export const RegistroDetail: React.FC = () => {
                 </h4>
 
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                  <Card>
-                    <div className="p-6">
-                      <h4 className="mb-4 text-lg font-semibold text-gray-900">
-                        Vida Útil Programada
-                      </h4>
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-gray-600">Años:</span>
-                          <span className="text-2xl font-semibold text-blue-600">
-                            {registro.fv_anios}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-gray-600">
-                            Meses adicionales:
-                          </span>
-                          <span className="text-2xl font-semibold text-blue-600">
-                            {registro.fv_meses}
-                          </span>
-                        </div>
-                        <div className="pt-2 border-t border-gray-200">
-                          <div className="flex items-center justify-between">
-                            <span className="text-gray-600">Total:</span>
-                            <span className="text-xl font-bold text-gray-900">
-                              {registro.fv_anios * 12 + registro.fv_meses} meses
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-
                   <Card>
                     <div className="p-6">
                       <h4 className="mb-4 text-lg font-semibold text-gray-900">

@@ -62,9 +62,36 @@ export const RegistroForm: React.FC = () => {
     seec: "",
     tipo_linea: "",
     ubicacion: "",
-    fecha_vencimiento: "",
+    fecha_caducidad: "",
     estado_actual: "activo" as DataRecord["estado_actual"],
   });
+
+  // Lógica automática de fecha de caducidad
+  useEffect(() => {
+    const { fecha_instalacion, fv_anios, fv_meses } = formData;
+    // Solo si hay fecha y al menos 1 año o 1 mes de vida útil
+    if (fecha_instalacion && (Number(fv_anios) > 0 || Number(fv_meses) > 0)) {
+      const inst = new Date(fecha_instalacion);
+      if (!isNaN(inst.getTime())) {
+        const venc = new Date(inst);
+        venc.setFullYear(venc.getFullYear() + Number(fv_anios));
+        venc.setMonth(venc.getMonth() + Number(fv_meses));
+        // Maneja días de fin de mes (por si se desfasa)
+        if (inst.getDate() !== venc.getDate()) {
+          venc.setDate(0);
+        }
+        const fechaVenc = venc.toISOString().split("T")[0];
+        // Solo actualiza si no es igual (para evitar loops innecesarios)
+        if (formData.fecha_caducidad !== fechaVenc) {
+          setFormData((f) => ({
+            ...f,
+            fecha_caducidad: fechaVenc,
+          }));
+        }
+      }
+    }
+    // eslint-disable-next-line
+  }, [formData.fecha_instalacion, formData.fv_anios, formData.fv_meses]);
 
   // Opciones para el tipo de línea con estructura jerárquica
   const tipoLineaOptions = [
@@ -346,7 +373,7 @@ export const RegistroForm: React.FC = () => {
         seec: data.seec,
         tipo_linea: data.tipo_linea,
         ubicacion: data.ubicacion,
-        fecha_vencimiento: formatDateForInput(data.fecha_vencimiento),
+        fecha_caducidad: formatDateForInput(data.fecha_caducidad),
         estado_actual: data.estado_actual,
       });
     },
@@ -405,14 +432,14 @@ export const RegistroForm: React.FC = () => {
     }
     if (step === 3) {
       if (!formData.fecha_instalacion) e.fecha_instalacion = "Requerido";
-      if (!formData.fecha_vencimiento) e.fecha_vencimiento = "Requerido";
+      if (!formData.fecha_caducidad) e.fecha_caducidad = "Requerido";
       if (formData.fv_anios < 0) e.fv_anios = "No negativo";
       if (formData.fv_meses < 0 || formData.fv_meses > 11) e.fv_meses = "0-11";
 
       const inst = new Date(formData.fecha_instalacion);
-      const venc = new Date(formData.fecha_vencimiento);
+      const venc = new Date(formData.fecha_caducidad);
       if (inst >= venc)
-        e.fecha_vencimiento = "Debe ser posterior a instalación";
+        e.fecha_caducidad = "Debe ser posterior a instalación";
     }
 
     setErrors(e);
@@ -440,7 +467,7 @@ export const RegistroForm: React.FC = () => {
       fv_anios: formData.fv_anios,
       fv_meses: formData.fv_meses,
       fecha_instalacion: formData.fecha_instalacion, // string YYYY-MM-DD
-      fecha_vencimiento: formData.fecha_vencimiento, // string YYYY-MM-DD
+      fecha_caducidad: formData.fecha_caducidad, // string YYYY-MM-DD
       longitud: Number(formData.longitud),
       observaciones: formData.observaciones || undefined,
       seec: formData.seec,
@@ -792,13 +819,11 @@ export const RegistroForm: React.FC = () => {
                     required
                   />
                   <Input
-                    label="Fecha de Vencimiento"
+                    label="Fecha de Caducidad"
                     type="date"
-                    value={formData.fecha_vencimiento}
-                    onChange={(e) =>
-                      handleChange("fecha_vencimiento", e.target.value)
-                    }
-                    error={errors.fecha_vencimiento}
+                    value={formData.fecha_caducidad}
+                    readOnly
+                    error={errors.fecha_caducidad}
                     required
                   />
                 </div>

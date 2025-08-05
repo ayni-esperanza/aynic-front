@@ -7,29 +7,28 @@ import {
   XCircle,
   Bell,
   BellRing,
-  TrendingUp,
   Activity,
-  Database,
-  Users,
   Eye,
   RefreshCw,
   Filter,
-  Calendar,
   BarChart3,
   PieChart,
-  Settings,
-  Zap,
   AlertCircle,
   Check,
   X,
   ExternalLink,
   ChevronRight,
-  Wrench,
+  Zap,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Calendar,
+  Users,
+  Database,
 } from "lucide-react";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
-import { Input } from "../components/ui/Input";
 import { Select } from "../components/ui/Select";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 import { useToast } from "../components/ui/Toast";
@@ -39,29 +38,28 @@ import {
   type Alert,
   type AlertStats,
 } from "../services/alertService";
-import { recordsService } from "../services/recordsService";
-import { formatDateTime, formatDate } from "../utils/formatters";
+import { formatDateTime } from "../utils/formatters";
 
-interface DashboardStats {
-  totalRegistros: number;
-  registrosActivos: number;
-  registrosPorVencer: number;
-  registrosVencidos: number;
-  alertasTotal: number;
-  alertasNoLeidas: number;
-  alertasCriticas: number;
-}
-
-// Componente para métricas principales
-const MetricCard: React.FC<{
+// Componente para métricas de alertas
+const AlertMetricCard: React.FC<{
   title: string;
   value: string | number;
   icon: React.ElementType;
-  color: "blue" | "green" | "yellow" | "red" | "purple" | "indigo";
+  color: "blue" | "green" | "yellow" | "red" | "purple" | "indigo" | "orange";
   trend?: { value: string; positive: boolean };
   onClick?: () => void;
   loading?: boolean;
-}> = ({ title, value, icon: Icon, color, trend, onClick, loading = false }) => {
+  description?: string;
+}> = ({
+  title,
+  value,
+  icon: Icon,
+  color,
+  trend,
+  onClick,
+  loading = false,
+  description,
+}) => {
   const colorClasses = {
     blue: {
       bg: "bg-gradient-to-br from-blue-50 to-blue-100",
@@ -111,6 +109,14 @@ const MetricCard: React.FC<{
       text: "text-indigo-900",
       trend: "text-indigo-600",
     },
+    orange: {
+      bg: "bg-gradient-to-br from-orange-50 to-amber-100",
+      border: "border-orange-200",
+      icon: "text-orange-600",
+      iconBg: "bg-orange-100",
+      text: "text-orange-900",
+      trend: "text-orange-600",
+    },
   };
 
   const colors = colorClasses[color];
@@ -136,17 +142,25 @@ const MetricCard: React.FC<{
               </p>
             )}
           </div>
+          {description && (
+            <p className="mt-1 text-xs text-gray-600">{description}</p>
+          )}
           {trend && (
-            <div className="flex items-center mt-1">
+            <div className="flex items-center mt-2">
               <span
-                className={`text-sm font-medium ${
+                className={`text-sm font-medium flex items-center ${
                   trend.positive ? "text-green-600" : "text-red-600"
                 }`}
               >
-                {trend.positive ? "↗" : "↘"} {trend.value}
+                {trend.positive ? (
+                  <TrendingUp size={14} className="mr-1" />
+                ) : (
+                  <TrendingDown size={14} className="mr-1" />
+                )}
+                {trend.value}
               </span>
               <span className="ml-1 text-xs text-gray-500">
-                vs mes anterior
+                vs periodo anterior
               </span>
             </div>
           )}
@@ -213,20 +227,19 @@ const AlertItem: React.FC<{
 
   const priorityConfig = getPriorityConfig(alert.prioridad);
   const TypeIcon = getTypeIcon(alert.tipo);
-  const PriorityIcon = priorityConfig.icon;
 
   return (
     <div
       className={`border-l-4 ${priorityConfig.borderColor} ${
         priorityConfig.bgColor
       } rounded-lg p-4 transition-all duration-200 hover:shadow-sm ${
-        !alert.leida ? "ring-2 ring-opacity-20 ring-" + alert.prioridad : ""
+        !alert.leida ? "ring-2 ring-opacity-20 ring-blue-500" : ""
       }`}
     >
       <div className="flex items-start justify-between">
         <div className="flex items-start flex-1 space-x-3">
           <div
-            className={`w-8 h-8 ${priorityConfig.bgColor} rounded-lg flex items-center justify-center`}
+            className={`w-8 h-8 ${priorityConfig.bgColor} rounded-lg flex items-center justify-center border ${priorityConfig.borderColor}`}
           >
             <TypeIcon className={`w-4 h-4 ${priorityConfig.color}`} />
           </div>
@@ -244,15 +257,28 @@ const AlertItem: React.FC<{
               )}
             </div>
 
-            <p className={`text-sm font-medium ${priorityConfig.color} mb-1`}>
+            <p className={`text-sm font-medium ${priorityConfig.color} mb-2`}>
               {alert.mensaje}
             </p>
 
             {alert.record && (
-              <div className="flex items-center mb-2 space-x-4 text-xs text-gray-500">
-                <span>📋 {alert.record.codigo}</span>
-                <span>👤 {alert.record.cliente}</span>
-                <span>⚙️ {alert.record.equipo}</span>
+              <div className="p-2 mb-2 bg-white border border-gray-100 rounded-lg">
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="flex items-center space-x-1">
+                    <Database size={12} className="text-gray-400" />
+                    <span className="text-gray-600">Código:</span>
+                    <span className="font-medium text-gray-900">
+                      {alert.record.codigo}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Users size={12} className="text-gray-400" />
+                    <span className="text-gray-600">Cliente:</span>
+                    <span className="font-medium text-gray-900">
+                      {alert.record.cliente}
+                    </span>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -270,7 +296,7 @@ const AlertItem: React.FC<{
                       e.stopPropagation();
                       onMarkAsRead(alert.id);
                     }}
-                    className="text-xs"
+                    className="text-xs hover:bg-green-50 hover:text-green-700"
                   >
                     <Check size={12} className="mr-1" />
                     Marcar leída
@@ -285,7 +311,7 @@ const AlertItem: React.FC<{
                       e.stopPropagation();
                       onViewRecord(alert.record!.id);
                     }}
-                    className="text-xs"
+                    className="text-xs hover:bg-blue-50 hover:text-blue-700"
                   >
                     <ExternalLink size={12} className="mr-1" />
                     Ver registro
@@ -306,9 +332,6 @@ export const Dashboard: React.FC = () => {
 
   // Estados
   const [alertStats, setAlertStats] = useState<AlertStats | null>(null);
-  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(
-    null
-  );
   const [alertFilters, setAlertFilters] = useState({
     tipo: "" as Alert["tipo"] | "",
     prioridad: "" as Alert["prioridad"] | "",
@@ -325,24 +348,6 @@ export const Dashboard: React.FC = () => {
       },
       onError: (error) => {
         showError("Error al cargar estadísticas de alertas", error);
-      },
-    }
-  );
-
-  const { loading: loadingRecordStats, execute: loadRecordStats } = useApi(
-    recordsService.getStatistics.bind(recordsService),
-    {
-      onSuccess: (recordStats) => {
-        setDashboardStats((prev) => ({
-          ...prev!,
-          totalRegistros: recordStats.total,
-          registrosActivos: recordStats.activos,
-          registrosPorVencer: recordStats.por_vencer,
-          registrosVencidos: recordStats.vencidos,
-        }));
-      },
-      onError: (error) => {
-        showError("Error al cargar estadísticas de registros", error);
       },
     }
   );
@@ -390,28 +395,20 @@ export const Dashboard: React.FC = () => {
 
   // Cargar datos inicial
   useEffect(() => {
-    const loadInitialData = async () => {
-      try {
-        await Promise.all([loadAlertStats(), loadRecordStats()]);
-      } catch (error) {
-        console.error("Error loading dashboard data:", error);
-      }
-    };
-
-    loadInitialData();
+    loadAlertStats();
   }, []);
 
   // Funciones
   const refreshData = useCallback(async () => {
     setRefreshing(true);
     try {
-      await Promise.all([loadAlertStats(), loadRecordStats()]);
+      await loadAlertStats();
     } catch (error) {
       console.error("Error refreshing data:", error);
     } finally {
       setRefreshing(false);
     }
-  }, [loadAlertStats, loadRecordStats]);
+  }, [loadAlertStats]);
 
   const handleMarkAsRead = useCallback(
     async (alertId: string) => {
@@ -468,30 +465,27 @@ export const Dashboard: React.FC = () => {
     return alerts;
   }, [alertStats, alertFilters]);
 
-  // Métricas calculadas
-  const metrics = useMemo(() => {
-    if (!alertStats || !dashboardStats) return null;
+  // Calcular métricas de tendencia (simuladas por ahora)
+  const alertTrends = useMemo(() => {
+    if (!alertStats) return null;
 
     return {
-      totalRegistros: dashboardStats.totalRegistros,
-      registrosActivos: dashboardStats.registrosActivos,
-      registrosPorVencer: dashboardStats.registrosPorVencer,
-      registrosVencidos: dashboardStats.registrosVencidos,
-      alertasTotal: alertStats.total,
-      alertasNoLeidas: alertStats.noLeidas,
-      alertasCriticas: alertStats.criticas.length,
+      totalTrend: { value: "+12%", positive: false },
+      criticalTrend: { value: "-5%", positive: true },
+      unreadTrend: { value: "+8%", positive: false },
+      resolvedTrend: { value: "+15%", positive: true },
     };
-  }, [alertStats, dashboardStats]);
+  }, [alertStats]);
 
-  const loading = loadingAlertStats || loadingRecordStats;
+  const loading = loadingAlertStats;
 
   return (
     <div className="pb-8 space-y-8">
-      {/* Header del Dashboard */}
+      {/* Header del Dashboard de Alertas */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <div className="w-12 h-12 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-xl flex items-center justify-center shadow-lg">
-            <Activity className="w-6 h-6 text-white" />
+            <BellRing className="w-6 h-6 text-white" />
           </div>
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
@@ -499,10 +493,10 @@ export const Dashboard: React.FC = () => {
             </h1>
             <p className="flex items-center space-x-2 text-gray-600">
               <span>Monitoreo en tiempo real de alertas y registros</span>
-              {!loading && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  <div className="w-2 h-2 mr-1 bg-green-500 rounded-full animate-pulse"></div>
-                  En línea
+              {alertStats && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#18D043]/10 text-[#16a34a]">
+                  <div className="w-2 h-2 mr-1 bg-[#18D043] rounded-full animate-pulse"></div>
+                  {alertStats.noLeidas} alertas activas
                 </span>
               )}
             </p>
@@ -530,70 +524,50 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Métricas Principales */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
-        <MetricCard
-          title="Total Registros"
-          value={metrics?.totalRegistros || 0}
-          icon={Database}
+      {/* Métricas Principales de Alertas */}
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <AlertMetricCard
+          title="Total Alertas"
+          value={alertStats?.total || 0}
+          icon={Bell}
           color="blue"
           loading={loading}
-          onClick={() => navigate("/registro")}
+          description="Todas las alertas del sistema"
+          trend={alertTrends?.totalTrend}
         />
 
-        <MetricCard
-          title="Registros Activos"
-          value={metrics?.registrosActivos || 0}
-          icon={CheckCircle}
-          color="green"
-          loading={loading}
-          onClick={() => navigate("/registro?estado=activo")}
-        />
-
-        <MetricCard
-          title="Por Vencer"
-          value={metrics?.registrosPorVencer || 0}
-          icon={Clock}
-          color="yellow"
-          loading={loading}
-          onClick={() => navigate("/registro?estado=por_vencer")}
-        />
-
-        <MetricCard
-          title="Vencidos"
-          value={metrics?.registrosVencidos || 0}
-          icon={XCircle}
-          color="red"
-          loading={loading}
-          onClick={() => navigate("/registro?estado=vencido")}
-        />
-
-        <MetricCard
-          title="Total Alertas"
-          value={metrics?.alertasTotal || 0}
-          icon={Bell}
-          color="purple"
-          loading={loading}
-        />
-
-        <MetricCard
-          title="No Leídas"
-          value={metrics?.alertasNoLeidas || 0}
-          icon={BellRing}
-          color="indigo"
-          loading={loading}
-        />
-
-        <MetricCard
-          title="Críticas"
-          value={metrics?.alertasCriticas || 0}
+        <AlertMetricCard
+          title="Alertas Críticas"
+          value={alertStats?.criticas.length || 0}
           icon={AlertTriangle}
           color="red"
           loading={loading}
+          description="Requieren atención inmediata"
+          trend={alertTrends?.criticalTrend}
+        />
+
+        <AlertMetricCard
+          title="No Leídas"
+          value={alertStats?.noLeidas || 0}
+          icon={BellRing}
+          color="orange"
+          loading={loading}
+          description="Alertas pendientes de revisar"
+          trend={alertTrends?.unreadTrend}
+        />
+
+        <AlertMetricCard
+          title="Resueltas Hoy"
+          value={alertStats ? alertStats.total - alertStats.noLeidas : 0}
+          icon={CheckCircle}
+          color="green"
+          loading={loading}
+          description="Alertas procesadas"
+          trend={alertTrends?.resolvedTrend}
         />
       </div>
 
-      {/* Gráficos y Estadísticas */}
+      {/* Gráficos y Estadísticas de Alertas */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         {/* Distribución de Alertas por Tipo */}
         <Card>
@@ -601,7 +575,7 @@ export const Dashboard: React.FC = () => {
             <div className="flex items-center justify-between mb-6">
               <h3 className="flex items-center text-lg font-semibold text-gray-900">
                 <PieChart className="w-5 h-5 mr-2 text-purple-600" />
-                Alertas por Tipo
+                Distribución por Tipo
               </h3>
               {alertStats && (
                 <span className="text-sm text-gray-500">
@@ -626,17 +600,17 @@ export const Dashboard: React.FC = () => {
                     por_vencer: {
                       bg: "bg-yellow-500",
                       text: "text-yellow-600",
-                      light: "bg-yellow-100",
+                      icon: "🟡",
                     },
                     vencido: {
                       bg: "bg-red-500",
                       text: "text-red-600",
-                      light: "bg-red-100",
+                      icon: "🔴",
                     },
                     critico: {
                       bg: "bg-purple-500",
                       text: "text-purple-600",
-                      light: "bg-purple-100",
+                      icon: "🚨",
                     },
                   };
 
@@ -647,7 +621,12 @@ export const Dashboard: React.FC = () => {
                       key={item.tipo}
                       className="flex items-center space-x-4"
                     >
-                      <div className={`w-4 h-4 rounded-full ${color.bg}`}></div>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-lg">{color.icon}</span>
+                        <div
+                          className={`w-3 h-3 rounded-full ${color.bg}`}
+                        ></div>
+                      </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-sm font-medium text-gray-700 capitalize">
@@ -669,6 +648,15 @@ export const Dashboard: React.FC = () => {
                     </div>
                   );
                 })}
+
+                {(!alertStats?.porTipo || alertStats.porTipo.length === 0) && (
+                  <div className="flex flex-col items-center justify-center h-32 text-center">
+                    <Bell className="w-8 h-8 mb-2 text-gray-300" />
+                    <p className="text-sm text-gray-500">
+                      No hay alertas por tipo
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -680,7 +668,7 @@ export const Dashboard: React.FC = () => {
             <div className="flex items-center justify-between mb-6">
               <h3 className="flex items-center text-lg font-semibold text-gray-900">
                 <BarChart3 className="w-5 h-5 mr-2 text-blue-600" />
-                Alertas por Prioridad
+                Distribución por Prioridad
               </h3>
               {alertStats && (
                 <span className="text-sm text-gray-500">
@@ -705,22 +693,22 @@ export const Dashboard: React.FC = () => {
                     low: {
                       bg: "bg-gray-500",
                       text: "text-gray-600",
-                      light: "bg-gray-100",
+                      icon: "⚪",
                     },
                     medium: {
                       bg: "bg-blue-500",
                       text: "text-blue-600",
-                      light: "bg-blue-100",
+                      icon: "🔵",
                     },
                     high: {
                       bg: "bg-orange-500",
                       text: "text-orange-600",
-                      light: "bg-orange-100",
+                      icon: "🟠",
                     },
                     critical: {
                       bg: "bg-red-500",
                       text: "text-red-600",
-                      light: "bg-red-100",
+                      icon: "🔴",
                     },
                   };
 
@@ -731,7 +719,12 @@ export const Dashboard: React.FC = () => {
                       key={item.prioridad}
                       className="flex items-center space-x-4"
                     >
-                      <div className={`w-4 h-4 rounded-full ${color.bg}`}></div>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-lg">{color.icon}</span>
+                        <div
+                          className={`w-3 h-3 rounded-full ${color.bg}`}
+                        ></div>
+                      </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-sm font-medium text-gray-700 capitalize">
@@ -753,6 +746,16 @@ export const Dashboard: React.FC = () => {
                     </div>
                   );
                 })}
+
+                {(!alertStats?.porPrioridad ||
+                  alertStats.porPrioridad.length === 0) && (
+                  <div className="flex flex-col items-center justify-center h-32 text-center">
+                    <BarChart3 className="w-8 h-8 mb-2 text-gray-300" />
+                    <p className="text-sm text-gray-500">
+                      No hay alertas por prioridad
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -816,7 +819,7 @@ export const Dashboard: React.FC = () => {
           <div className="flex items-center justify-between mb-6">
             <h3 className="flex items-center text-xl font-semibold text-gray-900">
               <Bell className="w-6 h-6 mr-2 text-[#18D043]" />
-              Centro de Alertas
+              Centro de Gestión de Alertas
               {alertStats && (
                 <Badge variant="primary" className="ml-2">
                   {filteredAlerts.length} de {alertStats.total}
@@ -859,7 +862,7 @@ export const Dashboard: React.FC = () => {
                 { value: "", label: "Todos los tipos" },
                 { value: "por_vencer", label: "🟡 Por Vencer" },
                 { value: "vencido", label: "🔴 Vencido" },
-                { value: "critico", label: "🔥 Crítico" },
+                { value: "critico", label: "🚨 Crítico" },
               ]}
               className="min-w-40"
             />
@@ -874,10 +877,10 @@ export const Dashboard: React.FC = () => {
               }
               options={[
                 { value: "", label: "Todas las prioridades" },
-                { value: "low", label: "Baja" },
-                { value: "medium", label: "Media" },
-                { value: "high", label: "Alta" },
-                { value: "critical", label: "Crítica" },
+                { value: "low", label: "⚪ Baja" },
+                { value: "medium", label: "🔵 Media" },
+                { value: "high", label: "🟠 Alta" },
+                { value: "critical", label: "🔴 Crítica" },
               ]}
               className="min-w-40"
             />
@@ -892,8 +895,8 @@ export const Dashboard: React.FC = () => {
               }
               options={[
                 { value: "", label: "Todas" },
-                { value: "false", label: "No leídas" },
-                { value: "true", label: "Leídas" },
+                { value: "false", label: "📬 No leídas" },
+                { value: "true", label: "📭 Leídas" },
               ]}
               className="min-w-32"
             />
@@ -910,10 +913,41 @@ export const Dashboard: React.FC = () => {
                 className="text-gray-500 hover:text-gray-700"
               >
                 <X size={16} className="mr-1" />
-                Limpiar
+                Limpiar filtros
               </Button>
             )}
           </div>
+
+          {/* Estadísticas rápidas de filtros aplicados */}
+          {(alertFilters.tipo ||
+            alertFilters.prioridad ||
+            alertFilters.leida !== "") && (
+            <div className="flex items-center justify-between p-3 mb-4 border border-blue-200 rounded-lg bg-blue-50">
+              <div className="flex items-center space-x-2">
+                <Activity size={16} className="text-blue-600" />
+                <span className="text-sm font-medium text-blue-800">
+                  Filtros aplicados: {filteredAlerts.length} alertas encontradas
+                </span>
+              </div>
+              <div className="flex items-center space-x-4 text-xs text-blue-600">
+                {alertFilters.tipo && (
+                  <span className="px-2 py-1 bg-white rounded-md">
+                    Tipo: {alertFilters.tipo.replace("_", " ")}
+                  </span>
+                )}
+                {alertFilters.prioridad && (
+                  <span className="px-2 py-1 bg-white rounded-md">
+                    Prioridad: {alertFilters.prioridad}
+                  </span>
+                )}
+                {alertFilters.leida !== "" && (
+                  <span className="px-2 py-1 bg-white rounded-md">
+                    Estado: {alertFilters.leida ? "Leídas" : "No leídas"}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Lista de Alertas */}
           {loading ? (
@@ -927,25 +961,100 @@ export const Dashboard: React.FC = () => {
                 <Bell className="w-8 h-8 text-gray-400" />
               </div>
               <h4 className="mb-2 text-lg font-medium text-gray-900">
-                No hay alertas
+                {alertStats?.total === 0 ? "No hay alertas" : "Sin resultados"}
               </h4>
               <p className="max-w-sm text-gray-600">
                 {alertStats?.total === 0
                   ? 'No se han generado alertas todavía. Haz clic en "Generar Alertas" para crear nuevas alertas.'
-                  : "No hay alertas que coincidan con los filtros seleccionados."}
+                  : "No hay alertas que coincidan con los filtros seleccionados. Prueba ajustando los criterios de búsqueda."}
               </p>
+              {alertStats?.total === 0 && (
+                <div className="mt-4">
+                  <Button
+                    onClick={handleGenerateAlerts}
+                    icon={Zap}
+                    className="bg-[#18D043] hover:bg-[#16a34a]"
+                  >
+                    Generar Alertas
+                  </Button>
+                </div>
+              )}
             </div>
           ) : (
-            <div className="space-y-4 overflow-y-auto max-h-96">
-              {filteredAlerts.map((alert) => (
-                <AlertItem
-                  key={alert.id}
-                  alert={alert}
-                  onMarkAsRead={handleMarkAsRead}
-                  onViewRecord={handleViewRecord}
-                />
-              ))}
-            </div>
+            <>
+              {/* Resumen de alertas filtradas */}
+              <div className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-4">
+                <div className="p-3 text-center border border-gray-200 rounded-lg bg-gray-50">
+                  <div className="text-lg font-bold text-gray-900">
+                    {filteredAlerts.length}
+                  </div>
+                  <div className="text-xs text-gray-600">Total mostradas</div>
+                </div>
+                <div className="p-3 text-center border border-red-200 rounded-lg bg-red-50">
+                  <div className="text-lg font-bold text-red-900">
+                    {
+                      filteredAlerts.filter((a) => a.prioridad === "critical")
+                        .length
+                    }
+                  </div>
+                  <div className="text-xs text-red-600">Críticas</div>
+                </div>
+                <div className="p-3 text-center border border-orange-200 rounded-lg bg-orange-50">
+                  <div className="text-lg font-bold text-orange-900">
+                    {filteredAlerts.filter((a) => !a.leida).length}
+                  </div>
+                  <div className="text-xs text-orange-600">No leídas</div>
+                </div>
+                <div className="p-3 text-center border border-green-200 rounded-lg bg-green-50">
+                  <div className="text-lg font-bold text-green-900">
+                    {filteredAlerts.filter((a) => a.leida).length}
+                  </div>
+                  <div className="text-xs text-green-600">Procesadas</div>
+                </div>
+              </div>
+
+              {/* Lista de alertas con scroll */}
+              <div className="space-y-4 overflow-y-auto max-h-96">
+                {filteredAlerts.map((alert) => (
+                  <AlertItem
+                    key={alert.id}
+                    alert={alert}
+                    onMarkAsRead={handleMarkAsRead}
+                    onViewRecord={handleViewRecord}
+                  />
+                ))}
+              </div>
+
+              {/* Acciones masivas */}
+              {filteredAlerts.some((alert) => !alert.leida) && (
+                <div className="flex items-center justify-between pt-4 mt-6 border-t border-gray-200">
+                  <div className="text-sm text-gray-600">
+                    {filteredAlerts.filter((a) => !a.leida).length} alertas sin
+                    leer en la vista actual
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleMarkAllAsRead}
+                      className="text-green-600 border-green-300 hover:bg-green-50"
+                    >
+                      <Check size={16} className="mr-1" />
+                      Marcar todas como leídas
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => navigate("/registro")}
+                      className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                    >
+                      <Database size={16} className="mr-1" />
+                      Ver registros
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </Card>

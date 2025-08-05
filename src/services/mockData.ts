@@ -42,7 +42,7 @@ export const mockDataRecords: DataRecord[] = Array.from(
         Math.floor(Math.random() * 4)
       ],
       ubicacion: `Ubicación ${i + 1}`,
-      fecha_vencimiento: createValidDate(
+      fecha_caducidad: createValidDate(
         expirationYear,
         installMonth,
         Math.floor(Math.random() * 28) + 1
