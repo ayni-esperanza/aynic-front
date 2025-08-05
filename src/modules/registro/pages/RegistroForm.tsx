@@ -482,10 +482,10 @@ export const RegistroForm: React.FC = () => {
   /* -------------------------------------------------
      Handlers
   ------------------------------------------------- */
-  const handleNext = useCallback(
-    () => validateStep(currentStep) && setCurrentStep((c) => c + 1),
-    [currentStep]
-  );
+
+  const handleNext = () => {
+    if (validateStep(currentStep)) setCurrentStep((c) => c + 1);
+  };
 
   const handlePrev = useCallback(() => {
     setCurrentStep((c) => c - 1);
