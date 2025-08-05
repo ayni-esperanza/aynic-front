@@ -86,12 +86,11 @@ const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({
   if (!isInitialized || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="text-center">
-          <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-2xl flex items-center justify-center shadow-lg">
-              <span className="text-2xl text-white">⚡</span>
-            </div>
+        <div className="flex flex-col items-center justify-center text-center">
+          <div className="w-16 h-16 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-2xl flex items-center justify-center shadow-lg mb-6">
+            <span className="text-2xl text-white">⚡</span>
           </div>
+          {/* Spinner */}
           <LoadingSpinner size="lg" className="mb-4" />
           <h2 className="mb-2 text-xl font-semibold text-gray-900">
             Iniciando AyniLine
