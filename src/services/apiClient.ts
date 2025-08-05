@@ -366,6 +366,15 @@ export const API_ENDPOINTS = {
   },
   ALERTS: {
     BASE: "/alerts",
+    BY_ID: (id: number) => `/alerts/${id}`,
     UNREAD_COUNT: "/alerts/unread-count",
+    DASHBOARD: "/alerts/dashboard",
+    MARK_AS_READ: (id: number) => `/alerts/${id}/read`,
+    MARK_ALL_READ: "/alerts/mark-all-read",
+    CRITICAL: "/alerts/critical",
+    BY_RECORD: (recordId: number) => `/alerts/by-record/${recordId}`,
+    GENERATE: "/alerts/generate",
+    CLEANUP: (days: number) => `/alerts/cleanup/${days}`,
+    STATS_BY_PERIOD: "/alerts/stats-by-period",
   },
 } as const;
