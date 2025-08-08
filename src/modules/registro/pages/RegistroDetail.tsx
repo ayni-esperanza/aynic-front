@@ -115,6 +115,8 @@ export const RegistroDetail: React.FC = () => {
 
   const [loadingImage] = useState(false);
 
+  const mountedRef = useRef(true);
+
   // Función de carga controlada para evitar duplicados
   const loadData = useCallback(
     async (recordId: string) => {
@@ -141,14 +143,20 @@ export const RegistroDetail: React.FC = () => {
 
   // Effect principal - Solo se ejecuta cuando cambia el ID
   useEffect(() => {
-    if (id && id !== loadedIdRef.current) {
-      // Resetear estado cuando cambia el ID
+    mountedRef.current = true;
+
+    if (id && id !== loadedIdRef.current && mountedRef.current) {
       hasLoadedRef.current = false;
       isLoadingRef.current = false;
+
       setCurrentImage(null);
 
       loadData(id);
     }
+
+    return () => {
+      mountedRef.current = false;
+    };
   }, [id, loadData]);
 
   // Handlers para imagen - Funciones estables

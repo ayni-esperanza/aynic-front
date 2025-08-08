@@ -79,7 +79,9 @@ export const useApi = <T = unknown>(
             success: true,
           }));
 
-          onSuccess?.(result);
+          if (mountedRef.current && onSuccess) {
+            onSuccess(result);
+          }
         } catch (error) {
           if (!mountedRef.current) return;
 
@@ -106,7 +108,9 @@ export const useApi = <T = unknown>(
             success: false,
           }));
 
-          onError?.(errorMessage);
+          if (mountedRef.current && onError) {
+            onError(errorMessage);
+          }
         }
       };
 

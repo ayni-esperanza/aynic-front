@@ -330,6 +330,10 @@ export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { success, error: showError } = useToast();
 
+  // Referencias para el ciclo de vida del componente
+  const mountedRef = useRef(true);
+  const isInitializedRef = useRef(false);
+
   // Estados
   const [alertStats, setAlertStats] = useState<AlertStats | null>(null);
   const [alertFilters, setAlertFilters] = useState({
@@ -393,16 +397,33 @@ export const Dashboard: React.FC = () => {
     }
   );
 
-  // Referencias para controlar carga inicial
-  const isInitialLoadRef = useRef(true);
+  const loadAlertStatsStable = useCallback(async () => {
+    if (!mountedRef.current) return;
 
-  // CORREGIDO: Cargar datos inicial solo una vez
-  useEffect(() => {
-    if (isInitialLoadRef.current) {
-      isInitialLoadRef.current = false;
-      loadAlertStats();
+    try {
+      const data = await alertService.getDashboardSummary();
+      if (mountedRef.current) {
+        setAlertStats(data);
+      }
+    } catch (error) {
+      if (mountedRef.current) {
+        showError("Error al cargar estadísticas de alertas", error);
+      }
     }
-  }, []);
+  }, [showError]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+
+    if (!isInitializedRef.current) {
+      isInitializedRef.current = true;
+      loadAlertStatsStable();
+    }
+
+    return () => {
+      mountedRef.current = false;
+    };
+  }, [loadAlertStatsStable]);
 
   // Funciones
   const refreshData = useCallback(async () => {

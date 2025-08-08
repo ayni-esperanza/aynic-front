@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Bell,
@@ -31,6 +31,9 @@ export const Header: React.FC = () => {
 
   const notificationRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  const mountedRef = useRef(true);
+  const intervalRef = useRef<NodeJS.Timeout>();
 
   // Hook para cargar alertas recientes
   const { loading: loadingAlerts, execute: loadAlerts } = useApi(
@@ -68,18 +71,48 @@ export const Header: React.FC = () => {
   };
 
   // Cargar alertas al montar el componente
-  useEffect(() => {
-    loadAlerts();
+  const loadAlertsStable = useCallback(async () => {
+    if (!mountedRef.current) return;
 
-    // Intervalo más largo y con verificación de mounted
-    const interval = setInterval(() => {
-      if (document.visibilityState === "visible") {
-        loadAlerts();
+    try {
+      const data = await alertService.getAlerts({
+        leida: false,
+        limit: 10,
+        sortBy: "fecha_creada",
+        sortOrder: "DESC",
+      });
+
+      if (mountedRef.current) {
+        setAlerts(data.data);
+        setUnreadCount(data.pagination.totalItems);
       }
-    }, 10 * 60 * 1000); // Cambiar a 10 minutos en lugar de 5
-
-    return () => clearInterval(interval);
+    } catch (error) {
+      if (mountedRef.current) {
+        console.error("Error loading alerts:", error);
+      }
+    }
   }, []);
+
+  useEffect(() => {
+    mountedRef.current = true;
+
+    // Cargar alertas inicial
+    loadAlertsStable();
+
+    // Configurar intervalo con cleanup
+    intervalRef.current = setInterval(() => {
+      if (mountedRef.current && document.visibilityState === "visible") {
+        loadAlertsStable();
+      }
+    }, 10 * 60 * 1000);
+
+    return () => {
+      mountedRef.current = false;
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [loadAlertsStable]);
 
   // Cerrar dropdowns cuando se hace clic fuera
   useEffect(() => {
