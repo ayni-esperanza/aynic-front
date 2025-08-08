@@ -1,4 +1,10 @@
-import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+  useRef,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Plus,
@@ -11,6 +17,8 @@ import {
   List,
   SlidersHorizontal,
   RefreshCw,
+  Camera,
+  Image as ImageIcon,
 } from "lucide-react";
 import { DataTable } from "../../../components/common/DataTable";
 import { Button } from "../../../components/ui/Button";
@@ -23,6 +31,10 @@ import { useToast } from "../../../components/ui/Toast";
 import { usePagination } from "../../../hooks/usePagination";
 import { useApi } from "../../../hooks/useApi";
 import { recordsService } from "../../../services/recordsService";
+import {
+  imageService,
+  type ImageResponse,
+} from "../../../services/imageService";
 import { formatDate } from "../../../utils/formatters";
 import type { DataRecord, TableColumn } from "../../../types";
 
@@ -44,6 +56,9 @@ export const RegistroList: React.FC = () => {
 
   // Estado para datos de registros
   const [registros, setRegistros] = useState<DataRecord[]>([]);
+  const [recordImages, setRecordImages] = useState<Map<string, ImageResponse>>(
+    new Map()
+  );
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -65,6 +80,8 @@ export const RegistroList: React.FC = () => {
     onSuccess: (data) => {
       setRegistros(data.data);
       setPagination(data.pagination);
+      // Cargar imágenes para los registros visibles
+      loadImagesForRecords(data.data);
     },
     onError: (error) => {
       showError("Error al cargar registros", error);
@@ -101,6 +118,29 @@ export const RegistroList: React.FC = () => {
       },
     }
   );
+
+  // Función para cargar imágenes de los registros
+  const loadImagesForRecords = useCallback(async (records: DataRecord[]) => {
+    const imagePromises = records.map(async (record) => {
+      try {
+        const image = await imageService.getRecordImage(record.id);
+        return { recordId: record.id, image };
+      } catch (error) {
+        return { recordId: record.id, image: null };
+      }
+    });
+
+    const imageResults = await Promise.all(imagePromises);
+    const newImageMap = new Map<string, ImageResponse>();
+
+    imageResults.forEach(({ recordId, image }) => {
+      if (image) {
+        newImageMap.set(recordId, image);
+      }
+    });
+
+    setRecordImages(newImageMap);
+  }, []);
 
   // Cargar datos inicial solo una vez
   useEffect(() => {
@@ -256,15 +296,25 @@ export const RegistroList: React.FC = () => {
         key: "codigo",
         label: "Código",
         sortable: true,
-        render: (value: any) => (
+        render: (value: any, registro: DataRecord) => (
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-lg flex items-center justify-center shadow-sm">
-              <span className="text-sm font-bold text-white">
-                {String(value).slice(-2)}
-              </span>
+            <div className="relative">
+              <div className="w-10 h-10 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-lg flex items-center justify-center shadow-sm">
+                <span className="text-sm font-bold text-white">
+                  {String(value).slice(-2)}
+                </span>
+              </div>
+              {recordImages.has(registro.id) && (
+                <div className="absolute flex items-center justify-center w-4 h-4 bg-orange-500 rounded-full -top-1 -right-1">
+                  <Camera className="w-2.5 h-2.5 text-white" />
+                </div>
+              )}
             </div>
             <div>
               <div className="font-semibold text-gray-900">{String(value)}</div>
+              {recordImages.has(registro.id) && (
+                <div className="text-xs text-orange-600">📷 Con imagen</div>
+              )}
             </div>
           </div>
         ),
@@ -449,7 +499,7 @@ export const RegistroList: React.FC = () => {
         ),
       },
     ],
-    [navigate, deleting, handleDeleteRegistro, getEstadoConfig]
+    [navigate, deleting, handleDeleteRegistro, getEstadoConfig, recordImages]
   );
 
   // Vista en cuadrícula
@@ -457,11 +507,20 @@ export const RegistroList: React.FC = () => {
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
       {registros.map((registro) => {
         const estadoConfig = getEstadoConfig(registro.estado_actual);
+        const hasImage = recordImages.has(registro.id);
         return (
           <Card
             key={registro.id}
-            className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-[#18D043]"
+            className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-[#18D043] relative"
           >
+            {hasImage && (
+              <div className="absolute z-10 top-2 right-2">
+                <div className="flex items-center justify-center w-8 h-8 bg-orange-500 rounded-full shadow-lg">
+                  <Camera className="w-4 h-4 text-white" />
+                </div>
+              </div>
+            )}
+
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
@@ -517,6 +576,14 @@ export const RegistroList: React.FC = () => {
                     📍 {registro.ubicacion}
                   </span>
                 </div>
+                {hasImage && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-500">Imagen:</span>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                      📷 Disponible
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="flex pt-3 space-x-2 border-t border-gray-100">
@@ -591,6 +658,9 @@ export const RegistroList: React.FC = () => {
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#18D043]/10 text-[#16a34a]">
                 {pagination.totalItems} registros
               </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                {recordImages.size} con imagen
+              </span>
             </p>
           </div>
         </div>
@@ -615,7 +685,7 @@ export const RegistroList: React.FC = () => {
       </div>
 
       {/* Estadísticas rápidas */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
         <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
           <div className="flex items-center justify-between p-4">
             <div>
@@ -691,6 +761,17 @@ export const RegistroList: React.FC = () => {
               </div>
             </div>
             <div className="text-2xl">🔧</div>
+          </div>
+        </Card>
+        <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100">
+          <div className="flex items-center justify-between p-4">
+            <div>
+              <p className="text-sm font-medium text-purple-600">Con Imagen</p>
+              <div className="text-2xl font-bold text-purple-900 min-h-[1.6rem] flex items-center justify-center">
+                {recordImages.size}
+              </div>
+            </div>
+            <div className="text-2xl">📷</div>
           </div>
         </Card>
       </div>
@@ -926,6 +1007,40 @@ export const RegistroList: React.FC = () => {
           </div>
         )}
       </Card>
+
+      {/* Información adicional sobre imágenes */}
+      {recordImages.size > 0 && (
+        <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-amber-50">
+          <div className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center justify-center w-10 h-10 bg-orange-100 rounded-full">
+                  <ImageIcon className="w-5 h-5 text-orange-600" />
+                </div>
+                <div>
+                  <h4 className="font-medium text-orange-900">
+                    Registros con documentación visual
+                  </h4>
+                  <p className="text-sm text-orange-700">
+                    {recordImages.size} de {pagination.totalItems} registros
+                    tienen imágenes asociadas
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-orange-900">
+                  {Math.round(
+                    (recordImages.size / Math.max(pagination.totalItems, 1)) *
+                      100
+                  )}
+                  %
+                </div>
+                <div className="text-xs text-orange-600">Con imagen</div>
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
     </div>
   );
 };

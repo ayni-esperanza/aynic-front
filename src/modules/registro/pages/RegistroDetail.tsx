@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -16,6 +16,8 @@ import {
   CheckCircle,
   XCircle,
   Wrench,
+  Camera,
+  Image as ImageIcon,
 } from "lucide-react";
 import { Button } from "../../../components/ui/Button";
 import { Card } from "../../../components/ui/Card";
@@ -24,6 +26,11 @@ import { LoadingSpinner } from "../../../components/ui/LoadingSpinner";
 import { useToast } from "../../../components/ui/Toast";
 import { useApi } from "../../../hooks/useApi";
 import { recordsService } from "../../../services/recordsService";
+import {
+  imageService,
+  type ImageResponse,
+} from "../../../services/imageService";
+import { ImageUpload } from "../../../components/common/ImageUpload";
 import { formatDate, formatDateTime } from "../../../utils/formatters";
 import type { DataRecord } from "../../../types";
 
@@ -73,8 +80,15 @@ const safeFormatDateTime = (dateValue: Date | string | undefined): string => {
 export const RegistroDetail: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { error: showError } = useToast();
+  const { error: showError, success } = useToast();
   const [activeTab, setActiveTab] = useState("general");
+  const [currentImage, setCurrentImage] = useState<ImageResponse | null>(null);
+  const [showImageUpload, setShowImageUpload] = useState(false);
+
+  // Referencias para evitar solicitudes duplicadas
+  const isLoadingRef = useRef(false);
+  const hasLoadedRef = useRef(false);
+  const loadedIdRef = useRef<string | null>(null);
 
   // Hook para cargar el registro
   const {
@@ -85,17 +99,75 @@ export const RegistroDetail: React.FC = () => {
   } = useApi(recordsService.getRecordById.bind(recordsService), {
     onError: (error) => {
       showError("Error al cargar registro", error);
+      isLoadingRef.current = false;
+    },
+    onSuccess: () => {
+      isLoadingRef.current = false;
+      hasLoadedRef.current = true;
     },
   });
 
+  // Hook para cargar imagen del registro - Función memoizada estable
+  const loadImageFunction = useCallback(
+    (recordId: string) => imageService.getRecordImage(recordId),
+    [] // Sin dependencias para mantener la función estable
+  );
+
+  const [loadingImage] = useState(false);
+
+  // Función de carga controlada para evitar duplicados
+  const loadData = useCallback(
+    async (recordId: string) => {
+      // Evitar cargas duplicadas
+      if (
+        isLoadingRef.current ||
+        (hasLoadedRef.current && loadedIdRef.current === recordId)
+      ) {
+        return;
+      }
+
+      isLoadingRef.current = true;
+      loadedIdRef.current = recordId;
+
+      try {
+        await loadRegistro(recordId);
+      } catch (error) {
+        console.error("Error loading data:", error);
+        isLoadingRef.current = false;
+      }
+    },
+    [loadRegistro]
+  );
+
+  // Effect principal - Solo se ejecuta cuando cambia el ID
   useEffect(() => {
-    if (id) {
-      loadRegistro(id);
+    if (id && id !== loadedIdRef.current) {
+      // Resetear estado cuando cambia el ID
+      hasLoadedRef.current = false;
+      isLoadingRef.current = false;
+      setCurrentImage(null);
+
+      loadData(id);
     }
-  }, [id]);
+  }, [id, loadData]);
+
+  // Handlers para imagen - Funciones estables
+  const handleImageUploaded = useCallback(
+    (image: ImageResponse) => {
+      setCurrentImage(image);
+      setShowImageUpload(false);
+      success("Imagen agregada exitosamente");
+    },
+    [success]
+  );
+
+  const handleImageDeleted = useCallback(() => {
+    setCurrentImage(null);
+    success("Imagen eliminada");
+  }, [success]);
 
   // Loading state
-  if (loading) {
+  if (loading && !registro) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="text-center">
@@ -194,6 +266,7 @@ export const RegistroDetail: React.FC = () => {
     { id: "general", label: "General", icon: FileText },
     { id: "tecnico", label: "Técnico", icon: Settings },
     { id: "fechas", label: "Fechas", icon: Calendar },
+    { id: "imagen", label: "Imagen", icon: Camera },
     { id: "actividad", label: "Actividad", icon: Activity },
   ];
 
@@ -601,6 +674,121 @@ export const RegistroDetail: React.FC = () => {
           </div>
         );
 
+      case "imagen":
+        return (
+          <div className="space-y-6">
+            <div className="mb-6 text-center">
+              <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-orange-100 to-orange-200">
+                <Camera className="w-8 h-8 text-orange-600" />
+              </div>
+              <h3 className="mb-2 text-xl font-semibold text-gray-900">
+                Imagen del Registro
+              </h3>
+              <p className="max-w-lg mx-auto text-gray-600">
+                Fotografía del equipo o instalación asociada a este registro.
+                {!currentImage &&
+                  " Agrega una imagen para completar la documentación."}
+              </p>
+            </div>
+
+            {loadingImage ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="text-center">
+                  <LoadingSpinner size="lg" />
+                  <p className="mt-4 text-gray-600">Cargando imagen...</p>
+                </div>
+              </div>
+            ) : (
+              <div className="max-w-4xl mx-auto">
+                <ImageUpload
+                  key={`image-upload-${registro.id}`}
+                  recordId={registro.id}
+                  recordCode={registro.codigo}
+                  skipInitialLoad={false}
+                  onImageUploaded={handleImageUploaded}
+                  onImageDeleted={handleImageDeleted}
+                />
+              </div>
+            )}
+
+            {/* Información adicional sobre imágenes */}
+            <Card className="border-blue-200 bg-blue-50">
+              <div className="p-6">
+                <div className="flex items-center mb-4 space-x-3">
+                  <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-lg">
+                    <ImageIcon className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-blue-900">
+                      Información sobre imágenes
+                    </h4>
+                    <p className="text-sm text-blue-700">
+                      Detalles técnicos y recomendaciones
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-3">
+                  <div className="p-3 bg-white border border-blue-200 rounded-lg">
+                    <div className="mb-1 font-medium text-blue-900">
+                      Formatos admitidos
+                    </div>
+                    <div className="text-blue-700">JPG, JPEG, PNG</div>
+                  </div>
+                  <div className="p-3 bg-white border border-blue-200 rounded-lg">
+                    <div className="mb-1 font-medium text-blue-900">
+                      Tamaño máximo
+                    </div>
+                    <div className="text-blue-700">10 MB por imagen</div>
+                  </div>
+                  <div className="p-3 bg-white border border-blue-200 rounded-lg">
+                    <div className="mb-1 font-medium text-blue-900">
+                      Compresión automática
+                    </div>
+                    <div className="text-blue-700">
+                      Optimización inteligente
+                    </div>
+                  </div>
+                </div>
+
+                {currentImage?.compression_info && (
+                  <div className="p-4 mt-4 bg-white border border-blue-200 rounded-lg">
+                    <h5 className="mb-2 font-medium text-blue-900">
+                      Estadísticas de compresión
+                    </h5>
+                    <div className="space-y-1 text-sm text-blue-700">
+                      <div>
+                        Tamaño original:{" "}
+                        {imageService.formatFileSize(
+                          currentImage.compression_info.original_size
+                        )}
+                      </div>
+                      <div>
+                        Tamaño final:{" "}
+                        {imageService.formatFileSize(
+                          currentImage.compression_info.compressed_size
+                        )}
+                      </div>
+                      <div>
+                        Ahorro: {currentImage.compression_info.savings_kb}KB (
+                        {currentImage.compression_info.compression_ratio.toFixed(
+                          1
+                        )}
+                        % reducción)
+                      </div>
+                      <div>
+                        Dimensiones:{" "}
+                        {currentImage.compression_info.dimensions.width}×
+                        {currentImage.compression_info.dimensions.height}px
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </Card>
+          </div>
+        );
+
       case "actividad":
         return (
           <div className="space-y-6">
@@ -623,43 +811,57 @@ export const RegistroDetail: React.FC = () => {
                       time: safeFormatDateTime(new Date()),
                       type: "update",
                     },
+                    currentImage && {
+                      action: "Imagen agregada",
+                      time: safeFormatDateTime(currentImage.upload_date),
+                      type: "image",
+                    },
                     {
                       action: "Última revisión completada",
                       time: safeFormatDateTime(new Date(Date.now() - 86400000)),
                       type: "review",
                     },
-                  ].map((activity, index) => (
-                    <div
-                      key={index}
-                      className="flex items-start p-4 space-x-4 rounded-lg bg-gray-50"
-                    >
+                  ]
+                    .filter(Boolean)
+                    .map((activity, index) => (
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          activity.type === "create"
-                            ? "bg-green-100"
-                            : activity.type === "update"
-                            ? "bg-blue-100"
-                            : "bg-purple-100"
-                        }`}
+                        key={index}
+                        className="flex items-start p-4 space-x-4 rounded-lg bg-gray-50"
                       >
-                        {activity.type === "create" && (
-                          <CheckCircle className="w-5 h-5 text-green-600" />
-                        )}
-                        {activity.type === "update" && (
-                          <Edit className="w-5 h-5 text-blue-600" />
-                        )}
-                        {activity.type === "review" && (
-                          <Settings className="w-5 h-5 text-purple-600" />
-                        )}
+                        <div
+                          className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                            activity!.type === "create"
+                              ? "bg-green-100"
+                              : activity!.type === "update"
+                              ? "bg-blue-100"
+                              : activity!.type === "image"
+                              ? "bg-orange-100"
+                              : "bg-purple-100"
+                          }`}
+                        >
+                          {activity!.type === "create" && (
+                            <CheckCircle className="w-5 h-5 text-green-600" />
+                          )}
+                          {activity!.type === "update" && (
+                            <Edit className="w-5 h-5 text-blue-600" />
+                          )}
+                          {activity!.type === "image" && (
+                            <Camera className="w-5 h-5 text-orange-600" />
+                          )}
+                          {activity!.type === "review" && (
+                            <Settings className="w-5 h-5 text-purple-600" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium text-gray-900">
+                            {activity!.action}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {activity!.time}
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900">
-                          {activity.action}
-                        </p>
-                        <p className="text-sm text-gray-500">{activity.time}</p>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               </div>
             </Card>
@@ -711,6 +913,16 @@ export const RegistroDetail: React.FC = () => {
                       </span>
                       <span className="font-semibold text-purple-900">Hoy</span>
                     </div>
+                    {currentImage && (
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-orange-50">
+                        <span className="font-medium text-orange-600">
+                          Imagen
+                        </span>
+                        <span className="font-semibold text-orange-900">
+                          Disponible
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </Card>
@@ -751,6 +963,17 @@ export const RegistroDetail: React.FC = () => {
                         </p>
                         <p className="text-sm text-orange-600">
                           Completar tareas pendientes
+                        </p>
+                      </div>
+                    )}
+
+                    {!currentImage && (
+                      <div className="p-3 border border-blue-200 rounded-lg bg-blue-50">
+                        <p className="font-medium text-blue-800">
+                          📷 Agregar imagen
+                        </p>
+                        <p className="text-sm text-blue-600">
+                          Documentar con una fotografía del equipo
                         </p>
                       </div>
                     )}
@@ -869,6 +1092,11 @@ export const RegistroDetail: React.FC = () => {
                 <p className="text-sm text-green-100">
                   Instalado: {formatDate(registro.fecha_instalacion)}
                 </p>
+                {currentImage && (
+                  <p className="mt-1 text-xs text-green-200">
+                    📷 Con imagen documentada
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -892,6 +1120,9 @@ export const RegistroDetail: React.FC = () => {
                   >
                     <TabIcon size={16} />
                     <span>{tab.label}</span>
+                    {tab.id === "imagen" && currentImage && (
+                      <div className="w-2 h-2 bg-[#18D043] rounded-full"></div>
+                    )}
                   </button>
                 );
               })}

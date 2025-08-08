@@ -10,6 +10,7 @@ import {
   Info,
   Plus,
   Check,
+  Camera,
 } from "lucide-react";
 import { Button } from "../../../components/ui/Button";
 import { Card } from "../../../components/ui/Card";
@@ -20,240 +21,240 @@ import { LoadingSpinner } from "../../../components/ui/LoadingSpinner";
 import { useToast } from "../../../components/ui/Toast";
 import { useApi } from "../../../hooks/useApi";
 import { recordsService } from "../../../services/recordsService";
+import { ImageUpload } from "../../../components/common/ImageUpload";
 import type { DataRecord } from "../../../types";
+import type { ImageResponse } from "../../../services/imageService";
 
 // Componente HierarchicalSelect para tipos de línea
-  const HierarchicalLineTypeSelect: React.FC<{
-    value: string;
-    onChange: (value: string) => void;
-    error?: string;
-    required?: boolean;
-  }> = ({ value, onChange, error, required = false }) => {
-    const [selectedCategory, setSelectedCategory] = useState<string>("");
-    const [selectedOrientation, setSelectedOrientation] = useState<string>("");
+const HierarchicalLineTypeSelect: React.FC<{
+  value: string;
+  onChange: (value: string) => void;
+  error?: string;
+  required?: boolean;
+}> = ({ value, onChange, error, required = false }) => {
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedOrientation, setSelectedOrientation] = useState<string>("");
 
-    // Opciones de categorías
-    const categories = [
-      { value: "permanente", label: "Línea de Vida Permanente", icon: "🔒" },
-      { value: "temporal", label: "Línea de Vida Temporal", icon: "⏱️" },
-    ];
+  // Opciones de categorías
+  const categories = [
+    { value: "permanente", label: "Línea de Vida Permanente", icon: "🔒" },
+    { value: "temporal", label: "Línea de Vida Temporal", icon: "⏱️" },
+  ];
 
-    // Opciones de orientación (depende de la categoría)
-    const getOrientations = (category: string) => {
-      if (category === "temporal") {
-        // Solo horizontal para temporal
-        return [{ value: "horizontal", label: "Horizontal", icon: "🔗" }];
-      } else {
-        // Ambas opciones para permanente
-        return [
-          { value: "horizontal", label: "Horizontal", icon: "🔗" },
-          { value: "vertical", label: "Vertical", icon: "⬆️" },
-        ];
-      }
-    };
-
-    // Efecto para sincronizar con el valor externo sin loops
-    React.useEffect(() => {
-      if (value && typeof value === "string" && value.includes("_")) {
-        const parts = value.split("_");
-        if (parts.length === 2) {
-          const [category, orientation] = parts;
-          setSelectedCategory((prev) => (prev !== category ? category : prev));
-          setSelectedOrientation((prev) =>
-            prev !== orientation ? orientation : prev
-          );
-        }
-      } else if (!value) {
-        setSelectedCategory((prev) => (prev !== "" ? "" : prev));
-        setSelectedOrientation((prev) => (prev !== "" ? "" : prev));
-      }
-    }, [value]);
-
-    // Manejar cambio de categoría sin re-renders
-    const handleCategoryClick = React.useCallback(
-      (categoryValue: string) => {
-        setSelectedCategory(categoryValue);
-        setSelectedOrientation(""); // Reset orientation
-
-        // Si es temporal, auto-seleccionar horizontal ya que es la única opción
-        if (categoryValue === "temporal") {
-          setSelectedOrientation("horizontal");
-          const finalValue = `${categoryValue}_horizontal`;
-          onChange(finalValue);
-        }
-      },
-      [onChange]
-    );
-
-    // Manejar cambio de orientación sin re-renders
-    const handleOrientationClick = React.useCallback(
-      (orientationValue: string) => {
-        setSelectedOrientation(orientationValue);
-        if (selectedCategory) {
-          const finalValue = `${selectedCategory}_${orientationValue}`;
-          onChange(finalValue);
-        }
-      },
-      [selectedCategory, onChange]
-    );
-
-    const availableOrientations = getOrientations(selectedCategory);
-
-    return (
-      <div className="space-y-6">
-        <div>
-          <label className="block mb-2 text-sm font-semibold text-gray-700">
-            Tipo de Línea
-            {required && <span className="ml-1 text-red-500">*</span>}
-          </label>
-          <p className="mb-4 text-sm text-gray-600">
-            Paso 1: Selecciona el tipo de línea de vida
-          </p>
-        </div>
-
-        {/* Paso 1: Seleccionar categoría */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {categories.map((category) => (
-            <div
-              key={category.value}
-              className={`p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 ${
-                selectedCategory === category.value
-                  ? "border-[#18D043] bg-[#18D043]/10 text-[#16a34a] shadow-md"
-                  : "border-gray-200 hover:border-gray-300 text-gray-700 hover:shadow-sm"
-              }`}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleCategoryClick(category.value);
-              }}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <span className="text-2xl">{category.icon}</span>
-                  <div>
-                    <p className="font-medium">{category.label}</p>
-                    <p className="text-xs text-gray-500">
-                      {category.value === "permanente"
-                        ? "Instalación fija"
-                        : "Instalación temporal"}
-                    </p>
-                  </div>
-                </div>
-                {selectedCategory === category.value && (
-                  <div className="w-6 h-6 bg-[#18D043] rounded-full flex items-center justify-center">
-                    <span className="text-sm font-bold text-white">✓</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Paso 2: Seleccionar orientación (solo si hay categoría seleccionada y es permanente) */}
-        {selectedCategory === "permanente" && (
-          <div className="space-y-4 duration-300 animate-in fade-in">
-            <p className="text-sm text-gray-600">
-              Paso 2: Selecciona la orientación
-            </p>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {availableOrientations.map((orientation) => (
-                <div
-                  key={orientation.value}
-                  className={`p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 ${
-                    selectedOrientation === orientation.value
-                      ? "border-[#18D043] bg-[#18D043]/10 text-[#16a34a] shadow-md"
-                      : "border-gray-200 hover:border-gray-300 text-gray-700 hover:shadow-sm"
-                  }`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleOrientationClick(orientation.value);
-                  }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <span className="text-2xl">{orientation.icon}</span>
-                      <div>
-                        <p className="font-medium">{orientation.label}</p>
-                        <p className="text-xs text-gray-500">
-                          {orientation.value === "horizontal"
-                            ? "Línea paralela al suelo"
-                            : "Línea perpendicular al suelo"}
-                        </p>
-                      </div>
-                    </div>
-                    {selectedOrientation === orientation.value && (
-                      <div className="w-6 h-6 bg-[#18D043] rounded-full flex items-center justify-center">
-                        <span className="text-sm font-bold text-white">✓</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Información adicional para temporal */}
-        {selectedCategory === "temporal" && (
-          <div className="p-4 duration-300 border border-blue-200 bg-blue-50 rounded-xl animate-in fade-in">
-            <div className="flex items-center space-x-3">
-              <span className="text-2xl">ℹ️</span>
-              <div>
-                <p className="text-sm font-medium text-blue-800">
-                  Orientación automática: Horizontal
-                </p>
-                <p className="text-xs text-blue-600">
-                  Las líneas de vida temporales solo están disponibles en
-                  orientación horizontal
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Resumen de selección */}
-        {selectedCategory && selectedOrientation && (
-          <div className="p-4 border border-[#18D043] bg-[#18D043]/5 rounded-xl animate-in fade-in duration-300">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-[#18D043] rounded-full flex items-center justify-center">
-                <span className="font-bold text-white">✓</span>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-[#16a34a]">
-                  Selección completa:
-                </p>
-                <p className="text-sm text-gray-700">
-                  {categories.find((c) => c.value === selectedCategory)?.icon}{" "}
-                  Línea de Vida{" "}
-                  {selectedCategory === "permanente"
-                    ? "Permanente"
-                    : "Temporal"}{" "}
-                  -{" "}
-                  {
-                    availableOrientations.find(
-                      (o) => o.value === selectedOrientation
-                    )?.icon
-                  }{" "}
-                  {selectedOrientation === "horizontal"
-                    ? "Horizontal"
-                    : "Vertical"}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Error message */}
-        {error && (
-          <p className="flex items-center space-x-1 text-sm text-red-600">
-            <span className="text-red-500">⚠️</span>
-            <span>{error}</span>
-          </p>
-        )}
-      </div>
-    );
+  // Opciones de orientación (depende de la categoría)
+  const getOrientations = (category: string) => {
+    if (category === "temporal") {
+      // Solo horizontal para temporal
+      return [{ value: "horizontal", label: "Horizontal", icon: "🔗" }];
+    } else {
+      // Ambas opciones para permanente
+      return [
+        { value: "horizontal", label: "Horizontal", icon: "🔗" },
+        { value: "vertical", label: "Vertical", icon: "⬆️" },
+      ];
+    }
   };
+
+  // Efecto para sincronizar con el valor externo sin loops
+  React.useEffect(() => {
+    if (value && typeof value === "string" && value.includes("_")) {
+      const parts = value.split("_");
+      if (parts.length === 2) {
+        const [category, orientation] = parts;
+        setSelectedCategory((prev) => (prev !== category ? category : prev));
+        setSelectedOrientation((prev) =>
+          prev !== orientation ? orientation : prev
+        );
+      }
+    } else if (!value) {
+      setSelectedCategory((prev) => (prev !== "" ? "" : prev));
+      setSelectedOrientation((prev) => (prev !== "" ? "" : prev));
+    }
+  }, [value]);
+
+  // Manejar cambio de categoría sin re-renders
+  const handleCategoryClick = React.useCallback(
+    (categoryValue: string) => {
+      setSelectedCategory(categoryValue);
+      setSelectedOrientation(""); // Reset orientation
+
+      // Si es temporal, auto-seleccionar horizontal ya que es la única opción
+      if (categoryValue === "temporal") {
+        setSelectedOrientation("horizontal");
+        const finalValue = `${categoryValue}_horizontal`;
+        onChange(finalValue);
+      }
+    },
+    [onChange]
+  );
+
+  // Manejar cambio de orientación sin re-renders
+  const handleOrientationClick = React.useCallback(
+    (orientationValue: string) => {
+      setSelectedOrientation(orientationValue);
+      if (selectedCategory) {
+        const finalValue = `${selectedCategory}_${orientationValue}`;
+        onChange(finalValue);
+      }
+    },
+    [selectedCategory, onChange]
+  );
+
+  const availableOrientations = getOrientations(selectedCategory);
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <label className="block mb-2 text-sm font-semibold text-gray-700">
+          Tipo de Línea
+          {required && <span className="ml-1 text-red-500">*</span>}
+        </label>
+        <p className="mb-4 text-sm text-gray-600">
+          Paso 1: Selecciona el tipo de línea de vida
+        </p>
+      </div>
+
+      {/* Paso 1: Seleccionar categoría */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {categories.map((category) => (
+          <div
+            key={category.value}
+            className={`p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 ${
+              selectedCategory === category.value
+                ? "border-[#18D043] bg-[#18D043]/10 text-[#16a34a] shadow-md"
+                : "border-gray-200 hover:border-gray-300 text-gray-700 hover:shadow-sm"
+            }`}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleCategoryClick(category.value);
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <span className="text-2xl">{category.icon}</span>
+                <div>
+                  <p className="font-medium">{category.label}</p>
+                  <p className="text-xs text-gray-500">
+                    {category.value === "permanente"
+                      ? "Instalación fija"
+                      : "Instalación temporal"}
+                  </p>
+                </div>
+              </div>
+              {selectedCategory === category.value && (
+                <div className="w-6 h-6 bg-[#18D043] rounded-full flex items-center justify-center">
+                  <span className="text-sm font-bold text-white">✓</span>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Paso 2: Seleccionar orientación (solo si hay categoría seleccionada y es permanente) */}
+      {selectedCategory === "permanente" && (
+        <div className="space-y-4 duration-300 animate-in fade-in">
+          <p className="text-sm text-gray-600">
+            Paso 2: Selecciona la orientación
+          </p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {availableOrientations.map((orientation) => (
+              <div
+                key={orientation.value}
+                className={`p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 ${
+                  selectedOrientation === orientation.value
+                    ? "border-[#18D043] bg-[#18D043]/10 text-[#16a34a] shadow-md"
+                    : "border-gray-200 hover:border-gray-300 text-gray-700 hover:shadow-sm"
+                }`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleOrientationClick(orientation.value);
+                }}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-2xl">{orientation.icon}</span>
+                    <div>
+                      <p className="font-medium">{orientation.label}</p>
+                      <p className="text-xs text-gray-500">
+                        {orientation.value === "horizontal"
+                          ? "Línea paralela al suelo"
+                          : "Línea perpendicular al suelo"}
+                      </p>
+                    </div>
+                  </div>
+                  {selectedOrientation === orientation.value && (
+                    <div className="w-6 h-6 bg-[#18D043] rounded-full flex items-center justify-center">
+                      <span className="text-sm font-bold text-white">✓</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Información adicional para temporal */}
+      {selectedCategory === "temporal" && (
+        <div className="p-4 duration-300 border border-blue-200 bg-blue-50 rounded-xl animate-in fade-in">
+          <div className="flex items-center space-x-3">
+            <span className="text-2xl">ℹ️</span>
+            <div>
+              <p className="text-sm font-medium text-blue-800">
+                Orientación automática: Horizontal
+              </p>
+              <p className="text-xs text-blue-600">
+                Las líneas de vida temporales solo están disponibles en
+                orientación horizontal
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Resumen de selección */}
+      {selectedCategory && selectedOrientation && (
+        <div className="p-4 border border-[#18D043] bg-[#18D043]/5 rounded-xl animate-in fade-in duration-300">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-[#18D043] rounded-full flex items-center justify-center">
+              <span className="font-bold text-white">✓</span>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-[#16a34a]">
+                Selección completa:
+              </p>
+              <p className="text-sm text-gray-700">
+                {categories.find((c) => c.value === selectedCategory)?.icon}{" "}
+                Línea de Vida{" "}
+                {selectedCategory === "permanente" ? "Permanente" : "Temporal"}{" "}
+                -{" "}
+                {
+                  availableOrientations.find(
+                    (o) => o.value === selectedOrientation
+                  )?.icon
+                }{" "}
+                {selectedOrientation === "horizontal"
+                  ? "Horizontal"
+                  : "Vertical"}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Error message */}
+      {error && (
+        <p className="flex items-center space-x-1 text-sm text-red-600">
+          <span className="text-red-500">⚠️</span>
+          <span>{error}</span>
+        </p>
+      )}
+    </div>
+  );
+};
 
 export const RegistroForm: React.FC = () => {
   const navigate = useNavigate();
@@ -265,6 +266,8 @@ export const RegistroForm: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showNewClientForm, setShowNewClientForm] = useState(false);
   const [newClientName, setNewClientName] = useState("");
+  const [savedRecordId, setSavedRecordId] = useState<string | null>(null);
+  const [hasImage, setHasImage] = useState(false);
   const [clientesList, setClientesList] = useState([
     "Danper",
     "Chimu",
@@ -334,34 +337,6 @@ export const RegistroForm: React.FC = () => {
     formData.fecha_caducidad,
   ]);
 
-  // Opciones para el tipo de línea con estructura jerárquica
-  const tipoLineaOptions = [
-    {
-      value: "permanente_horizontal",
-      label: "🔗 Línea de Vida Permanente - Horizontal",
-      category: "permanente",
-      orientation: "horizontal",
-    },
-    {
-      value: "permanente_vertical",
-      label: "⬆️ Línea de Vida Permanente - Vertical",
-      category: "permanente",
-      orientation: "vertical",
-    },
-    {
-      value: "temporal_horizontal",
-      label: "🔗 Línea de Vida Temporal - Horizontal",
-      category: "temporal",
-      orientation: "horizontal",
-    },
-    {
-      value: "temporal_vertical",
-      label: "⬆️ Línea de Vida Temporal - Vertical",
-      category: "temporal",
-      orientation: "vertical",
-    },
-  ];
-
   // Hook para cargar registro con función estable
   const loadRegistroFunction = useCallback(
     (id: string) => recordsService.getRecordById(id),
@@ -411,9 +386,20 @@ export const RegistroForm: React.FC = () => {
   const { execute: createRecord, loading: creating } = useApi(
     createRecordFunction,
     {
-      onSuccess: () => {
-        success("Registro creado");
-        navigate("/registro");
+      onSuccess: (createdRecord) => {
+        setSavedRecordId(createdRecord.id);
+        if (currentStep < 4) {
+          // Si no estamos en el último paso, avanzar al paso de imagen
+          setCurrentStep(4);
+          success(
+            "Registro creado exitosamente",
+            "Ahora puedes agregar una imagen"
+          );
+        } else {
+          // Si ya estamos en el último paso o no queremos agregar imagen
+          success("Registro creado exitosamente");
+          navigate("/registro");
+        }
       },
       onError: (err) => showError("Error al guardar", err),
     }
@@ -474,6 +460,7 @@ export const RegistroForm: React.FC = () => {
       const venc = new Date(formData.fecha_caducidad);
       if (inst >= venc) e.fecha_caducidad = "Debe ser posterior a instalación";
     }
+    // Paso 4 (imagen) es opcional, no requiere validación
 
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -496,24 +483,30 @@ export const RegistroForm: React.FC = () => {
     ev.preventDefault();
     if (!validateStep(currentStep)) return;
 
-    const payload: Omit<DataRecord, "id"> = {
-      codigo: formData.codigo,
-      cliente: formData.cliente,
-      equipo: formData.equipo,
-      fv_anios: formData.fv_anios,
-      fv_meses: formData.fv_meses,
-      fecha_instalacion: formData.fecha_instalacion, // string YYYY-MM-DD
-      fecha_caducidad: formData.fecha_caducidad, // string YYYY-MM-DD
-      longitud: Number(formData.longitud),
-      observaciones: formData.observaciones || undefined,
-      seec: formData.seec,
-      tipo_linea: formData.tipo_linea,
-      ubicacion: formData.ubicacion,
-      estado_actual: formData.estado_actual,
-    };
+    // Solo procesar el formulario en los primeros 3 pasos
+    if (currentStep <= 3) {
+      const payload: Omit<DataRecord, "id"> = {
+        codigo: formData.codigo,
+        cliente: formData.cliente,
+        equipo: formData.equipo,
+        fv_anios: formData.fv_anios,
+        fv_meses: formData.fv_meses,
+        fecha_instalacion: formData.fecha_instalacion, // string YYYY-MM-DD
+        fecha_caducidad: formData.fecha_caducidad, // string YYYY-MM-DD
+        longitud: Number(formData.longitud),
+        observaciones: formData.observaciones || undefined,
+        seec: formData.seec,
+        tipo_linea: formData.tipo_linea,
+        ubicacion: formData.ubicacion,
+        estado_actual: formData.estado_actual,
+      };
 
-    if (isEditing && id) await updateRecord(id, payload);
-    else await createRecord(payload);
+      if (isEditing && id) {
+        await updateRecord(id, payload);
+      } else {
+        await createRecord(payload);
+      }
+    }
   };
 
   const handleChange = useCallback(
@@ -562,6 +555,30 @@ export const RegistroForm: React.FC = () => {
   };
 
   /* -------------------------------------------------
+     Handlers para imagen
+  ------------------------------------------------- */
+  const handleImageUploaded = useCallback(
+    (image: ImageResponse) => {
+      setHasImage(true);
+      success("Imagen agregada exitosamente");
+    },
+    [success]
+  );
+
+  const handleImageDeleted = useCallback(() => {
+    setHasImage(false);
+    success("Imagen eliminada");
+  }, [success]);
+
+  const handleFinishWithoutImage = useCallback(() => {
+    navigate("/registro");
+  }, [navigate]);
+
+  const handleFinishWithImage = useCallback(() => {
+    navigate("/registro");
+  }, [navigate]);
+
+  /* -------------------------------------------------
      UI helpers
   ------------------------------------------------- */
   const steps = [
@@ -588,6 +605,14 @@ export const RegistroForm: React.FC = () => {
       icon: Calendar,
       color: "text-green-600",
       bgColor: "bg-green-100",
+    },
+    {
+      number: 4,
+      title: "Imagen del Registro",
+      description: "Fotografía del equipo o instalación",
+      icon: Camera,
+      color: "text-orange-600",
+      bgColor: "bg-orange-100",
     },
   ];
 
@@ -911,10 +936,53 @@ export const RegistroForm: React.FC = () => {
               </div>
             )}
 
+            {currentStep === 4 && (
+              <div className="space-y-6">
+                {(savedRecordId || (isEditing && id)) && (
+                  <div className="mb-6 text-center">
+                    <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-orange-100 to-orange-200">
+                      <Camera className="w-8 h-8 text-orange-600" />
+                    </div>
+                    <h3 className="mb-2 text-xl font-semibold text-gray-900">
+                      Imagen del Registro
+                    </h3>
+                    <p className="max-w-lg mx-auto text-gray-600">
+                      Agrega una fotografía del equipo o instalación para
+                      completar el registro. Esta imagen será comprimida
+                      automáticamente para optimizar el almacenamiento.
+                    </p>
+                  </div>
+                )}
+
+                {savedRecordId || (isEditing && id) ? (
+                  <ImageUpload
+                    recordId={savedRecordId || id!}
+                    recordCode={formData.codigo}
+                    onImageUploaded={handleImageUploaded}
+                    onImageDeleted={handleImageDeleted}
+                    className="max-w-2xl mx-auto"
+                  />
+                ) : (
+                  <div className="p-8 text-center border border-yellow-200 bg-yellow-50 rounded-xl">
+                    <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-yellow-100 rounded-full">
+                      <Info className="w-8 h-8 text-yellow-600" />
+                    </div>
+                    <h3 className="mb-2 text-lg font-medium text-yellow-900">
+                      Primero guarda el registro
+                    </h3>
+                    <p className="text-yellow-700">
+                      Para agregar una imagen, primero debes completar y guardar
+                      la información básica del registro.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* ------- BOTONES ------- */}
             <div className="flex justify-between pt-8 mt-8 border-t border-gray-200">
               <div>
-                {currentStep > 1 && (
+                {currentStep > 1 && currentStep < 4 && (
                   <Button
                     type="button"
                     variant="outline"
@@ -938,7 +1006,37 @@ export const RegistroForm: React.FC = () => {
                   Cancelar
                 </Button>
 
-                {currentStep < 3 ? (
+                {currentStep === 4 ? (
+                  // Botones para el paso de imagen
+                  <div className="flex space-x-3">
+                    {!hasImage && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleFinishWithoutImage}
+                        disabled={isSubmitting}
+                      >
+                        Terminar sin imagen
+                      </Button>
+                    )}
+                    <Button
+                      type="button"
+                      onClick={
+                        hasImage
+                          ? handleFinishWithImage
+                          : handleFinishWithoutImage
+                      }
+                      disabled={isSubmitting}
+                      className={
+                        hasImage
+                          ? "bg-gradient-to-r from-[#18D043] to-[#16a34a]"
+                          : ""
+                      }
+                    >
+                      {hasImage ? "Finalizar registro" : "Terminar sin imagen"}
+                    </Button>
+                  </div>
+                ) : currentStep < 3 ? (
                   <Button
                     type="button"
                     onClick={handleNext}
@@ -946,18 +1044,17 @@ export const RegistroForm: React.FC = () => {
                   >
                     Siguiente
                   </Button>
-                ) : (
+                ) : currentStep === 3 ? (
                   <Button type="submit" icon={Save} loading={isSubmitting}>
                     {isSubmitting
                       ? isEditing
                         ? "Actualizando..."
                         : "Creando..."
                       : isEditing
-                      ? "Actualizar"
-                      : "Crear"}{" "}
-                    Registro
+                      ? "Actualizar Registro"
+                      : "Crear Registro"}
                   </Button>
-                )}
+                ) : null}
               </div>
             </div>
           </form>
