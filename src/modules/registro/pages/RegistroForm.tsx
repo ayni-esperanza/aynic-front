@@ -500,29 +500,31 @@ export const RegistroForm: React.FC = () => {
     ev.preventDefault();
     if (!validateStep(currentStep)) return;
 
-    // Solo procesar el formulario en los primeros 3 pasos
-    if (currentStep <= 3) {
-      const payload: Omit<DataRecord, "id"> = {
-        codigo: formData.codigo,
-        cliente: formData.cliente,
-        equipo: formData.equipo,
-        fv_anios: formData.fv_anios,
-        fv_meses: formData.fv_meses,
-        fecha_instalacion: formData.fecha_instalacion, // string YYYY-MM-DD
-        fecha_caducidad: formData.fecha_caducidad, // string YYYY-MM-DD
-        longitud: Number(formData.longitud),
-        observaciones: formData.observaciones || undefined,
-        seec: formData.seec,
-        tipo_linea: formData.tipo_linea,
-        ubicacion: formData.ubicacion,
-        estado_actual: formData.estado_actual,
-      };
+    if (currentStep < 4) {
+      handleNext();
+      return;
+    }
 
-      if (isEditing && id) {
-        await updateRecord(id, payload);
-      } else {
-        await createRecord(payload);
-      }
+    const payload: Omit<DataRecord, "id"> = {
+      codigo: formData.codigo,
+      cliente: formData.cliente,
+      equipo: formData.equipo,
+      fv_anios: formData.fv_anios,
+      fv_meses: formData.fv_meses,
+      fecha_instalacion: formData.fecha_instalacion,
+      fecha_caducidad: formData.fecha_caducidad,
+      longitud: Number(formData.longitud),
+      observaciones: formData.observaciones || undefined,
+      seec: formData.seec,
+      tipo_linea: formData.tipo_linea,
+      ubicacion: formData.ubicacion,
+      estado_actual: formData.estado_actual,
+    };
+
+    if (isEditing && id) {
+      await updateRecord(id, payload);
+    } else {
+      await createRecord(payload);
     }
   };
 
@@ -1024,37 +1026,6 @@ export const RegistroForm: React.FC = () => {
                 </Button>
 
                 {currentStep === 4 ? (
-                  // Botones para el paso de imagen
-                  <div className="flex space-x-3">
-                    {!hasImage ? (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handleFinishWithoutImage}
-                        disabled={isSubmitting}
-                      >
-                        Terminar sin imagen
-                      </Button>
-                    ) : (
-                      <Button
-                        type="button"
-                        onClick={handleFinishWithImage}
-                        disabled={isSubmitting}
-                        className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
-                      >
-                        Finalizar registro
-                      </Button>
-                    )}
-                  </div>
-                ) : currentStep < 3 ? (
-                  <Button
-                    type="button"
-                    onClick={handleNext}
-                    disabled={isSubmitting}
-                  >
-                    Siguiente
-                  </Button>
-                ) : currentStep === 3 ? (
                   <Button type="submit" icon={Save} loading={isSubmitting}>
                     {isSubmitting
                       ? isEditing
@@ -1064,7 +1035,17 @@ export const RegistroForm: React.FC = () => {
                       ? "Actualizar Registro"
                       : "Crear Registro"}
                   </Button>
-                ) : null}
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      if (validateStep(currentStep)) handleNext();
+                    }}
+                    disabled={isSubmitting}
+                  >
+                    Siguiente
+                  </Button>
+                )}
               </div>
             </div>
           </form>
