@@ -405,18 +405,12 @@ export const RegistroForm: React.FC = () => {
     {
       onSuccess: (createdRecord) => {
         setSavedRecordId(createdRecord.id);
-        if (currentStep < 4) {
-          // Si no estamos en el último paso, avanzar al paso de imagen
-          setCurrentStep(4);
-          success(
-            "Registro creado exitosamente",
-            "Ahora puedes agregar una imagen"
-          );
-        } else {
-          // Si ya estamos en el último paso o no queremos agregar imagen
-          success("Registro creado exitosamente");
-          navigate("/registro");
-        }
+        // NO navegar automáticamente, mantener en el paso 4
+        success(
+          "Registro creado exitosamente",
+          "Ahora puedes agregar una imagen o finalizar"
+        );
+        // NO llamar navigate("/registro") aquí
       },
       onError: (err) => showError("Error al guardar", err),
     }
@@ -498,6 +492,12 @@ export const RegistroForm: React.FC = () => {
 
   const handleSubmit = async (ev: React.FormEvent) => {
     ev.preventDefault();
+
+    // Si estamos en el paso 4 y ya se creó el registro, NO hacer nada
+    if (currentStep === 4 && savedRecordId && !isEditing) {
+      return; // Salir sin hacer nada
+    }
+
     if (!validateStep(currentStep)) return;
 
     if (currentStep < 4) {
@@ -523,7 +523,7 @@ export const RegistroForm: React.FC = () => {
 
     if (isEditing && id) {
       await updateRecord(id, payload);
-    } else {
+    } else if (!savedRecordId) {
       await createRecord(payload);
     }
   };
@@ -974,13 +974,15 @@ export const RegistroForm: React.FC = () => {
                 )}
 
                 {savedRecordId || (isEditing && id) ? (
-                  <ImageUpload
-                    recordId={savedRecordId || id!}
-                    recordCode={formData.codigo}
-                    onImageUploaded={handleImageUploaded}
-                    onImageDeleted={handleImageDeleted}
-                    className="max-w-2xl mx-auto"
-                  />
+                  <div onSubmit={(e) => e.preventDefault()}>
+                    <ImageUpload
+                      recordId={savedRecordId || id!}
+                      recordCode={formData.codigo}
+                      onImageUploaded={handleImageUploaded}
+                      onImageDeleted={handleImageDeleted}
+                      className="max-w-2xl mx-auto"
+                    />
+                  </div>
                 ) : (
                   <div className="p-8 text-center border border-yellow-200 bg-yellow-50 rounded-xl">
                     <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-yellow-100 rounded-full">
@@ -1001,7 +1003,7 @@ export const RegistroForm: React.FC = () => {
             {/* ------- BOTONES ------- */}
             <div className="flex justify-between pt-8 mt-8 border-t border-gray-200">
               <div>
-                {currentStep > 1 && currentStep < 4 && (
+                {currentStep > 1 && (
                   <Button
                     type="button"
                     variant="outline"
@@ -1026,15 +1028,30 @@ export const RegistroForm: React.FC = () => {
                 </Button>
 
                 {currentStep === 4 ? (
-                  <Button type="submit" icon={Save} loading={isSubmitting}>
-                    {isSubmitting
-                      ? isEditing
-                        ? "Actualizando..."
-                        : "Creando..."
-                      : isEditing
-                      ? "Actualizar Registro"
-                      : "Crear Registro"}
-                  </Button>
+                  <div className="flex space-x-3">
+                    {/* Para nuevos registros sin guardar */}
+                    {!isEditing && !savedRecordId && (
+                      <Button
+                        type="submit"
+                        icon={Save}
+                        loading={isSubmitting}
+                        className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
+                      >
+                        {isSubmitting ? "Creando..." : "Crear Registro"}
+                      </Button>
+                    )}
+
+                    {/* Para registros ya creados o editados */}
+                    {(savedRecordId || isEditing) && (
+                      <Button
+                        type="button"
+                        onClick={handleFinishWithoutImage}
+                        className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
+                      >
+                        {isEditing ? "Guardar Cambios" : "Finalizar"}
+                      </Button>
+                    )}
+                  </div>
                 ) : (
                   <Button
                     type="button"
@@ -1042,6 +1059,7 @@ export const RegistroForm: React.FC = () => {
                       if (validateStep(currentStep)) handleNext();
                     }}
                     disabled={isSubmitting}
+                    className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
                   >
                     Siguiente
                   </Button>
@@ -1049,6 +1067,202 @@ export const RegistroForm: React.FC = () => {
               </div>
             </div>
           </form>
+        </Card>
+
+        {/* Card de confirmación después de crear el registro */}
+        {currentStep === 4 && savedRecordId && (
+          <Card className="mt-6 border-green-200 bg-green-50">
+            <div className="p-6">
+              <div className="flex items-center mb-4 space-x-3">
+                <div className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-lg">
+                  <Check className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-green-900">
+                    ¡Registro creado exitosamente!
+                  </h4>
+                  <p className="text-sm text-green-700">
+                    ID: {savedRecordId} • Código: {formData.codigo}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
+                <div className="p-3 bg-white border border-green-200 rounded-lg">
+                  <div className="mb-1 font-medium text-green-900">
+                    📷 Agregar imagen
+                  </div>
+                  <div className="text-green-700">
+                    Opcional: Sube una foto del equipo para completar la
+                    documentación
+                  </div>
+                </div>
+                <div className="p-3 bg-white border border-green-200 rounded-lg">
+                  <div className="mb-1 font-medium text-green-900">
+                    ✅ Finalizar proceso
+                  </div>
+                  <div className="text-green-700">
+                    Puedes finalizar ahora o agregar la imagen más tarde
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between mt-4">
+                <div className="text-sm text-green-700">
+                  {hasImage ? (
+                    <span className="flex items-center space-x-1">
+                      <Camera className="w-4 h-4" />
+                      <span>Imagen agregada exitosamente</span>
+                    </span>
+                  ) : (
+                    <span>Sin imagen • Puedes agregar una más tarde</span>
+                  )}
+                </div>
+
+                <div className="flex space-x-2">
+                  {hasImage && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleFinishWithImage}
+                      className="text-white bg-green-600 hover:bg-green-700"
+                    >
+                      Finalizar con Imagen
+                    </Button>
+                  )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleFinishWithoutImage}
+                    className="text-green-700 border-green-300 hover:bg-green-100"
+                  >
+                    {hasImage ? "Finalizar" : "Finalizar sin Imagen"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Card de ayuda contextual */}
+        <Card className="mt-6 border-blue-200 bg-blue-50">
+          <div className="p-6">
+            <div className="flex items-center mb-4 space-x-3">
+              <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-lg">
+                <Info className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-blue-900">
+                  Ayuda: {steps[currentStep - 1].title}
+                </h4>
+                <p className="text-sm text-blue-700">
+                  Consejos para completar este paso
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3 text-sm text-blue-700">
+              {currentStep === 1 && (
+                <div className="space-y-2">
+                  <p>
+                    • <strong>Código:</strong> Usa un formato único como
+                    "COD-001" o "REG-2024-001"
+                  </p>
+                  <p>
+                    • <strong>Cliente:</strong> Busca en la lista o agrega uno
+                    nuevo con el botón "+"
+                  </p>
+                  <p>
+                    • <strong>Equipo:</strong> Identifica el equipo específico
+                    (ej: "Línea-Norte-A1")
+                  </p>
+                  <p>
+                    • <strong>SEEC:</strong> Código del sistema de seguridad
+                    (ej: "SEEC-001")
+                  </p>
+                </div>
+              )}
+
+              {currentStep === 2 && (
+                <div className="space-y-2">
+                  <p>
+                    • <strong>Tipo de Línea:</strong> Selecciona primero si es
+                    permanente o temporal
+                  </p>
+                  <p>
+                    • <strong>Orientación:</strong> Las líneas temporales solo
+                    pueden ser horizontales
+                  </p>
+                  <p>
+                    • <strong>Longitud:</strong> Ingresa solo números y punto
+                    decimal (ej: 150.5)
+                  </p>
+                  <p>
+                    • <strong>Ubicación:</strong> Sé específico: dirección,
+                    coordenadas o referencias claras
+                  </p>
+                </div>
+              )}
+
+              {currentStep === 3 && (
+                <div className="space-y-2">
+                  <p>
+                    • <strong>Fecha de Instalación:</strong> Selecciona la fecha
+                    real de instalación
+                  </p>
+                  <p>
+                    • <strong>Vida Útil:</strong> La fecha de caducidad se
+                    calcula automáticamente
+                  </p>
+                  <p>
+                    • <strong>Estado:</strong> Selecciona el estado actual del
+                    equipo
+                  </p>
+                  <p>
+                    • <strong>Tip:</strong> La fecha de caducidad debe ser
+                    posterior a la instalación
+                  </p>
+                </div>
+              )}
+
+              {currentStep === 4 && (
+                <div className="space-y-2">
+                  {!savedRecordId && !isEditing ? (
+                    <>
+                      <p>
+                        • <strong>Crear Registro:</strong> Primero guarda la
+                        información básica
+                      </p>
+                      <p>
+                        • <strong>Imagen Opcional:</strong> Después podrás
+                        agregar una foto del equipo
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p>
+                        • <strong>Formatos:</strong> JPG, JPEG, PNG (máximo
+                        10MB)
+                      </p>
+                      <p>
+                        • <strong>Compresión:</strong> Las imágenes se optimizan
+                        automáticamente
+                      </p>
+                      <p>
+                        • <strong>Opcional:</strong> Puedes agregar la imagen
+                        más tarde si prefieres
+                      </p>
+                      <p>
+                        • <strong>Calidad:</strong> Usa fotos claras y bien
+                        iluminadas del equipo
+                      </p>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
         </Card>
       </div>
     </div>
