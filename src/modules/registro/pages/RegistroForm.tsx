@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -61,14 +67,16 @@ const HierarchicalLineTypeSelect: React.FC<{
       const parts = value.split("_");
       if (parts.length === 2) {
         const [category, orientation] = parts;
-        setSelectedCategory((prev) => (prev !== category ? category : prev));
-        setSelectedOrientation((prev) =>
-          prev !== orientation ? orientation : prev
-        );
+        setTimeout(() => {
+          setSelectedCategory(category);
+          setSelectedOrientation(orientation);
+        }, 0);
       }
     } else if (!value) {
-      setSelectedCategory((prev) => (prev !== "" ? "" : prev));
-      setSelectedOrientation((prev) => (prev !== "" ? "" : prev));
+      setTimeout(() => {
+        setSelectedCategory("");
+        setSelectedOrientation("");
+      }, 0);
     }
   }, [value]);
 
@@ -268,6 +276,8 @@ export const RegistroForm: React.FC = () => {
   const [newClientName, setNewClientName] = useState("");
   const [savedRecordId, setSavedRecordId] = useState<string | null>(null);
   const [hasImage, setHasImage] = useState(false);
+  const [hasLoadedRecord, setHasLoadedRecord] = useState(false);
+  const loadedRef = useRef(false);
   const [clientesList, setClientesList] = useState([
     "Danper",
     "Chimu",
@@ -304,9 +314,8 @@ export const RegistroForm: React.FC = () => {
 
   // Lógica automática de fecha de caducidad
   useEffect(() => {
-    const { fecha_instalacion, fv_anios, fv_meses, fecha_caducidad } = formData;
+    const { fecha_instalacion, fv_anios, fv_meses } = formData;
 
-    // Solo si hay fecha y al menos 1 año o 1 mes de vida útil
     if (fecha_instalacion && (Number(fv_anios) > 0 || Number(fv_meses) > 0)) {
       const inst = new Date(fecha_instalacion);
       if (!isNaN(inst.getTime())) {
@@ -314,15 +323,14 @@ export const RegistroForm: React.FC = () => {
         venc.setFullYear(venc.getFullYear() + Number(fv_anios));
         venc.setMonth(venc.getMonth() + Number(fv_meses));
 
-        // Maneja días de fin de mes (por si se desfasa)
         if (inst.getDate() !== venc.getDate()) {
           venc.setDate(0);
         }
 
         const fechaVenc = venc.toISOString().split("T")[0];
 
-        // Solo actualiza si no es igual
-        if (fecha_caducidad !== fechaVenc) {
+        // Solo actualiza si es diferente Y si no está vacía la fecha de caducidad actual
+        if (formData.fecha_caducidad !== fechaVenc) {
           setFormData((f) => ({
             ...f,
             fecha_caducidad: fechaVenc,
@@ -330,18 +338,23 @@ export const RegistroForm: React.FC = () => {
         }
       }
     }
-  }, [
-    formData.fecha_instalacion,
-    formData.fv_anios,
-    formData.fv_meses,
-    formData.fecha_caducidad,
-  ]);
+  }, [formData.fecha_instalacion, formData.fv_anios, formData.fv_meses]);
+
+  useEffect(() => {
+    return () => {
+      // Cleanup cuando el componente se desmonte
+      loadedRef.current = false;
+      setHasLoadedRecord(false);
+    };
+  }, []);
 
   // Hook para cargar registro con función estable
-  const loadRegistroFunction = useCallback(
-    (id: string) => recordsService.getRecordById(id),
-    []
-  );
+  const loadRegistroFunction = useCallback((id: string) => {
+    if (!id || id === "undefined" || id === "null") {
+      throw new Error("ID de registro inválido");
+    }
+    return recordsService.getRecordById(id);
+  }, []);
 
   const {
     data: registro,
@@ -370,9 +383,13 @@ export const RegistroForm: React.FC = () => {
         fecha_caducidad: formatDateForInput(data.fecha_caducidad),
         estado_actual: data.estado_actual,
       });
+      loadedRef.current = false;
+      setHasLoadedRecord(false);
     },
     onError: (err) => {
       showError("Error al cargar registro", err);
+      loadedRef.current = false;
+      setHasLoadedRecord(false);
       navigate("/registro");
     },
   });
@@ -422,15 +439,15 @@ export const RegistroForm: React.FC = () => {
     }
   );
 
-  /* -------------------------------------------------
-     Efectos
-  ------------------------------------------------- */
   // Cargar registro solo una vez cuando se está editando
   useEffect(() => {
-    if (isEditing && id) {
+    if (isEditing && id && !loadedRef.current && !loadingRegistro) {
+      console.log("Cargando registro:", id);
+      loadedRef.current = true;
+      setHasLoadedRecord(true);
       loadRegistro(id);
     }
-  }, [isEditing, id, loadRegistro]);
+  }, [isEditing, id]);
 
   /* -------------------------------------------------
      Validaciones por paso
@@ -511,24 +528,24 @@ export const RegistroForm: React.FC = () => {
 
   const handleChange = useCallback(
     (field: string, value: any) => {
-      if (field === "longitud") {
-        // Solo permitir números, punto decimal y cadena vacía
-        const numericValue = value.replace(/[^0-9.]/g, "");
+      setTimeout(() => {
+        if (field === "longitud") {
+          const numericValue = value.replace(/[^0-9.]/g, "");
+          const parts = numericValue.split(".");
+          const sanitizedValue =
+            parts.length > 2
+              ? parts[0] + "." + parts.slice(1).join("")
+              : numericValue;
 
-        // Prevenir múltiples puntos decimales
-        const parts = numericValue.split(".");
-        const sanitizedValue =
-          parts.length > 2
-            ? parts[0] + "." + parts.slice(1).join("")
-            : numericValue;
+          setFormData((p) => ({ ...p, [field]: sanitizedValue }));
+        } else {
+          setFormData((p) => ({ ...p, [field]: value }));
+        }
 
-        setFormData((p) => ({ ...p, [field]: sanitizedValue }));
-      } else {
-        setFormData((p) => ({ ...p, [field]: value }));
-      }
-      if (errors[field]) {
-        setErrors((p) => ({ ...p, [field]: "" }));
-      }
+        if (errors[field]) {
+          setErrors((p) => ({ ...p, [field]: "" }));
+        }
+      }, 0);
     },
     [errors]
   );
