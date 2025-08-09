@@ -1026,7 +1026,7 @@ export const RegistroForm: React.FC = () => {
                 {currentStep === 4 ? (
                   // Botones para el paso de imagen
                   <div className="flex space-x-3">
-                    {!hasImage && (
+                    {!hasImage ? (
                       <Button
                         type="button"
                         variant="outline"
@@ -1035,23 +1035,16 @@ export const RegistroForm: React.FC = () => {
                       >
                         Terminar sin imagen
                       </Button>
+                    ) : (
+                      <Button
+                        type="button"
+                        onClick={handleFinishWithImage}
+                        disabled={isSubmitting}
+                        className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
+                      >
+                        Finalizar registro
+                      </Button>
                     )}
-                    <Button
-                      type="button"
-                      onClick={
-                        hasImage
-                          ? handleFinishWithImage
-                          : handleFinishWithoutImage
-                      }
-                      disabled={isSubmitting}
-                      className={
-                        hasImage
-                          ? "bg-gradient-to-r from-[#18D043] to-[#16a34a]"
-                          : ""
-                      }
-                    >
-                      {hasImage ? "Finalizar registro" : "Terminar sin imagen"}
-                    </Button>
                   </div>
                 ) : currentStep < 3 ? (
                   <Button
