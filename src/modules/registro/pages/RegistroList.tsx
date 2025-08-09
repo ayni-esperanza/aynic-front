@@ -306,7 +306,7 @@ export const RegistroList: React.FC = () => {
             <div>
               <div className="font-semibold text-gray-900">{String(value)}</div>
               {recordImages.has(registro.id) && (
-                <div className="text-xs text-orange-600">📷 Con imagen</div>
+                <div className="text-xs text-orange-600">Con imagen</div>
               )}
             </div>
           </div>
@@ -651,9 +651,6 @@ export const RegistroList: React.FC = () => {
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#18D043]/10 text-[#16a34a]">
                 {pagination.totalItems} registros
               </span>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                {recordImages.size} con imagen
-              </span>
             </p>
           </div>
         </div>
@@ -678,93 +675,86 @@ export const RegistroList: React.FC = () => {
       </div>
 
       {/* Estadísticas rápidas */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
-        <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
-          <div className="flex items-center justify-between p-4">
+      <div className="grid gap-4 items-stretch [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
+        <Card className="h-full border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
+          <div className="flex items-center justify-between h-full p-4">
             <div>
               <p className="text-sm font-medium text-blue-600">Total</p>
-              <div className="text-2xl font-bold text-blue-900 min-h-[1.6rem] flex items-center justify-center">
+              <div className="text-2xl font-bold text-blue-900 min-h-[1.6rem] flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
-                  estadisticas?.total || 0
+                  estadisticas?.total ?? 0
                 )}
               </div>
             </div>
             <div className="text-2xl">📊</div>
           </div>
         </Card>
-        <Card className="border-green-200 bg-gradient-to-br from-green-50 to-green-100">
-          <div className="flex items-center justify-between p-4">
+
+        <Card className="h-full border-green-200 bg-gradient-to-br from-green-50 to-green-100">
+          <div className="flex items-center justify-between h-full p-4">
             <div>
               <p className="text-sm font-medium text-green-600">Activos</p>
-              <div className="text-2xl font-bold text-green-900 min-h-[1.6rem] flex items-center justify-center">
+              <div className="text-2xl font-bold text-green-900 min-h-[1.6rem] flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
-                  estadisticas?.activos || 0
+                  estadisticas?.activos ?? 0
                 )}
               </div>
             </div>
             <div className="text-2xl">🟢</div>
           </div>
         </Card>
-        <Card className="border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100">
-          <div className="flex items-center justify-between p-4">
+
+        <Card className="h-full border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100">
+          <div className="flex items-center justify-between h-full p-4">
             <div>
               <p className="text-sm font-medium text-yellow-600">Por Vencer</p>
-              <div className="text-2xl font-bold text-yellow-900 min-h-[1.6rem] flex items-center justify-center">
+              <div className="text-2xl font-bold text-yellow-900 min-h-[1.6rem] flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
-                  estadisticas?.por_vencer || 0
+                  estadisticas?.por_vencer ?? 0
                 )}
               </div>
             </div>
             <div className="text-2xl">🟡</div>
           </div>
         </Card>
-        <Card className="border-red-200 bg-gradient-to-br from-red-50 to-red-100">
-          <div className="flex items-center justify-between p-4">
+
+        <Card className="h-full border-red-200 bg-gradient-to-br from-red-50 to-red-100">
+          <div className="flex items-center justify-between h-full p-4">
             <div>
               <p className="text-sm font-medium text-red-600">Vencidos</p>
-              <div className="text-2xl font-bold text-red-900 min-h-[1.6rem] flex items-center justify-center">
+              <div className="text-2xl font-bold text-red-900 min-h-[1.6rem] flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
-                  estadisticas?.vencidos || 0
+                  estadisticas?.vencidos ?? 0
                 )}
               </div>
             </div>
             <div className="text-2xl">🔴</div>
           </div>
         </Card>
-        <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100">
-          <div className="flex items-center justify-between p-4">
+
+        <Card className="h-full border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100">
+          <div className="flex items-center justify-between h-full p-4">
             <div>
               <p className="text-sm font-medium text-orange-600">
                 Mantenimiento
               </p>
-              <div className="text-2xl font-bold text-orange-900 min-h-[1.6rem] flex items-center justify-center">
+              <div className="text-2xl font-bold text-orange-900 min-h-[1.6rem] flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
-                  estadisticas?.mantenimiento || 0
+                  estadisticas?.mantenimiento ?? 0
                 )}
               </div>
             </div>
             <div className="text-2xl">🔧</div>
-          </div>
-        </Card>
-        <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100">
-          <div className="flex items-center justify-between p-4">
-            <div>
-              <p className="text-sm font-medium text-purple-600">Con Imagen</p>
-              <div className="text-2xl font-bold text-purple-900 min-h-[1.6rem] flex items-center justify-center">
-                {recordImages.size}
-              </div>
-            </div>
-            <div className="text-2xl">📷</div>
           </div>
         </Card>
       </div>
@@ -1000,40 +990,6 @@ export const RegistroList: React.FC = () => {
           </div>
         )}
       </Card>
-
-      {/* Información adicional sobre imágenes */}
-      {recordImages.size > 0 && (
-        <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-amber-50">
-          <div className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center justify-center w-10 h-10 bg-orange-100 rounded-full">
-                  <ImageIcon className="w-5 h-5 text-orange-600" />
-                </div>
-                <div>
-                  <h4 className="font-medium text-orange-900">
-                    Registros con documentación visual
-                  </h4>
-                  <p className="text-sm text-orange-700">
-                    {recordImages.size} de {pagination.totalItems} registros
-                    tienen imágenes asociadas
-                  </p>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-orange-900">
-                  {Math.round(
-                    (recordImages.size / Math.max(pagination.totalItems, 1)) *
-                      100
-                  )}
-                  %
-                </div>
-                <div className="text-xs text-orange-600">Con imagen</div>
-              </div>
-            </div>
-          </div>
-        </Card>
-      )}
     </div>
   );
 };

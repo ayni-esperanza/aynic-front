@@ -1102,7 +1102,7 @@ export const RegistroDetail: React.FC = () => {
                 </p>
                 {currentImage && (
                   <p className="mt-1 text-xs text-green-200">
-                    📷 Con imagen documentada
+                    Con imagen documentada
                   </p>
                 )}
               </div>

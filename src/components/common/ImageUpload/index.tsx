@@ -3,8 +3,6 @@ import {
   Upload,
   X,
   Eye,
-  Edit,
-  Trash2,
   Image as ImageIcon,
   Camera,
   CheckCircle,
@@ -32,6 +30,7 @@ interface ImageUploadProps {
   onImageDeleted?: () => void;
   disabled?: boolean;
   className?: string;
+  readOnly?: boolean;
 }
 
 export const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -44,6 +43,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   onImageDeleted,
   disabled = false,
   className = "",
+  readOnly = false,
 }) => {
   const { success, error: showError } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -62,7 +62,6 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [description, setDescription] = useState("");
   const [showImageModal, setShowImageModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
 
   // Hook para cargar imagen existente - Función estable
   const loadImageFunction = useCallback(
@@ -195,7 +194,6 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     {
       onSuccess: (image) => {
         setCurrentImage(image);
-        setShowEditModal(false);
         success("Descripción actualizada");
       },
       onError: (error) => {
@@ -237,10 +235,10 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     skipInitialLoad,
     externalCurrentImage,
     initialImage,
-    currentImage
+    currentImage,
   ]);
 
-  // Sincronizar con imagen externa (solo cuando cambia)
+  // Sincronizar con imagen externa
   useEffect(() => {
     if (
       externalCurrentImage !== undefined &&
@@ -347,21 +345,6 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     }
   }, [previewUrl]);
 
-  const handleDeleteImage = useCallback(async () => {
-    if (!currentImage) return;
-
-    if (confirm("¿Estás seguro de que quieres eliminar esta imagen?")) {
-      await deleteImage(recordId);
-    }
-  }, [currentImage, recordId, deleteImage]);
-
-  const handleUpdateDescription = useCallback(
-    async (newDescription: string) => {
-      await updateMetadata({ recordId, description: newDescription });
-    },
-    [recordId, updateMetadata]
-  );
-
   const isProcessing = uploading || replacing || deleting || updatingMetadata;
 
   return (
@@ -378,31 +361,17 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
               className="object-cover w-full h-64 transition-opacity cursor-pointer hover:opacity-90"
               onClick={() => setShowImageModal(true)}
             />
-            <div className="absolute flex space-x-1 top-2 right-2">
-              <Button
-                size="sm"
-                variant="outline"
-                className="text-gray-700 border-gray-300 bg-white/90 hover:bg-white"
-                onClick={() => setShowImageModal(true)}
-                icon={Eye}
-              />
-              <Button
-                size="sm"
-                variant="outline"
-                className="text-gray-700 border-gray-300 bg-white/90 hover:bg-white"
-                onClick={() => setShowEditModal(true)}
-                icon={Edit}
-                disabled={isProcessing}
-              />
-              <Button
-                size="sm"
-                variant="danger"
-                className="text-white bg-red-500/90 hover:bg-red-500"
-                onClick={handleDeleteImage}
-                icon={Trash2}
-                disabled={isProcessing}
-              />
-            </div>
+            {readOnly && (
+              <div className="absolute flex space-x-1 top-2 right-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-gray-700 border-gray-300 bg-white/90 hover:bg-white"
+                  onClick={() => setShowImageModal(true)}
+                  icon={Eye}
+                />
+              </div>
+            )}
           </div>
 
           <div className="p-4">
@@ -433,17 +402,6 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                   )}
                 </div>
               </div>
-
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => fileInputRef.current?.click()}
-                icon={Camera}
-                disabled={disabled || isProcessing}
-                className="ml-3"
-              >
-                Cambiar
-              </Button>
             </div>
 
             {currentImage.compression_info && (
@@ -476,8 +434,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         </Card>
       )}
 
-      {/* Vista previa del archivo seleccionado */}
-      {previewFile && (
+      {/* Vista previa del archivo seleccionado - NO MOSTRAR EN READONLY */}
+      {!readOnly && previewFile && (
         <Card className="border-blue-200 bg-blue-50">
           <div className="p-4">
             <div className="flex items-center justify-between mb-4">
@@ -547,8 +505,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         </Card>
       )}
 
-      {/* Área de subida (solo mostrar si no hay imagen actual ni preview) */}
-      {!currentImage && !previewFile && (
+      {/* Área de subida - NO MOSTRAR EN READONLY */}
+      {!readOnly && !currentImage && !previewFile && (
         <Card
           className={`border-2 border-dashed transition-all duration-200 ${
             dragOver
@@ -602,15 +560,34 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         </Card>
       )}
 
-      {/* Input file oculto */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/jpeg,image/jpg,image/png"
-        onChange={handleFileInputChange}
-        className="hidden"
-        disabled={disabled || isProcessing}
-      />
+      {/* MENSAJE CUANDO NO HAY IMAGEN EN MODO READONLY */}
+      {readOnly && !currentImage && (
+        <Card className="border-2 border-gray-300 border-dashed">
+          <div className="p-16 text-center">
+            <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full">
+              <ImageIcon className="w-10 h-10 text-gray-400" />
+            </div>
+            <h4 className="mb-3 text-xl font-medium text-gray-900">
+              Sin imagen disponible
+            </h4>
+            <p className="max-w-sm mx-auto text-gray-500">
+              No se ha asociado ninguna imagen a este registro.
+            </p>
+          </div>
+        </Card>
+      )}
+
+      {/* Input file oculto - NO EN READONLY */}
+      {!readOnly && (
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/jpg,image/png"
+          onChange={handleFileInputChange}
+          className="hidden"
+          disabled={disabled || isProcessing}
+        />
+      )}
 
       {/* Modal para ver imagen completa */}
       {showImageModal && currentImage && (
@@ -635,74 +612,6 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
               </div>
             )}
           </div>
-        </div>
-      )}
-
-      {/* Modal para editar descripción */}
-      {showEditModal && currentImage && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <Card className="w-full max-w-md">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Editar descripción
-                </h3>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowEditModal(false)}
-                  icon={X}
-                  disabled={updatingMetadata}
-                />
-              </div>
-
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const formData = new FormData(e.currentTarget);
-                  const newDescription = formData.get("description") as string;
-                  handleUpdateDescription(newDescription);
-                }}
-                className="space-y-4"
-              >
-                <div>
-                  <label className="block mb-2 text-sm font-medium text-gray-700">
-                    Descripción
-                  </label>
-                  <textarea
-                    name="description"
-                    defaultValue={currentImage.description || ""}
-                    placeholder="Describe la imagen..."
-                    rows={3}
-                    maxLength={500}
-                    disabled={updatingMetadata}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#18D043]/20 focus:border-[#18D043] resize-none"
-                  />
-                  <p className="mt-1 text-xs text-gray-500">
-                    Máximo 500 caracteres
-                  </p>
-                </div>
-
-                <div className="flex justify-end space-x-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowEditModal(false)}
-                    disabled={updatingMetadata}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    type="submit"
-                    loading={updatingMetadata}
-                    icon={CheckCircle}
-                  >
-                    Guardar
-                  </Button>
-                </div>
-              </form>
-            </div>
-          </Card>
         </div>
       )}
     </div>
