@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
@@ -12,20 +12,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   requiredRoles = [],
 }) => {
-  const { isAuthenticated, user, loading, isInitialized, checkAuthStatus } =
+  const { isAuthenticated, user, loading, isInitialized } =
     useAuthStore();
   const location = useLocation();
-
-  // Verificar autenticación periódicamente (cada 5 minutos)
-  useEffect(() => {
-    if (isAuthenticated && isInitialized) {
-      const interval = setInterval(() => {
-        checkAuthStatus();
-      }, 5 * 60 * 1000); // 5 minutos
-
-      return () => clearInterval(interval);
-    }
-  }, [isAuthenticated, isInitialized, checkAuthStatus]);
 
   // Si aún no se ha inicializado, mostrar loading
   if (!isInitialized) {

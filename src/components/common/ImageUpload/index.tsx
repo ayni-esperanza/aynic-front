@@ -237,8 +237,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     skipInitialLoad,
     externalCurrentImage,
     initialImage,
-    currentImage,
-    loadImage,
+    currentImage
   ]);
 
   // Sincronizar con imagen externa (solo cuando cambia)

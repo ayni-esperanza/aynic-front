@@ -132,18 +132,18 @@ const AlertMetricCard: React.FC<{
     >
       <div className="flex items-center justify-between p-6">
         <div className="flex-1">
-          <p className={`text-sm font-medium ${colors.icon}`}>{title}</p>
+          <div className={`text-sm font-medium ${colors.icon}`}>{title}</div>
           <div className="flex items-center mt-2">
             {loading ? (
               <LoadingSpinner size="sm" className="mr-2" />
             ) : (
-              <p className={`text-3xl font-bold ${colors.text}`}>
+              <div className={`text-3xl font-bold ${colors.text}`}>
                 {typeof value === "number" ? value.toLocaleString() : value}
-              </p>
+              </div>
             )}
           </div>
           {description && (
-            <p className="mt-1 text-xs text-gray-600">{description}</p>
+            <div className="mt-1 text-xs text-gray-600">{description}</div>
           )}
           {trend && (
             <div className="flex items-center mt-2">
@@ -257,9 +257,9 @@ const AlertItem: React.FC<{
               )}
             </div>
 
-            <p className={`text-sm font-medium ${priorityConfig.color} mb-2`}>
+            <div className={`text-sm font-medium ${priorityConfig.color} mb-2`}>
               {alert.mensaje}
-            </p>
+            </div>
 
             {alert.record && (
               <div className="p-2 mb-2 bg-white border border-gray-100 rounded-lg">
@@ -351,7 +351,12 @@ export const Dashboard: React.FC = () => {
         setAlertStats(data);
       },
       onError: (error) => {
-        showError("Error al cargar estadísticas de alertas", error);
+        showError(
+          "Error al cargar estadísticas de alertas",
+          (typeof error === "object" && error !== null && "message" in error)
+            ? (error as Error).message
+            : String(error)
+        );
       },
     }
   );
@@ -407,10 +412,13 @@ export const Dashboard: React.FC = () => {
       }
     } catch (error) {
       if (mountedRef.current) {
-        showError("Error al cargar estadísticas de alertas", error);
+        showError(
+          "Error al cargar estadísticas de alertas",
+          error instanceof Error ? error.message : String(error)
+        );
       }
     }
-  }, [showError]);
+  }, []);
 
   useEffect(() => {
     mountedRef.current = true;

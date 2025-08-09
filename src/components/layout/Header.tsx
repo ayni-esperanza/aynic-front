@@ -99,13 +99,6 @@ export const Header: React.FC = () => {
     // Cargar alertas inicial
     loadAlertsStable();
 
-    // Configurar intervalo con cleanup
-    intervalRef.current = setInterval(() => {
-      if (mountedRef.current && document.visibilityState === "visible") {
-        loadAlertsStable();
-      }
-    }, 10 * 60 * 1000);
-
     return () => {
       mountedRef.current = false;
       if (intervalRef.current) {

@@ -191,14 +191,7 @@ export const RegistroList: React.FC = () => {
     } catch (error) {
       console.error("Error refreshing data:", error);
     }
-  }, [
-    pagination.currentPage,
-    pagination.itemsPerPage,
-    searchTerm,
-    statusFilter,
-    loadRegistros,
-    loadStats,
-  ]);
+  }, []);
 
   const handleSearchChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {

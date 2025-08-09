@@ -44,7 +44,7 @@ const GlobalErrorHandler: React.FC<{ children: React.ReactNode }> = ({
       );
       window.removeEventListener("error", handleGlobalError);
     };
-  }, [showError]);
+  }, []);
 
   return <>{children}</>;
 };
