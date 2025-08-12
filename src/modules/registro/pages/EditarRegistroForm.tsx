@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   Save,
@@ -25,7 +25,6 @@ import { ImageUpload } from "../../../components/common/ImageUpload";
 import type { DataRecord } from "../../../types";
 import type { ImageResponse } from "../../../services/imageService";
 
-// Componente HierarchicalSelect para tipos de línea
 const HierarchicalLineTypeSelect: React.FC<{
   value: string;
   onChange: (value: string) => void;
@@ -35,19 +34,15 @@ const HierarchicalLineTypeSelect: React.FC<{
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedOrientation, setSelectedOrientation] = useState<string>("");
 
-  // Opciones de categorías
   const categories = [
     { value: "permanente", label: "Línea de Vida Permanente", icon: "🔒" },
     { value: "temporal", label: "Línea de Vida Temporal", icon: "⏱️" },
   ];
 
-  // Opciones de orientación (depende de la categoría)
   const getOrientations = (category: string) => {
     if (category === "temporal") {
-      // Solo horizontal para temporal
       return [{ value: "horizontal", label: "Horizontal", icon: "🔗" }];
     } else {
-      // Ambas opciones para permanente
       return [
         { value: "horizontal", label: "Horizontal", icon: "🔗" },
         { value: "vertical", label: "Vertical", icon: "⬆️" },
@@ -55,7 +50,6 @@ const HierarchicalLineTypeSelect: React.FC<{
     }
   };
 
-  // Efecto para sincronizar con el valor externo sin loops
   React.useEffect(() => {
     if (value && typeof value === "string" && value.includes("_")) {
       const parts = value.split("_");
@@ -74,13 +68,11 @@ const HierarchicalLineTypeSelect: React.FC<{
     }
   }, [value]);
 
-  // Manejar cambio de categoría sin re-renders
   const handleCategoryClick = React.useCallback(
     (categoryValue: string) => {
       setSelectedCategory(categoryValue);
-      setSelectedOrientation(""); // Reset orientation
+      setSelectedOrientation("");
 
-      // Si es temporal, auto-seleccionar horizontal ya que es la única opción
       if (categoryValue === "temporal") {
         setSelectedOrientation("horizontal");
         const finalValue = `${categoryValue}_horizontal`;
@@ -90,7 +82,6 @@ const HierarchicalLineTypeSelect: React.FC<{
     [onChange]
   );
 
-  // Manejar cambio de orientación sin re-renders
   const handleOrientationClick = React.useCallback(
     (orientationValue: string) => {
       setSelectedOrientation(orientationValue);
@@ -116,7 +107,6 @@ const HierarchicalLineTypeSelect: React.FC<{
         </p>
       </div>
 
-      {/* Paso 1: Seleccionar categoría */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {categories.map((category) => (
           <div
@@ -154,7 +144,6 @@ const HierarchicalLineTypeSelect: React.FC<{
         ))}
       </div>
 
-      {/* Paso 2: Seleccionar orientación (solo si hay categoría seleccionada y es permanente) */}
       {selectedCategory === "permanente" && (
         <div className="space-y-4 duration-300 animate-in fade-in">
           <p className="text-sm text-gray-600">
@@ -199,7 +188,6 @@ const HierarchicalLineTypeSelect: React.FC<{
         </div>
       )}
 
-      {/* Información adicional para temporal */}
       {selectedCategory === "temporal" && (
         <div className="p-4 duration-300 border border-blue-200 bg-blue-50 rounded-xl animate-in fade-in">
           <div className="flex items-center space-x-3">
@@ -217,7 +205,6 @@ const HierarchicalLineTypeSelect: React.FC<{
         </div>
       )}
 
-      {/* Resumen de selección */}
       {selectedCategory && selectedOrientation && (
         <div className="p-4 border border-[#18D043] bg-[#18D043]/5 rounded-xl animate-in fade-in duration-300">
           <div className="flex items-center space-x-3">
@@ -247,7 +234,6 @@ const HierarchicalLineTypeSelect: React.FC<{
         </div>
       )}
 
-      {/* Error message */}
       {error && (
         <p className="flex items-center space-x-1 text-sm text-red-600">
           <span className="text-red-500">⚠️</span>
@@ -258,16 +244,19 @@ const HierarchicalLineTypeSelect: React.FC<{
   );
 };
 
-export const RegistroForm: React.FC = () => {
+export const EditarRegistroForm: React.FC = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
   const { success, error: showError } = useToast();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showNewClientForm, setShowNewClientForm] = useState(false);
   const [newClientName, setNewClientName] = useState("");
-  const [savedRecordId, setSavedRecordId] = useState<string | null>(null);
   const [hasImage, setHasImage] = useState(false);
+  const [hasLoadedRecord, setHasLoadedRecord] = useState(false);
+  const loadedRef = useRef(false);
+
   const [clientesList, setClientesList] = useState([
     "Danper",
     "Chimu",
@@ -329,28 +318,85 @@ export const RegistroForm: React.FC = () => {
     }
   }, [formData.fecha_instalacion, formData.fv_anios, formData.fv_meses]);
 
-  // Hook para crear registro con función estable
-  const createRecordFunction = useCallback(
-    (data: any) => recordsService.createRecord(data),
+  useEffect(() => {
+    return () => {
+      loadedRef.current = false;
+      setHasLoadedRecord(false);
+    };
+  }, []);
+
+  // Hook para cargar registro
+  const loadRegistroFunction = useCallback((id: string) => {
+    if (!id || id === "undefined" || id === "null") {
+      throw new Error("ID de registro inválido");
+    }
+    return recordsService.getRecordById(id);
+  }, []);
+
+  const {
+    data: registro,
+    loading: loadingRegistro,
+    execute: loadRegistro,
+  } = useApi(loadRegistroFunction, {
+    onSuccess: (data) => {
+      const formatDateForInput = (d: Date | string | null) => {
+        if (!d) return "";
+        const date = d instanceof Date ? d : new Date(d);
+        return isNaN(date.getTime()) ? "" : date.toISOString().split("T")[0];
+      };
+
+      setFormData({
+        codigo: data.codigo,
+        cliente: data.cliente,
+        equipo: data.equipo,
+        fv_anios: data.fv_anios,
+        fv_meses: data.fv_meses,
+        fecha_instalacion: formatDateForInput(data.fecha_instalacion),
+        longitud: data.longitud,
+        observaciones: data.observaciones || "",
+        seec: data.seec,
+        tipo_linea: data.tipo_linea,
+        ubicacion: data.ubicacion,
+        fecha_caducidad: formatDateForInput(data.fecha_caducidad),
+        estado_actual: data.estado_actual,
+      });
+    },
+    onError: (err) => {
+      showError("Error al cargar registro", err);
+      navigate("/registro");
+    },
+  });
+
+  // Hook para actualizar registro
+  const updateRecordFunction = useCallback(
+    (id: string, data: any) => recordsService.updateRecord(id, data),
     []
   );
 
-  const { execute: createRecord, loading: creating } = useApi(
-    createRecordFunction,
+  const { execute: updateRecord, loading: updating } = useApi(
+    updateRecordFunction,
     {
-      onSuccess: (createdRecord) => {
-        setSavedRecordId(createdRecord.id);
-        success(
-          "Registro creado exitosamente",
-          "Ahora puedes agregar una imagen o finalizar"
-        );
+      onSuccess: () => {
+        success("Registro actualizado exitosamente");
+        navigate("/registro");
       },
-      onError: (err) => showError("Error al guardar", err),
+      onError: (err) => showError("Error al actualizar", err),
     }
   );
 
+  // Cargar registro cuando se está editando
+  useEffect(() => {
+    if (id && !loadedRef.current && !loadingRegistro) {
+      loadedRef.current = true;
+      setHasLoadedRecord(true);
+      loadRegistro(id);
+    }
+  }, [id, loadingRegistro, loadRegistro]);
+
+  // Validaciones por paso
   const validateStep = (step: number) => {
     const e: Record<string, string> = {};
+
     if (step === 1) {
       if (!formData.codigo.trim()) e.codigo = "Requerido";
       if (!formData.cliente.trim()) e.cliente = "Requerido";
@@ -373,10 +419,12 @@ export const RegistroForm: React.FC = () => {
       const venc = new Date(formData.fecha_caducidad);
       if (inst >= venc) e.fecha_caducidad = "Debe ser posterior a instalación";
     }
+
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
+  // Handlers
   const handleNext = () => {
     if (validateStep(currentStep)) setCurrentStep((c) => c + 1);
   };
@@ -389,16 +437,27 @@ export const RegistroForm: React.FC = () => {
   const handleSubmit = async (ev: React.FormEvent) => {
     ev.preventDefault();
 
-    // Si estamos en el paso 4 y ya se creó el registro, NO hacer nada
-    if (currentStep === 4 && savedRecordId) {
-      return; // Salir sin hacer nada
-    }
-
     if (!validateStep(currentStep)) return;
 
     if (currentStep < 4) {
       handleNext();
       return;
+    }
+
+    // En el paso 4, simplemente navegar de vuelta
+    if (currentStep === 4) {
+      navigate("/registro");
+      return;
+    }
+  };
+
+  const handleSaveChanges = async () => {
+    // Validar todos los pasos antes de guardar
+    for (let step = 1; step <= 3; step++) {
+      if (!validateStep(step)) {
+        setCurrentStep(step);
+        return;
+      }
     }
 
     const payload: Omit<DataRecord, "id"> = {
@@ -417,31 +476,26 @@ export const RegistroForm: React.FC = () => {
       estado_actual: formData.estado_actual,
     };
 
-    if (!savedRecordId) {
-      await createRecord(payload);
+    if (id) {
+      await updateRecord(id, payload);
     }
   };
 
   const handleChange = useCallback(
     (field: string, value: any) => {
-      setTimeout(() => {
-        if (field === "longitud") {
-          const numericValue = value.replace(/[^0-9.]/g, "");
-          const parts = numericValue.split(".");
-          const sanitizedValue =
-            parts.length > 2
-              ? parts[0] + "." + parts.slice(1).join("")
-              : numericValue;
+      if (field === "longitud") {
+        const numericValue = String(value).replace(/[^0-9.]/g, "");
+        const parts = numericValue.split(".");
+        const sanitizedValue =
+          parts.length > 2
+            ? parts[0] + "." + parts.slice(1).join("")
+            : numericValue;
 
-          setFormData((p) => ({ ...p, [field]: sanitizedValue }));
-        } else {
-          setFormData((p) => ({ ...p, [field]: value }));
-        }
-
-        if (errors[field]) {
-          setErrors((p) => ({ ...p, [field]: "" }));
-        }
-      }, 0);
+        setFormData((p) => ({ ...p, [field]: sanitizedValue }));
+      } else {
+        setFormData((p) => ({ ...p, [field]: value ?? "" }));
+      }
+      if (errors[field]) setErrors((p) => ({ ...p, [field]: "" }));
     },
     [errors]
   );
@@ -466,6 +520,7 @@ export const RegistroForm: React.FC = () => {
     setShowNewClientForm(false);
   };
 
+  // Handlers para imagen
   const handleImageUploaded = useCallback(
     (image: ImageResponse) => {
       setHasImage(true);
@@ -479,14 +534,7 @@ export const RegistroForm: React.FC = () => {
     success("Imagen eliminada");
   }, [success]);
 
-  const handleFinishWithoutImage = useCallback(() => {
-    navigate("/registro");
-  }, [navigate]);
-
-  const handleFinishWithImage = useCallback(() => {
-    navigate("/registro");
-  }, [navigate]);
-
+  // UI helpers
   const steps = [
     {
       number: 1,
@@ -522,6 +570,16 @@ export const RegistroForm: React.FC = () => {
     },
   ];
 
+  // Render
+  if (loadingRegistro) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <LoadingSpinner size="lg" />
+        <p className="ml-4 text-gray-600">Cargando registro...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="max-w-4xl px-4 py-6 mx-auto sm:px-6 lg:px-8">
@@ -532,21 +590,19 @@ export const RegistroForm: React.FC = () => {
               variant="outline"
               onClick={() => navigate("/registro")}
               icon={ArrowLeft}
-              disabled={creating}
+              disabled={updating}
             >
               Volver
             </Button>
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-xl text-white">➕</span>
+                <span className="text-xl text-white">✏️</span>
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">
-                  Nuevo Registro
+                  Editar Registro
                 </h1>
-                <p className="text-gray-600">
-                  Completa el formulario paso a paso
-                </p>
+                <p className="text-gray-600">Modifica los datos del registro</p>
               </div>
             </div>
           </div>
@@ -608,7 +664,7 @@ export const RegistroForm: React.FC = () => {
               {steps[currentStep - 1].description}
             </p>
 
-            {/* ------- PASOS ------- */}
+            {/* PASOS */}
             {currentStep === 1 && (
               <div className="space-y-6">
                 <div className="grid gap-6 md:grid-cols-2">
@@ -826,50 +882,35 @@ export const RegistroForm: React.FC = () => {
 
             {currentStep === 4 && (
               <div className="space-y-6">
-                {savedRecordId && (
-                  <div className="mb-6 text-center">
-                    <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-orange-100 to-orange-200">
-                      <Camera className="w-8 h-8 text-orange-600" />
-                    </div>
-                    <h3 className="mb-2 text-xl font-semibold text-gray-900">
-                      Imagen del Registro
-                    </h3>
-                    <p className="max-w-lg mx-auto text-gray-600">
-                      Agrega una fotografía del equipo o instalación para
-                      completar el registro. Esta imagen será comprimida
-                      automáticamente para optimizar el almacenamiento.
-                    </p>
+                <div className="mb-6 text-center">
+                  <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-orange-100 to-orange-200">
+                    <Camera className="w-8 h-8 text-orange-600" />
                   </div>
-                )}
+                  <h3 className="mb-2 text-xl font-semibold text-gray-900">
+                    Imagen del Registro
+                  </h3>
+                  <p className="max-w-lg mx-auto text-gray-600">
+                    Actualiza la fotografía del equipo o instalación. La imagen
+                    será comprimida automáticamente para optimizar el
+                    almacenamiento.
+                  </p>
+                </div>
 
-                {savedRecordId ? (
+                {id && (
                   <div onSubmit={(e) => e.preventDefault()}>
                     <ImageUpload
-                      recordId={savedRecordId}
+                      recordId={id}
                       recordCode={formData.codigo}
                       onImageUploaded={handleImageUploaded}
                       onImageDeleted={handleImageDeleted}
                       className="max-w-2xl mx-auto"
                     />
                   </div>
-                ) : (
-                  <div className="p-8 text-center border border-yellow-200 bg-yellow-50 rounded-xl">
-                    <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-yellow-100 rounded-full">
-                      <Info className="w-8 h-8 text-yellow-600" />
-                    </div>
-                    <h3 className="mb-2 text-lg font-medium text-yellow-900">
-                      Primero guarda el registro
-                    </h3>
-                    <p className="text-yellow-700">
-                      Para agregar una imagen, primero debes completar y guardar
-                      la información básica del registro.
-                    </p>
-                  </div>
                 )}
               </div>
             )}
 
-            {/* ------- BOTONES ------- */}
+            {/* BOTONES */}
             <div className="flex justify-between pt-8 mt-8 border-t border-gray-200">
               <div>
                 {currentStep > 1 && (
@@ -878,7 +919,7 @@ export const RegistroForm: React.FC = () => {
                     variant="outline"
                     onClick={handlePrev}
                     icon={ArrowLeft}
-                    disabled={creating}
+                    disabled={updating}
                   >
                     Anterior
                   </Button>
@@ -891,43 +932,28 @@ export const RegistroForm: React.FC = () => {
                   variant="outline"
                   onClick={() => navigate("/registro")}
                   icon={X}
-                  disabled={creating}
+                  disabled={updating}
                 >
                   Cancelar
                 </Button>
 
                 {currentStep === 4 ? (
-                  <div className="flex space-x-3">
-                    {/* Para nuevos registros sin guardar */}
-                    {!savedRecordId && (
-                      <Button
-                        type="submit"
-                        icon={Save}
-                        loading={creating}
-                        className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
-                      >
-                        {creating ? "Creando..." : "Crear Registro"}
-                      </Button>
-                    )}
-
-                    {/* Para registros ya creados */}
-                    {savedRecordId && (
-                      <Button
-                        type="button"
-                        onClick={handleFinishWithoutImage}
-                        className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
-                      >
-                        Finalizar
-                      </Button>
-                    )}
-                  </div>
+                  <Button
+                    type="button"
+                    onClick={handleSaveChanges}
+                    icon={Save}
+                    loading={updating}
+                    className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
+                  >
+                    {updating ? "Guardando..." : "Guardar Cambios"}
+                  </Button>
                 ) : (
                   <Button
                     type="button"
                     onClick={() => {
                       if (validateStep(currentStep)) handleNext();
                     }}
-                    disabled={creating}
+                    disabled={updating}
                     className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
                   >
                     Siguiente
