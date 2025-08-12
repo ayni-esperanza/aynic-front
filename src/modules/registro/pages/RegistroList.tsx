@@ -44,6 +44,8 @@ export const RegistroList: React.FC = () => {
 
   // Estados para filtros y vista
   const [searchTerm, setSearchTerm] = useState("");
+  const [equipoFilter, setEquipoFilter] = useState("");
+  const [ubicacionFilter, setUbicacionFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [installDateFrom, setInstallDateFrom] = useState("");
   const [installDateTo, setInstallDateTo] = useState("");
@@ -56,14 +58,18 @@ export const RegistroList: React.FC = () => {
 
   // Estado para datos de registros
   const [registros, setRegistros] = useState<DataRecord[]>([]);
-  const [recordImages, setRecordImages] = useState<Map<string, ImageResponse>>(
-    new Map()
-  );
+  const [recordImages, setRecordImages] = useState<Map<string, ImageResponse>>(new Map());
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
     totalItems: 0,
     itemsPerPage: 10,
+  });
+
+  const debounceRefs = useRef<Record<"codigo" | "equipo" | "ubicacion", any>>({
+    codigo: null,
+    equipo: null,
+    ubicacion: null,
   });
 
   // Hook para cargar registros con función estable
@@ -174,6 +180,12 @@ export const RegistroList: React.FC = () => {
     };
   }, []);
 
+  useEffect(() => {
+    return () => {
+      Object.values(debounceRefs.current).forEach((t) => t && clearTimeout(t));
+    };
+  }, []);
+
   // refreshData con dependencias estables
   const refreshData = useCallback(async () => {
     try {
@@ -193,35 +205,46 @@ export const RegistroList: React.FC = () => {
     }
   }, []);
 
-  const handleSearchChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-      setSearchTerm(value);
+  const handleTextFilterChange = useCallback(
+    (field: "codigo" | "equipo" | "ubicacion", setter: (v: string) => void) =>
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setter(value);
 
-      // Limpiar timeout anterior
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current);
-      }
+        // limpiar solo el timeout del campo actual
+        const ref = debounceRefs.current[field];
+        if (ref) clearTimeout(ref);
 
-      // Solo hacer búsqueda automática si no hay filtros activos
-      if (!statusFilter && !installDateFrom && !installDateTo) {
-        searchTimeoutRef.current = setTimeout(() => {
-          loadRegistros({
-            page: 1,
-            limit: pagination.itemsPerPage,
-            codigo: value || undefined,
-            sortBy: "codigo",
-            sortOrder: "ASC",
-          });
-        }, 500); // Debounce de 500ms
-      }
-    },
+        // búsqueda automática solo si NO hay estado/fechas activos
+        if (!statusFilter && !installDateFrom && !installDateTo) {
+          debounceRefs.current[field] = setTimeout(() => {
+            // construir payload combinando los 3 filtros de texto
+            const payload = {
+              page: 1,
+              limit: pagination.itemsPerPage,
+              codigo:
+                (field === "codigo" ? value : searchTerm).trim() || undefined,
+              equipo:
+                (field === "equipo" ? value : equipoFilter).trim() || undefined,
+              ubicacion:
+                (field === "ubicacion" ? value : ubicacionFilter).trim() ||
+                undefined,
+              sortBy: "codigo",
+              sortOrder: "ASC",
+            };
+            loadRegistros(payload);
+          }, 500);
+        }
+      },
     [
       statusFilter,
       installDateFrom,
       installDateTo,
       pagination.itemsPerPage,
       loadRegistros,
+      searchTerm,
+      equipoFilter,
+      ubicacionFilter,
     ]
   );
 
@@ -762,29 +785,98 @@ export const RegistroList: React.FC = () => {
       {/* Controles y filtros */}
       <Card className="border border-gray-200 shadow-sm bg-gradient-to-r from-gray-50 to-white">
         <div className="p-6">
-          <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
-            {/* Barra de búsqueda */}
-            <div className="flex-1 max-w-md">
-              <div className="relative">
-                <Search
-                  className="absolute text-gray-400 transform -translate-y-1/2 left-3 top-1/2"
-                  size={20}
-                />
-                <Input
-                  placeholder="Buscar por código..."
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                  className="pl-10 border-gray-300 focus:border-[#18D043] focus:ring-[#18D043]/20"
-                />
+          {/* Top bar: 3 inputs con label + botones */}
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            {/* 3 filtros alineados */}
+            <div className="flex-1">
+              <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+                {/* Código */}
+                <div className="relative">
+                  <label
+                    htmlFor="f-codigo"
+                    className="block mb-1 text-xs font-semibold text-gray-700"
+                  >
+                    Código
+                  </label>
+                  <div className="relative">
+                    <Search
+                      className="absolute text-gray-400 -translate-y-1/2 left-3 top-1/2"
+                      size={18}
+                      aria-hidden
+                    />
+                    <Input
+                      id="f-codigo"
+                      placeholder="Buscar por código..."
+                      value={searchTerm}
+                      onChange={handleTextFilterChange("codigo", setSearchTerm)}
+                      className="h-10 pl-9 border-gray-300 focus:border-[#18D043] focus:ring-[#18D043]/20"
+                    />
+                  </div>
+                </div>
+
+                {/* Equipo */}
+                <div className="relative">
+                  <label
+                    htmlFor="f-equipo"
+                    className="block mb-1 text-xs font-semibold text-gray-700"
+                  >
+                    Equipo
+                  </label>
+                  <div className="relative">
+                    <Search
+                      className="absolute text-gray-400 -translate-y-1/2 left-3 top-1/2"
+                      size={18}
+                      aria-hidden
+                    />
+                    <Input
+                      id="f-equipo"
+                      placeholder="Buscar por equipo..."
+                      value={equipoFilter}
+                      onChange={handleTextFilterChange(
+                        "equipo",
+                        setEquipoFilter
+                      )}
+                      className="h-10 pl-9 border-gray-300 focus:border-[#18D043] focus:ring-[#18D043]/20"
+                    />
+                  </div>
+                </div>
+
+                {/* Ubicación */}
+                <div className="relative">
+                  <label
+                    htmlFor="f-ubicacion"
+                    className="block mb-1 text-xs font-semibold text-gray-700"
+                  >
+                    Ubicación
+                  </label>
+                  <div className="relative">
+                    <Search
+                      className="absolute text-gray-400 -translate-y-1/2 left-3 top-1/2"
+                      size={18}
+                      aria-hidden
+                    />
+                    <Input
+                      id="f-ubicacion"
+                      placeholder="Buscar por ubicación..."
+                      value={ubicacionFilter}
+                      onChange={handleTextFilterChange(
+                        "ubicacion",
+                        setUbicacionFilter
+                      )}
+                      className="h-10 pl-9 border-gray-300 focus:border-[#18D043] focus:ring-[#18D043]/20"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Controles de vista y filtros */}
-            <div className="flex items-center space-x-3">
+            {/* Botonera derecha */}
+            <div className="flex items-center gap-2 shrink-0">
               <Button
+                type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => setShowFilters(!showFilters)}
+                onClick={() => setShowFilters((v) => !v)}
                 icon={showFilters ? SlidersHorizontal : Filter}
                 className={
                   showFilters
@@ -794,25 +886,30 @@ export const RegistroList: React.FC = () => {
               >
                 Filtros
               </Button>
-
               <div className="flex p-1 bg-white border border-gray-300 rounded-lg">
                 <button
+                  type="button"
                   onClick={() => setViewMode("table")}
                   className={`p-2 rounded ${
                     viewMode === "table"
                       ? "bg-[#18D043] text-white"
                       : "text-gray-600 hover:bg-gray-100"
                   }`}
+                  aria-pressed={viewMode === "table"}
+                  aria-label="Vista tabla"
                 >
                   <List size={16} />
                 </button>
                 <button
+                  type="button"
                   onClick={() => setViewMode("grid")}
                   className={`p-2 rounded ${
                     viewMode === "grid"
                       ? "bg-[#18D043] text-white"
                       : "text-gray-600 hover:bg-gray-100"
                   }`}
+                  aria-pressed={viewMode === "grid"}
+                  aria-label="Vista tarjetas"
                 >
                   <Grid size={16} />
                 </button>
@@ -820,7 +917,7 @@ export const RegistroList: React.FC = () => {
             </div>
           </div>
 
-          {/* Filtros expandidos */}
+          {/* Panel de filtros */}
           {showFilters && (
             <div className="pt-4 mt-4 border-t border-gray-200">
               <form
@@ -830,6 +927,8 @@ export const RegistroList: React.FC = () => {
                     page: 1,
                     limit: pagination.itemsPerPage,
                     codigo: searchTerm || undefined,
+                    equipo: equipoFilter || undefined,
+                    ubicacion: ubicacionFilter || undefined,
                     estado_actual: statusFilter || undefined,
                     fecha_instalacion_desde: installDateFrom || undefined,
                     fecha_instalacion_hasta: installDateTo || undefined,
@@ -837,10 +936,10 @@ export const RegistroList: React.FC = () => {
                     sortOrder: "ASC",
                   });
                 }}
-                className="grid items-end grid-cols-1 gap-4 md:grid-cols-4"
+                className="grid grid-cols-1 gap-4 md:grid-cols-12"
               >
                 {/* Estado */}
-                <div>
+                <div className="md:col-span-3">
                   <label className="block mb-1 text-xs font-semibold text-gray-700">
                     Estado
                   </label>
@@ -858,8 +957,8 @@ export const RegistroList: React.FC = () => {
                   />
                 </div>
 
-                {/* Fecha instalación desde */}
-                <div>
+                {/* Fechas */}
+                <div className="md:col-span-4">
                   <label className="block mb-1 text-xs font-semibold text-gray-700">
                     Fecha instalación (desde)
                   </label>
@@ -867,13 +966,12 @@ export const RegistroList: React.FC = () => {
                     type="date"
                     value={installDateFrom}
                     onChange={(e) => setInstallDateFrom(e.target.value)}
-                    className="border-gray-300"
+                    className="h-10 border-gray-300"
                     max={installDateTo || undefined}
                   />
                 </div>
 
-                {/* Fecha instalación hasta */}
-                <div>
+                <div className="md:col-span-4">
                   <label className="block mb-1 text-xs font-semibold text-gray-700">
                     Fecha instalación (hasta)
                   </label>
@@ -881,29 +979,33 @@ export const RegistroList: React.FC = () => {
                     type="date"
                     value={installDateTo}
                     onChange={(e) => setInstallDateTo(e.target.value)}
-                    className="border-gray-300"
+                    className="h-10 border-gray-300"
                     min={installDateFrom || undefined}
                   />
                 </div>
 
-                {/* Acciones */}
-                <div className="flex space-x-2">
+                {/* Acciones: propia fila/col para que no se mueva */}
+                <div className="flex items-center justify-end gap-2 md:col-span-12">
                   <Button
                     type="submit"
-                    className="bg-[#18D043] text-white hover:bg-[#16a34a] flex-1"
+                    className="h-10 min-w-[140px] bg-[#18D043] text-white hover:bg-[#16a34a]"
                   >
-                    <span className="font-semibold">Aplicar filtros</span>
+                    Aplicar filtros
                   </Button>
                   {(searchTerm ||
+                    equipoFilter ||
+                    ubicacionFilter ||
                     statusFilter ||
                     installDateFrom ||
                     installDateTo) && (
                     <Button
+                      type="button"
                       variant="ghost"
-                      className="text-gray-500 hover:text-gray-700"
-                      onClick={(e) => {
-                        e.preventDefault();
+                      className="h-10 text-gray-600 hover:text-gray-800"
+                      onClick={() => {
                         setSearchTerm("");
+                        setEquipoFilter("");
+                        setUbicacionFilter("");
                         setStatusFilter("");
                         setInstallDateFrom("");
                         setInstallDateTo("");
