@@ -358,6 +358,7 @@ export const EditarRegistroForm: React.FC = () => {
         seec: data.seec,
         tipo_linea: data.tipo_linea,
         ubicacion: data.ubicacion,
+        anclaje_equipos: (data as any).anclaje_equipos || "",
         fecha_caducidad: formatDateForInput(data.fecha_caducidad),
         estado_actual: data.estado_actual,
       });
@@ -368,13 +369,26 @@ export const EditarRegistroForm: React.FC = () => {
     },
   });
 
-  // Hook para actualizar registro
+  // Hook para actualizar registro y continuar al paso 4
   const updateRecordFunction = useCallback(
     (id: string, data: any) => recordsService.updateRecord(id, data),
     []
   );
 
-  const { execute: updateRecord, loading: updating } = useApi(
+  const { execute: updateRecordToContinue, loading: updating } = useApi(
+    updateRecordFunction,
+    {
+      onSuccess: () => {
+        success("Cambios guardados. Ahora puedes actualizar la imagen.");
+        // NO navegamos aquí, solo avanzamos al paso
+        handleNext();
+      },
+      onError: (err) => showError("Error al actualizar", err),
+    }
+  );
+
+  // Hook separado para actualizar registro y finalizar
+  const { execute: updateRecordAndFinish, loading: updatingFinal } = useApi(
     updateRecordFunction,
     {
       onSuccess: () => {
@@ -405,13 +419,13 @@ export const EditarRegistroForm: React.FC = () => {
       if (!formData.seec.trim()) e.seec = "Requerido";
     }
     if (step === 2) {
-        if (!formData.tipo_linea) e.tipo_linea = "Requerido";
-        if (!formData.ubicacion.trim()) e.ubicacion = "Requerido";
-        const val = parseFloat(String(formData.longitud));
-        if (isNaN(val) || val <= 0) e.longitud = "Mayor a 0";
-        if (formData.anclaje_equipos && formData.anclaje_equipos.length > 100) {
-            e.anclaje_equipos = "No puede exceder 100 caracteres";
-        }
+      if (!formData.tipo_linea) e.tipo_linea = "Requerido";
+      if (!formData.ubicacion.trim()) e.ubicacion = "Requerido";
+      const val = parseFloat(String(formData.longitud));
+      if (isNaN(val) || val <= 0) e.longitud = "Mayor a 0";
+      if (formData.anclaje_equipos && formData.anclaje_equipos.length > 100) {
+        e.anclaje_equipos = "No puede exceder 100 caracteres";
+      }
     }
     if (step === 3) {
       if (!formData.fecha_instalacion) e.fecha_instalacion = "Requerido";
@@ -455,8 +469,8 @@ export const EditarRegistroForm: React.FC = () => {
     }
   };
 
-  const handleSaveChanges = async () => {
-    // Validar todos los pasos antes de guardar
+  const handleSaveToAdvanceToStep4 = async () => {
+    // Validar todos los pasos completados antes de guardar
     for (let step = 1; step <= 3; step++) {
       if (!validateStep(step)) {
         setCurrentStep(step);
@@ -482,7 +496,33 @@ export const EditarRegistroForm: React.FC = () => {
     };
 
     if (id) {
-      await updateRecord(id, payload);
+      await updateRecordToContinue(id, payload);
+    }
+  };
+
+  const handleSaveChanges = async () => {
+    // Si necesitamos guardar cambios finales (casos especiales)
+    const payload: Omit<DataRecord, "id"> = {
+      codigo: formData.codigo,
+      cliente: formData.cliente,
+      equipo: formData.equipo,
+      fv_anios: formData.fv_anios,
+      fv_meses: formData.fv_meses,
+      fecha_instalacion: formData.fecha_instalacion,
+      fecha_caducidad: formData.fecha_caducidad,
+      longitud: Number(formData.longitud),
+      observaciones: formData.observaciones || undefined,
+      seec: formData.seec,
+      tipo_linea: formData.tipo_linea,
+      ubicacion: formData.ubicacion,
+      anclaje_equipos: formData.anclaje_equipos || undefined,
+      estado_actual: formData.estado_actual,
+    };
+
+    if (id) {
+      await updateRecordAndFinish(id, payload);
+    } else {
+      navigate("/registro");
     }
   };
 
@@ -919,15 +959,15 @@ export const EditarRegistroForm: React.FC = () => {
                 </div>
 
                 {id && (
-                  <div onSubmit={(e) => e.preventDefault()}>
-                    <ImageUpload
-                      recordId={id}
-                      recordCode={formData.codigo}
-                      onImageUploaded={handleImageUploaded}
-                      onImageDeleted={handleImageDeleted}
-                      className="max-w-2xl mx-auto"
-                    />
-                  </div>
+                  <ImageUpload
+                    recordId={id}
+                    recordCode={formData.codigo}
+                    onImageUploaded={handleImageUploaded}
+                    onImageDeleted={handleImageDeleted}
+                    className="max-w-2xl mx-auto"
+                    readOnly={false}
+                    skipInitialLoad={false}
+                  />
                 )}
               </div>
             )}
@@ -962,23 +1002,33 @@ export const EditarRegistroForm: React.FC = () => {
                 {currentStep === 4 ? (
                   <Button
                     type="button"
-                    onClick={handleSaveChanges}
-                    icon={Save}
-                    loading={updating}
+                    onClick={() => navigate("/registro")}
+                    icon={Check}
+                    disabled={updating}
                     className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
                   >
-                    {updating ? "Guardando..." : "Guardar Cambios"}
+                    Finalizar Edición
                   </Button>
                 ) : (
                   <Button
                     type="button"
-                    onClick={() => {
-                      if (validateStep(currentStep)) handleNext();
+                    onClick={async () => {
+                      if (!validateStep(currentStep)) return;
+
+                      // Si estamos en el paso 3, guardar cambios antes de avanzar al paso 4
+                      if (currentStep === 3) {
+                        await handleSaveToAdvanceToStep4();
+                      } else {
+                        handleNext();
+                      }
                     }}
                     disabled={updating}
+                    loading={currentStep === 3 && updating}
                     className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
                   >
-                    Siguiente
+                    {currentStep === 3 && updating
+                      ? "Guardando..."
+                      : "Siguiente"}
                   </Button>
                 )}
               </div>

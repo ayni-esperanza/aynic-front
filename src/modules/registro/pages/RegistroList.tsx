@@ -383,6 +383,25 @@ export const RegistroList: React.FC = () => {
         ),
       },
       {
+        key: "anclaje_equipos",
+        label: "Anclaje de equipos",
+        sortable: true,
+        width: "min-w-[220px]",
+        render: (value) => {
+          const text = (value as string | undefined)?.trim();
+          return text && text.length > 0 ? (
+            <span
+              className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-emerald-50 text-emerald-700"
+              title={text}
+            >
+              {text}
+            </span>
+          ) : (
+            <span className="text-xs italic text-gray-400">No registrado</span>
+          );
+        },
+      },
+      {
         key: "observaciones",
         label: "Observaciones",
         render: (value: any) =>

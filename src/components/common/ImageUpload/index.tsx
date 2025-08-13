@@ -361,17 +361,54 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
               className="object-cover w-full h-64 transition-opacity cursor-pointer hover:opacity-90"
               onClick={() => setShowImageModal(true)}
             />
-            {readOnly && (
-              <div className="absolute flex space-x-1 top-2 right-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="text-gray-700 border-gray-300 bg-white/90 hover:bg-white"
-                  onClick={() => setShowImageModal(true)}
-                  icon={Eye}
-                />
-              </div>
-            )}
+            <div className="absolute flex space-x-1 top-2 right-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="text-gray-700 border-gray-300 bg-white/90 hover:bg-white"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowImageModal(true);
+                }}
+                icon={Eye}
+                title="Ver imagen completa"
+              />
+              {!readOnly && (
+                <>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="text-blue-700 border-blue-300 bg-white/90 hover:bg-white"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      fileInputRef.current?.click();
+                    }}
+                    icon={Upload}
+                    title="Reemplazar imagen"
+                    disabled={isProcessing}
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="text-red-700 border-red-300 bg-white/90 hover:bg-white"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      deleteImage(recordId);
+                    }}
+                    icon={X}
+                    title="Eliminar imagen"
+                    disabled={isProcessing}
+                    loading={deleting}
+                  />
+                </>
+              )}
+            </div>
           </div>
 
           <div className="p-4">
