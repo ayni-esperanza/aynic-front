@@ -21,9 +21,12 @@ interface DataTableProps<T extends Record<string, unknown>> {
   onSort?: (column: keyof T, direction: "asc" | "desc") => void;
   sortColumn?: keyof T;
   sortDirection?: "asc" | "desc";
+  stickyHeader?: boolean;
+  headerOffset?: number;
+  maxBodyHeight?: string;
 }
 
-// Componente de fila mejorado con hover y animaciones
+// Fila de la tabla
 const TableRow = <T extends Record<string, unknown>>({
   item,
   columns,
@@ -48,11 +51,11 @@ const TableRow = <T extends Record<string, unknown>>({
             key={String(column.key)}
             className={`px-6 py-4 text-sm whitespace-nowrap transition-all duration-200 group-hover:scale-[1.02] ${
               colIndex === 0 ? "font-medium text-gray-900" : "text-gray-700"
-            }`}
+            } ${column.width ? String(column.width) : ""}`}
           >
             {column.render
-              ? column.render(item[column.key], item)
-              : String(item[column.key] || "-")}
+              ? column.render((item as any)[column.key], item)
+              : String(((item as any)[column.key] as any) ?? "-")}
           </td>
         );
       } catch (error) {
@@ -72,7 +75,7 @@ const TableRow = <T extends Record<string, unknown>>({
   </tr>
 );
 
-// Componente de botones de paginación mejorado
+// Botones de paginación
 const PaginationButtons = React.memo(
   ({
     currentPage,
@@ -84,7 +87,7 @@ const PaginationButtons = React.memo(
     onPageChange: (page: number) => void;
   }) => {
     const buttons = useMemo(() => {
-      const buttonList = [];
+      const buttonList: React.ReactNode[] = [];
       const maxVisible = 5;
       let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
       const endPage = Math.min(totalPages, startPage + maxVisible - 1);
@@ -93,7 +96,6 @@ const PaginationButtons = React.memo(
         startPage = Math.max(1, endPage - maxVisible + 1);
       }
 
-      // Botón primera página
       if (startPage > 1) {
         buttonList.push(
           <button
@@ -113,7 +115,6 @@ const PaginationButtons = React.memo(
         }
       }
 
-      // Páginas visibles
       for (let i = startPage; i <= endPage; i++) {
         buttonList.push(
           <button
@@ -130,7 +131,6 @@ const PaginationButtons = React.memo(
         );
       }
 
-      // Botón última página
       if (endPage < totalPages) {
         if (endPage < totalPages - 1) {
           buttonList.push(
@@ -168,9 +168,12 @@ export const DataTable = <T extends Record<string, unknown>>({
   onSort,
   sortColumn,
   sortDirection,
+  stickyHeader = true,
+  headerOffset = 0,
+  maxBodyHeight = "60vh",
 }: DataTableProps<T>) => {
   const [localSortBy, setLocalSortBy] = useState<keyof T | null>(
-    sortColumn || null
+    (sortColumn as keyof T) || null
   );
   const [localSortOrder, setLocalSortOrder] = useState<"asc" | "desc">(
     sortDirection || "asc"
@@ -178,30 +181,26 @@ export const DataTable = <T extends Record<string, unknown>>({
 
   const handleSort = useCallback(
     (column: keyof T) => {
-      if (!columns.find((col) => col.key === column)?.sortable) return;
+      const colCfg = columns.find((col) => col.key === (column as any));
+      if (!colCfg?.sortable) return;
 
       let newSortOrder: "asc" | "desc" = "asc";
-
       if (localSortBy === column) {
         newSortOrder = localSortOrder === "asc" ? "desc" : "asc";
       }
 
       setLocalSortBy(column);
       setLocalSortOrder(newSortOrder);
-
-      if (onSort) {
-        onSort(column, newSortOrder);
-      }
+      onSort && onSort(column, newSortOrder);
     },
     [localSortBy, localSortOrder, onSort, columns]
   );
 
-  // Memoizar las filas de la tabla con mejoras visuales
   const tableRows = useMemo(
     () =>
       data.map((item, index) => (
         <TableRow
-          key={`${String(item.id) || index}`}
+          key={`${String((item as any).id) || index}`}
           item={item}
           columns={columns}
           index={index}
@@ -211,7 +210,6 @@ export const DataTable = <T extends Record<string, unknown>>({
     [data, columns]
   );
 
-  // Memoizar información de paginación
   const paginationInfo = useMemo(
     () => ({
       start: Math.min((currentPage - 1) * 10 + 1, totalItems),
@@ -244,7 +242,7 @@ export const DataTable = <T extends Record<string, unknown>>({
             No hay datos disponibles
           </p>
           <p className="text-gray-600">
-            No se encontraron registros que coincidan with los criterios de
+            No se encontraron registros que coincidan con los criterios de
             búsqueda.
           </p>
         </div>
@@ -254,67 +252,88 @@ export const DataTable = <T extends Record<string, unknown>>({
 
   return (
     <div className="space-y-6">
-      {/* Tabla con diseño mejorado */}
+      {/* Tabla con header sticky */}
       <div className="overflow-hidden bg-white border border-gray-200 shadow-sm rounded-xl">
+        {/* Scroll horizontal si hace falta */}
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
-              <tr>
-                {columns.map((column, index) => {
-                  const isSorted = localSortBy === column.key;
-                  const isAscending = isSorted && localSortOrder === "asc";
-                  const isDescending = isSorted && localSortOrder === "desc";
+          {/* Scroll vertical del body */}
+          <div
+            className="overflow-y-auto"
+            style={{
+              maxHeight: maxBodyHeight,
+              ["--header-offset" as any]: `${headerOffset}px`,
+            }}
+          >
+            {/* table-fixed evita desajustes al aparecer el scrollbar vertical */}
+            <table className="min-w-full divide-y divide-gray-200 table-fixed">
+              <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+                <tr>
+                  {columns.map((column) => {
+                    const isSorted = localSortBy === (column.key as keyof T);
+                    const isAscending = isSorted && localSortOrder === "asc";
+                    const isDescending = isSorted && localSortOrder === "desc";
 
-                  return (
-                    <th
-                      key={String(column.key)}
-                      className={`px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r border-gray-200 last:border-r-0 ${
-                        column.sortable
-                          ? "cursor-pointer hover:bg-gray-200 transition-colors duration-200 group"
-                          : ""
-                      } ${column.width ? `w-${column.width}` : ""}`}
-                      onClick={() => column.sortable && handleSort(column.key)}
-                    >
-                      <div className="flex items-center space-x-2">
-                        <span className={isSorted ? "text-[#16a34a]" : ""}>
-                          {column.label}
-                        </span>
-                        {column.sortable && (
-                          <div className="flex flex-col">
-                            {!isSorted && (
-                              <ArrowUpDown
-                                size={12}
-                                className="text-gray-400 transition-colors duration-200 group-hover:text-gray-600"
-                              />
-                            )}
-                            {isAscending && (
-                              <ArrowUp
-                                size={12}
-                                className="text-[#16a34a] animate-pulse"
-                              />
-                            )}
-                            {isDescending && (
-                              <ArrowDown
-                                size={12}
-                                className="text-[#16a34a] animate-pulse"
-                              />
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </th>
-                  );
-                })}
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
-              {tableRows}
-            </tbody>
-          </table>
+                    return (
+                      <th
+                        key={String(column.key)}
+                        className={[
+                          stickyHeader
+                            ? "sticky [top:var(--header-offset)] z-10"
+                            : "",
+                          "bg-gradient-to-r from-gray-50 to-gray-100",
+                          "px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider",
+                          "border-r border-gray-200 last:border-r-0 shadow-sm",
+                          column.width ? String(column.width) : "",
+                          column.sortable
+                            ? "cursor-pointer hover:bg-gray-200 transition-colors duration-200 group"
+                            : "",
+                        ].join(" ")}
+                        onClick={() =>
+                          column.sortable && handleSort(column.key as keyof T)
+                        }
+                      >
+                        <div className="flex items-center space-x-2">
+                          <span className={isSorted ? "text-[#16a34a]" : ""}>
+                            {column.label}
+                          </span>
+                          {column.sortable && (
+                            <div className="flex flex-col">
+                              {!isSorted && (
+                                <ArrowUpDown
+                                  size={12}
+                                  className="text-gray-400 transition-colors duration-200 group-hover:text-gray-600"
+                                />
+                              )}
+                              {isAscending && (
+                                <ArrowUp
+                                  size={12}
+                                  className="text-[#16a34a] animate-pulse"
+                                />
+                              )}
+                              {isDescending && (
+                                <ArrowDown
+                                  size={12}
+                                  className="text-[#16a34a] animate-pulse"
+                                />
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </th>
+                    );
+                  })}
+                </tr>
+              </thead>
+
+              <tbody className="bg-white divide-y divide-gray-100">
+                {tableRows}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      {/* Paginación mejorada */}
+      {/* Paginación */}
       <div className="flex flex-col items-center justify-between px-6 py-4 space-y-4 bg-white border border-gray-200 shadow-sm sm:flex-row sm:space-y-0 rounded-xl">
         <div className="flex items-center space-x-4">
           <div className="px-3 py-2 text-sm text-gray-700 rounded-lg bg-gray-50">
@@ -369,7 +388,7 @@ export const DataTable = <T extends Record<string, unknown>>({
         )}
       </div>
 
-      {/* Información adicional */}
+      {/* Info pie */}
       <div className="flex items-center justify-center">
         <div className="flex items-center px-4 py-2 space-x-4 text-xs text-gray-500 rounded-full bg-gray-50">
           <div className="flex items-center space-x-1">
