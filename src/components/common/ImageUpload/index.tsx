@@ -480,9 +480,14 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                 {currentImage ? "Reemplazar imagen" : "Nueva imagen"}
               </h4>
               <Button
+                type="button"
                 size="sm"
                 variant="outline"
-                onClick={handleCancelPreview}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleCancelPreview();
+                }}
                 icon={X}
                 disabled={isProcessing}
               >
@@ -522,7 +527,12 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                 </div>
 
                 <Button
-                  onClick={handleUpload}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleUpload();
+                  }}
                   loading={isProcessing}
                   disabled={isProcessing}
                   className="w-full"
@@ -584,7 +594,12 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                 </div>
 
                 <Button
-                  onClick={() => fileInputRef.current?.click()}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    fileInputRef.current?.click();
+                  }}
                   disabled={disabled || loadingImage}
                   icon={Camera}
                   className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
