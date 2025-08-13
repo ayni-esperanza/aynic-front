@@ -404,7 +404,7 @@ export const RegistroList: React.FC = () => {
       },
       {
         key: "seec",
-        label: "SEEC",
+        label: "Sección/Área/Planta",
         render: (value: any) => (
           <span className="inline-flex items-center px-2 py-1 font-mono text-sm text-indigo-800 bg-indigo-100 rounded-md">
             {String(value)}

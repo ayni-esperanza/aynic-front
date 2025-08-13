@@ -330,7 +330,9 @@ export const RegistroDetail: React.FC = () => {
                     <Settings className="w-5 h-5 text-orange-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-orange-600">SEEC</p>
+                    <p className="text-sm font-medium text-orange-600">
+                      Sección/Área/Planta
+                    </p>
                     <p className="font-mono text-lg font-bold text-orange-900">
                       {registro.seec}
                     </p>
@@ -444,7 +446,9 @@ export const RegistroDetail: React.FC = () => {
                       </span>
                     </div>
                     <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                      <span className="text-gray-600">Sistema SEEC:</span>
+                      <span className="text-gray-600">
+                        Sección/Área/Planta:
+                      </span>
                       <span className="px-2 py-1 font-mono font-medium bg-gray-100 rounded">
                         {registro.seec}
                       </span>

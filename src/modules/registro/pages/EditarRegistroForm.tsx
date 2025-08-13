@@ -753,7 +753,7 @@ export const EditarRegistroForm: React.FC = () => {
                     required
                   />
                   <Input
-                    label="SEEC"
+                    label="Sección/Área/Planta"
                     value={formData.seec}
                     onChange={(e) => handleChange("seec", e.target.value)}
                     error={errors.seec}
