@@ -287,6 +287,7 @@ export const EditarRegistroForm: React.FC = () => {
     seec: "",
     tipo_linea: "",
     ubicacion: "",
+    anclaje_equipos: "",
     fecha_caducidad: "",
     estado_actual: "activo" as DataRecord["estado_actual"],
   });
@@ -404,10 +405,13 @@ export const EditarRegistroForm: React.FC = () => {
       if (!formData.seec.trim()) e.seec = "Requerido";
     }
     if (step === 2) {
-      if (!formData.tipo_linea) e.tipo_linea = "Requerido";
-      if (!formData.ubicacion.trim()) e.ubicacion = "Requerido";
-      const val = parseFloat(String(formData.longitud));
-      if (isNaN(val) || val <= 0) e.longitud = "Mayor a 0";
+        if (!formData.tipo_linea) e.tipo_linea = "Requerido";
+        if (!formData.ubicacion.trim()) e.ubicacion = "Requerido";
+        const val = parseFloat(String(formData.longitud));
+        if (isNaN(val) || val <= 0) e.longitud = "Mayor a 0";
+        if (formData.anclaje_equipos && formData.anclaje_equipos.length > 100) {
+            e.anclaje_equipos = "No puede exceder 100 caracteres";
+        }
     }
     if (step === 3) {
       if (!formData.fecha_instalacion) e.fecha_instalacion = "Requerido";
@@ -473,6 +477,7 @@ export const EditarRegistroForm: React.FC = () => {
       seec: formData.seec,
       tipo_linea: formData.tipo_linea,
       ubicacion: formData.ubicacion,
+      anclaje_equipos: formData.anclaje_equipos || undefined,
       estado_actual: formData.estado_actual,
     };
 
@@ -795,6 +800,23 @@ export const EditarRegistroForm: React.FC = () => {
                     placeholder="Dirección o coordenadas"
                     required
                   />
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-1">
+                  <Input
+                    label="Anclaje de equipos"
+                    value={formData.anclaje_equipos}
+                    onChange={(e) =>
+                      handleChange("anclaje_equipos", e.target.value)
+                    }
+                    error={errors.anclaje_equipos}
+                    placeholder="Tipo/estado del anclaje (ej. 'I M12 química', 'Puntos fijos 2xD-Ring')"
+                    maxLength={100} // límite en el control
+                  />
+                  <p className="-mt-4 text-xs text-gray-500">
+                    Máx. 100 caracteres. Dejar vacío si no corresponde — se
+                    mostrará “No registrado”.
+                  </p>
                 </div>
 
                 <div>

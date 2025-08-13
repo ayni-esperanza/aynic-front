@@ -21,6 +21,7 @@ export interface DataRecord extends Record<string, unknown> {
   seec: string;
   tipo_linea: string;
   ubicacion: string;
+  anclaje_equipos?: string;
   fecha_caducidad: Date;
   estado_actual:
     | "activo"

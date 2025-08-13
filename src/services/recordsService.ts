@@ -13,6 +13,7 @@ export interface RecordFilters {
   estado_actual?: string;
   tipo_linea?: string;
   ubicacion?: string;
+  anclaje_equipos?: string;
   fecha_instalacion_desde?: string;
   fecha_instalacion_hasta?: string;
   seec?: string;
@@ -28,13 +29,14 @@ export interface CreateRecordData {
   equipo?: string;
   fv_anios?: number;
   fv_meses?: number;
-  fecha_instalacion?: string; // ISO string
+  fecha_instalacion?: string;
   longitud?: number;
   observaciones?: string;
   seec?: string;
   tipo_linea?: string;
   ubicacion?: string;
-  fecha_caducidad?: string; // ISO string
+  anclaje_equipos?: string;
+  fecha_caducidad?: string;
   estado_actual?: string;
 }
 
@@ -51,6 +53,7 @@ export interface BackendRecord {
   seec?: string;
   tipo_linea?: string;
   ubicacion?: string;
+  anclaje_equipos?: string;
   fecha_caducidad?: string;
   estado_actual?: string;
 }
@@ -144,7 +147,7 @@ class RecordsService {
    */
   private mapBackendToFrontend(backendRecord: BackendRecord): DataRecord {
     return {
-      id: backendRecord.id.toString(), // number -> string
+      id: backendRecord.id.toString(),
       codigo: backendRecord.codigo,
       cliente: backendRecord.cliente || "",
       equipo: backendRecord.equipo || "",
@@ -158,6 +161,7 @@ class RecordsService {
       seec: backendRecord.seec || "",
       tipo_linea: backendRecord.tipo_linea || "",
       ubicacion: backendRecord.ubicacion || "",
+      anclaje_equipos: backendRecord.anclaje_equipos || undefined,
       fecha_caducidad: backendRecord.fecha_caducidad
         ? new Date(backendRecord.fecha_caducidad)
         : new Date(),
@@ -187,6 +191,7 @@ class RecordsService {
       seec: frontendData.seec || undefined,
       tipo_linea: frontendData.tipo_linea || undefined,
       ubicacion: frontendData.ubicacion || undefined,
+      anclaje_equipos: frontendData.anclaje_equipos || undefined,
       fecha_caducidad: frontendData.fecha_caducidad
         ? new Date(frontendData.fecha_caducidad).toISOString().split("T")[0]
         : undefined,
@@ -214,6 +219,8 @@ class RecordsService {
       if (filters?.codigo) params.append("codigo", filters.codigo);
       if (filters?.cliente) params.append("cliente", filters.cliente);
       if (filters?.equipo) params.append("equipo", filters.equipo);
+      if (filters?.anclaje_equipos)
+        params.append("anclaje_equipos", filters.anclaje_equipos);
       if (filters?.estado_actual) {
         // Mapear estado del frontend al backend
         const backendStatus = this.mapFrontendStatusToBackend(
@@ -317,6 +324,8 @@ class RecordsService {
         backendData.cliente = recordData.cliente;
       if (recordData.equipo !== undefined)
         backendData.equipo = recordData.equipo;
+      if (recordData.anclaje_equipos !== undefined)
+        backendData.anclaje_equipos = recordData.anclaje_equipos;
       if (recordData.fv_anios !== undefined)
         backendData.fv_anios = recordData.fv_anios;
       if (recordData.fv_meses !== undefined)
