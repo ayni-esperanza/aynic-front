@@ -2,7 +2,7 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { HistorialList } from "./pages/HistorialList";
 
-export const RegistroEstadoHistorialModule: React.FC = () => {
+export const MovementHistoryModule: React.FC = () => {
   return (
     <Routes>
       <Route index element={<HistorialList />} />
@@ -11,4 +11,4 @@ export const RegistroEstadoHistorialModule: React.FC = () => {
 };
 
 // Default export para lazy loading
-export default RegistroEstadoHistorialModule;
+export default MovementHistoryModule;

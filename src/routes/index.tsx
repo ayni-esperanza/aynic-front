@@ -16,9 +16,9 @@ const RegistroModule = React.lazy(() =>
     default: module.RegistroModule,
   }))
 );
-const RegistroEstadoHistorialModule = React.lazy(() =>
-  import("../modules/registro_estado_historial").then((module) => ({
-    default: module.RegistroEstadoHistorialModule,
+const MovementHistoryModule = React.lazy(() =>
+  import("../modules/movement_history").then((module) => ({
+    default: module.MovementHistoryModule,
   }))
 );
 
@@ -135,7 +135,7 @@ export const AppRoutes: React.FC = () => {
           element={
             <ModuleErrorBoundary>
               <Suspense fallback={<PageLoadingFallback />}>
-                <RegistroEstadoHistorialModule />
+                <MovementHistoryModule />
               </Suspense>
             </ModuleErrorBoundary>
           }

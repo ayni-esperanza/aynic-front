@@ -526,15 +526,15 @@ export const Dashboard: React.FC = () => {
             <h1 className="text-3xl font-bold text-gray-900">
               Dashboard de Control
             </h1>
-            <p className="flex items-center space-x-2 text-gray-600">
+            <div className="flex items-center space-x-2 text-gray-600">
               <span>Monitoreo en tiempo real de alertas y registros</span>
               {alertStats && (
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#18D043]/10 text-[#16a34a]">
-                  <div className="w-2 h-2 mr-1 bg-[#18D043] rounded-full animate-pulse"></div>
+                  <span className="inline-block w-2 h-2 mr-1 bg-[#18D043] rounded-full animate-pulse"></span>
                   {alertStats.noLeidas} alertas activas
                 </span>
               )}
-            </p>
+            </div>
           </div>
         </div>
 
