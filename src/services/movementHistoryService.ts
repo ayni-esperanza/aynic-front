@@ -94,7 +94,7 @@ export interface MovementStatistics {
 export interface MovementFilters extends Record<string, unknown> {
   record_id?: string;
   action?: MovementAction;
-  user_id?: string;
+  username?: string;
   record_code?: string;
   date_from?: string;
   date_to?: string;
@@ -175,20 +175,17 @@ export const validateFilters = (
   const errors: string[] = [];
   const sanitizedFilters: MovementFilters = { ...filters };
 
-  // user_id debe ser numérico o vacío
-  if (filters.user_id) {
-    const userIdAsNumber = parseInt(filters.user_id, 10);
-    if (isNaN(userIdAsNumber)) {
-      errors.push(
-        `user_id debe ser un número válido. Recibido: "${filters.user_id}"`
-      );
-      delete sanitizedFilters.user_id; // Remover valor inválido
+  //  username - debe ser string válido
+  if (filters.username) {
+    if (filters.username.trim() === "") {
+      errors.push("username no puede estar vacío");
+      delete sanitizedFilters.username;
     } else {
-      sanitizedFilters.user_id = userIdAsNumber.toString();
+      sanitizedFilters.username = filters.username.trim();
     }
   }
 
-  // limit no debe exceder MAX_LIMIT
+  // ✅ VALIDACIÓN: limit no debe exceder MAX_LIMIT
   if (filters.limit && filters.limit > MAX_LIMIT) {
     errors.push(
       `limit no debe ser mayor que ${MAX_LIMIT}. Recibido: ${filters.limit}`
@@ -196,13 +193,13 @@ export const validateFilters = (
     sanitizedFilters.limit = MAX_LIMIT;
   }
 
-  // page debe ser positivo
+  // ✅ VALIDACIÓN: page debe ser positivo
   if (filters.page && filters.page < 1) {
     errors.push(`page debe ser mayor que 0. Recibido: ${filters.page}`);
     sanitizedFilters.page = 1;
   }
 
-  // VALIDACIÓN: fechas deben ser válidas
+  // ✅ VALIDACIÓN: fechas deben ser válidas
   if (filters.date_from && !isValidDate(filters.date_from)) {
     errors.push(
       `date_from debe ser una fecha válida (YYYY-MM-DD). Recibido: "${filters.date_from}"`
@@ -217,7 +214,7 @@ export const validateFilters = (
     delete sanitizedFilters.date_to;
   }
 
-  // sortOrder debe ser válido
+  // ✅ VALIDACIÓN: sortOrder debe ser válido
   if (filters.sortOrder && !["ASC", "DESC"].includes(filters.sortOrder)) {
     errors.push(
       `sortOrder debe ser "ASC" o "DESC". Recibido: "${filters.sortOrder}"`
@@ -330,17 +327,10 @@ export const getMovements = async (
     itemsPerPage: number;
   };
 }> => {
-  console.log("🔍 getMovements called with filters:", filters);
 
   try {
     // VALIDAR FILTROS ANTES DE ENVIAR
     const validation = validateFilters(filters || {});
-
-    if (!validation.valid) {
-      console.warn("⚠️ Filter validation errors:", validation.errors);
-      // Usar filtros sanitizados en lugar de fallar
-      console.log("🔧 Using sanitized filters:", validation.sanitizedFilters);
-    }
 
     const sanitizedFilters = validation.sanitizedFilters;
     const params = new URLSearchParams();
@@ -354,8 +344,8 @@ export const getMovements = async (
         mapFrontendActionToBackend(sanitizedFilters.action)
       );
     }
-    if (sanitizedFilters.user_id)
-      params.append("user_id", sanitizedFilters.user_id);
+    if (sanitizedFilters.username)
+      params.append("username", sanitizedFilters.username);
     if (sanitizedFilters.record_code)
       params.append("record_code", sanitizedFilters.record_code);
     if (sanitizedFilters.date_from)
@@ -382,11 +372,7 @@ export const getMovements = async (
     const queryString = params.toString();
     const url = `${API_BASE_PATH}${queryString ? `?${queryString}` : ""}`;
 
-    console.log("🌐 Making request to URL:", url);
-
     const response = await apiClient.get<BackendPaginatedMovements>(url);
-
-    console.log("✅ API Response received:", response);
 
     const mappedData = response.data.map((movement) =>
       mapBackendToFrontend(movement)
@@ -402,11 +388,9 @@ export const getMovements = async (
       },
     };
 
-    console.log("✅ Mapped result:", result);
-
     return result;
   } catch (error) {
-    console.error("❌ Error fetching movements:", error);
+    console.error("Error fetching movements:", error);
 
     // MANEJO MEJORADO DE ERRORES
     if (error instanceof ApiClientError) {
@@ -425,21 +409,15 @@ export const getMovements = async (
  * Obtener estadísticas del historial
  */
 export const getStatistics = async (): Promise<MovementStatistics> => {
-  console.log("🔍 getStatistics called");
 
   try {
     const url = `${API_BASE_PATH}/statistics`;
-    console.log("🌐 Making request to URL:", url);
-
     const response = await apiClient.get<BackendMovementStatistics>(url);
-    console.log("✅ Statistics response:", response);
-
     const result = mapBackendStatsToFrontend(response);
-    console.log("✅ Mapped statistics:", result);
 
     return result;
   } catch (error) {
-    console.error("❌ Error fetching movement statistics:", error);
+    console.error("Error fetching movement statistics:", error);
     // Retornar datos por defecto en caso de error
     return {
       total: 0,
@@ -494,6 +472,21 @@ export const getAvailableActions = async (): Promise<ActionOption[]> => {
       { value: "image_delete", label: "Eliminación de Imagen" },
     ];
     return defaultActions;
+  }
+};
+
+/**
+ * Obtener usernames únicos para filtros
+ */
+export const getUniqueUsernames = async (): Promise<Array<{ value: string; label: string }>> => {
+  try {
+    const response = await apiClient.get<Array<{ value: string; label: string }>>(
+      `${API_BASE_PATH}/usernames`
+    );
+    return response;
+  } catch (error) {
+    console.error("Error fetching usernames:", error);
+    return [];
   }
 };
 
@@ -571,7 +564,7 @@ export const getActionColor = (action: MovementAction): string => {
 };
 
 /**
- * Crear filtros seguros para exportación
+ * ✅ FUNCIÓN UTILITARIA: Crear filtros seguros para exportación
  */
 export const createExportFilters = (
   baseFilters: MovementFilters

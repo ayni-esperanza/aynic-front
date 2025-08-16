@@ -21,10 +21,12 @@ import { Input } from "../../../components/ui/Input";
 import { Select } from "../../../components/ui/Select";
 import { useToast } from "../../../components/ui/Toast";
 import { useApi } from "../../../hooks/useApi";
+import { SearchableSelect } from "../../../components/ui/SearchableSelect";
 import {
   getMovements,
   getStatistics,
   getAvailableActions,
+  getUniqueUsernames,
   type MovementHistory,
   type MovementFilters,
   type MovementStatistics,
@@ -229,11 +231,11 @@ export const HistorialList: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { success, error: showError } = useToast();
 
-  // ✅ ESTADO SIMPLE - SIN COMPLICACIONES
+  // ✅ ESTADO CON FILTROS SEPARADOS: rol y usuario
   const [filters, setFilters] = useState<MovementFilters>({
     search: searchParams.get("search") || "",
     action: (searchParams.get("action") as MovementAction) || undefined,
-    user_id: searchParams.get("user_id") || undefined,
+    username: searchParams.get("username") || undefined,
     date_from: searchParams.get("date_from") || "",
     date_to: searchParams.get("date_to") || "",
     page: 1,
@@ -245,12 +247,12 @@ export const HistorialList: React.FC = () => {
   // Estados para datos iniciales
   const [statistics, setStatistics] = useState<MovementStatistics | null>(null);
   const [actionOptions, setActionOptions] = useState<ActionOption[]>([]);
-  const [userOptions, setUserOptions] = useState<
+  const [usernameOptions, setUsernameOptions] = useState<
     Array<{ value: string; label: string }>
   >([]);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // ✅ API HOOK SIMPLE - SIN IMMEDIATE
+  // API HOOK SIMPLE
   const {
     data: movementsData,
     loading,
@@ -264,14 +266,12 @@ export const HistorialList: React.FC = () => {
     },
   });
 
-  // ✅ CARGAR DATOS INICIALES UNA SOLA VEZ
+  // CARGAR DATOS INICIALES UNA SOLA VEZ
   useEffect(() => {
     const loadInitialData = async () => {
       if (isInitialized) return;
 
       try {
-        console.log("📋 Cargando datos iniciales...");
-
         // Cargar estadísticas
         const stats = await getStatistics();
         setStatistics(stats);
@@ -280,38 +280,29 @@ export const HistorialList: React.FC = () => {
         const actions = await getAvailableActions();
         setActionOptions(actions);
 
-        // Crear opciones de usuarios (solo numéricas)
-        if (stats.byUser.length > 0) {
-          const users = stats.byUser
-            .filter((user) => /^\d+$/.test(user.username))
-            .map((user: { username: string; count: number }) => ({
-              value: user.username,
-              label: `Usuario ${user.username}`,
-            }));
-          setUserOptions(users);
-        }
+        // Cargar usernames únicos
+        const usernames = await getUniqueUsernames();
+        setUsernameOptions(usernames);
 
         setIsInitialized(true);
-        console.log("✅ Datos iniciales cargados");
       } catch (error) {
-        console.error("❌ Error loading initial data:", error);
+        console.error("Error loading initial data:", error);
         showError("Error", "Error al cargar datos iniciales");
-        setIsInitialized(true); // Marcar como inicializado aunque falle
+        setIsInitialized(true);
       }
     };
 
     loadInitialData();
-  }, []); // ✅ Solo ejecutar UNA VEZ
+  }, []);
 
-  // ✅ CARGAR MOVIMIENTOS DESPUÉS DE INICIALIZAR
+  // CARGAR MOVIMIENTOS DESPUÉS DE INICIALIZAR
   useEffect(() => {
     if (isInitialized) {
-      console.log("🔄 Cargando movimientos...");
       executeGetMovements();
     }
-  }, [isInitialized]); // ✅ Solo cuando se inicialice
+  }, [isInitialized]); // Solo cuando se inicialice
 
-  // ✅ FUNCIONES DE MANEJO SIMPLES
+  // FUNCIONES DE MANEJO SIMPLES
   const handleFilterChange = useCallback(
     (field: string, value: string) => {
       const newFilters = { ...filters, [field]: value || undefined, page: 1 };
@@ -338,7 +329,6 @@ export const HistorialList: React.FC = () => {
 
   const handleSearch = useCallback(() => {
     if (!isInitialized) return;
-    console.log("🔍 Ejecutando búsqueda manual...");
     executeGetMovements();
   }, [executeGetMovements, isInitialized]);
 
@@ -346,7 +336,7 @@ export const HistorialList: React.FC = () => {
     const clearedFilters: MovementFilters = {
       search: "",
       action: undefined,
-      user_id: undefined,
+      username: undefined,
       date_from: "",
       date_to: "",
       page: 1,
@@ -523,10 +513,10 @@ export const HistorialList: React.FC = () => {
         </div>
       )}
 
-      {/* ✅ FILTROS SIMPLES - SOLO CAMBIO DE ESTADO */}
+      {/* FILTROS CON ROL Y USUARIO */}
       <Card padding="lg">
         <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             {/* Búsqueda */}
             <Input
               placeholder="Buscar en descripciones..."
@@ -535,14 +525,20 @@ export const HistorialList: React.FC = () => {
               icon={Search}
             />
 
-            {/* Usuario */}
-            <Select
-              value={filters.user_id || ""}
-              onChange={(e) => handleFilterChange("user_id", e.target.value)}
+            {/* Filtro por Usuario */}
+            <SearchableSelect
               options={[
-                { value: "", label: "Todos los usuarios" },
-                ...userOptions,
+                "Todos los usuarios",
+                ...usernameOptions.map((option) => option.value),
               ]}
+              value={filters.username ? filters.username : "Todos los usuarios"}
+              onChange={(value) =>
+                handleFilterChange(
+                  "username",
+                  value === "Todos los usuarios" ? "" : value
+                )
+              }
+              placeholder="Buscar usuario..."
             />
 
             {/* Acción */}
@@ -558,21 +554,25 @@ export const HistorialList: React.FC = () => {
               ]}
             />
 
-            {/* Fecha Desde */}
-            <Input
-              type="date"
-              value={filters.date_from || ""}
-              onChange={(e) => handleFilterChange("date_from", e.target.value)}
-              max={today}
-            />
-
-            {/* Fecha Hasta */}
-            <Input
-              type="date"
-              value={filters.date_to || ""}
-              onChange={(e) => handleFilterChange("date_to", e.target.value)}
-              max={today}
-            />
+            {/* Fechas en una sola fila */}
+            <div className="flex space-x-2">
+              <Input
+                type="date"
+                value={filters.date_from || ""}
+                onChange={(e) =>
+                  handleFilterChange("date_from", e.target.value)
+                }
+                max={today}
+                placeholder="Desde"
+              />
+              <Input
+                type="date"
+                value={filters.date_to || ""}
+                onChange={(e) => handleFilterChange("date_to", e.target.value)}
+                max={today}
+                placeholder="Hasta"
+              />
+            </div>
           </div>
 
           <div className="flex items-center justify-between">
