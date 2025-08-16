@@ -14,9 +14,9 @@ export interface RecordFilters {
   tipo_linea?: string;
   ubicacion?: string;
   anclaje_equipos?: string;
+  seec?: string;
   fecha_instalacion_desde?: string;
   fecha_instalacion_hasta?: string;
-  seec?: string;
   page?: number;
   limit?: number;
   sortBy?: string;
@@ -221,6 +221,7 @@ class RecordsService {
       if (filters?.equipo) params.append("equipo", filters.equipo);
       if (filters?.anclaje_equipos)
         params.append("anclaje_equipos", filters.anclaje_equipos);
+      if (filters?.seec) params.append("seec", filters.seec);
       if (filters?.estado_actual) {
         // Mapear estado del frontend al backend
         const backendStatus = this.mapFrontendStatusToBackend(
@@ -240,7 +241,6 @@ class RecordsService {
           "fecha_instalacion_hasta",
           filters.fecha_instalacion_hasta
         );
-      if (filters?.seec) params.append("seec", filters.seec);
       if (filters?.page) params.append("page", filters.page.toString());
       if (filters?.limit) params.append("limit", filters.limit.toString());
       if (filters?.sortBy) params.append("sortBy", filters.sortBy);

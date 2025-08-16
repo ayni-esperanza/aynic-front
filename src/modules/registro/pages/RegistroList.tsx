@@ -18,7 +18,6 @@ import {
   SlidersHorizontal,
   RefreshCw,
   Camera,
-  Image as ImageIcon,
 } from "lucide-react";
 import { DataTable } from "../../../components/common/DataTable";
 import { Button } from "../../../components/ui/Button";
@@ -28,7 +27,6 @@ import { Input } from "../../../components/ui/Input";
 import { Select } from "../../../components/ui/Select";
 import { LoadingSpinner } from "../../../components/ui/LoadingSpinner";
 import { useToast } from "../../../components/ui/Toast";
-import { usePagination } from "../../../hooks/usePagination";
 import { useApi } from "../../../hooks/useApi";
 import { recordsService } from "../../../services/recordsService";
 import {
@@ -47,6 +45,8 @@ export const RegistroList: React.FC = () => {
   const [equipoFilter, setEquipoFilter] = useState("");
   const [ubicacionFilter, setUbicacionFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [empresaFilter, setEmpresaFilter] = useState("");
+  const [areaFilter, setAreaFilter] = useState("");
   const [installDateFrom, setInstallDateFrom] = useState("");
   const [installDateTo, setInstallDateTo] = useState("");
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
@@ -58,7 +58,9 @@ export const RegistroList: React.FC = () => {
 
   // Estado para datos de registros
   const [registros, setRegistros] = useState<DataRecord[]>([]);
-  const [recordImages, setRecordImages] = useState<Map<string, ImageResponse>>(new Map());
+  const [recordImages, setRecordImages] = useState<Map<string, ImageResponse>>(
+    new Map()
+  );
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -66,10 +68,12 @@ export const RegistroList: React.FC = () => {
     itemsPerPage: 10,
   });
 
-  const debounceRefs = useRef<Record<"codigo" | "equipo" | "ubicacion", any>>({
+  const debounceRefs = useRef<Record<string, any>>({
     codigo: null,
     equipo: null,
     ubicacion: null,
+    empresa: null,
+    area: null,
   });
 
   // Hook para cargar registros con función estable
@@ -88,6 +92,7 @@ export const RegistroList: React.FC = () => {
       setPagination(data.pagination);
       // Cargar imágenes para los registros visibles
       loadImagesForRecords(data.data);
+      // Extraer opciones únicas para filtros
     },
     onError: (error) => {
       showError("Error al cargar registros", error);
@@ -169,7 +174,7 @@ export const RegistroList: React.FC = () => {
       };
       loadInitialData();
     }
-  }, []); // Sin dependencias para ejecutar solo una vez
+  }, []);
 
   // Limpiar timeout al desmontar
   useEffect(() => {
@@ -194,6 +199,10 @@ export const RegistroList: React.FC = () => {
           page: pagination.currentPage,
           limit: pagination.itemsPerPage,
           codigo: searchTerm || undefined,
+          equipo: equipoFilter || undefined,
+          ubicacion: ubicacionFilter || undefined,
+          cliente: empresaFilter || undefined,
+          seec: areaFilter || undefined,
           estado_actual: statusFilter || undefined,
           sortBy: "codigo",
           sortOrder: "ASC",
@@ -203,10 +212,21 @@ export const RegistroList: React.FC = () => {
     } catch (error) {
       console.error("Error refreshing data:", error);
     }
-  }, []);
+  }, [
+    pagination.currentPage,
+    pagination.itemsPerPage,
+    searchTerm,
+    equipoFilter,
+    ubicacionFilter,
+    empresaFilter,
+    areaFilter,
+    statusFilter,
+    loadRegistros,
+    loadStats,
+  ]);
 
   const handleTextFilterChange = useCallback(
-    (field: "codigo" | "equipo" | "ubicacion", setter: (v: string) => void) =>
+    (field: string, setter: (v: string) => void) =>
       (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setter(value);
@@ -218,7 +238,7 @@ export const RegistroList: React.FC = () => {
         // búsqueda automática solo si NO hay estado/fechas activos
         if (!statusFilter && !installDateFrom && !installDateTo) {
           debounceRefs.current[field] = setTimeout(() => {
-            // construir payload combinando los 3 filtros de texto
+            // construir payload combinando todos los filtros de texto
             const payload = {
               page: 1,
               limit: pagination.itemsPerPage,
@@ -229,6 +249,10 @@ export const RegistroList: React.FC = () => {
               ubicacion:
                 (field === "ubicacion" ? value : ubicacionFilter).trim() ||
                 undefined,
+              cliente:
+                (field === "empresa" ? value : empresaFilter).trim() ||
+                undefined,
+              seec: (field === "area" ? value : areaFilter).trim() || undefined,
               sortBy: "codigo",
               sortOrder: "ASC",
             };
@@ -240,6 +264,8 @@ export const RegistroList: React.FC = () => {
       statusFilter,
       installDateFrom,
       installDateTo,
+      empresaFilter,
+      areaFilter,
       pagination.itemsPerPage,
       loadRegistros,
       searchTerm,
@@ -248,18 +274,44 @@ export const RegistroList: React.FC = () => {
     ]
   );
 
+  const handleExpandedFilterChange = useCallback(
+    (field: string, setter: (v: string) => void) =>
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setter(value);
+      },
+    []
+  );
+
   const handlePageChange = useCallback(
     (newPage: number) => {
       loadRegistros({
         page: newPage,
         limit: pagination.itemsPerPage,
         codigo: searchTerm || undefined,
+        equipo: equipoFilter || undefined,
+        ubicacion: ubicacionFilter || undefined,
+        cliente: empresaFilter || undefined,
+        seec: areaFilter || undefined,
         estado_actual: statusFilter || undefined,
+        fecha_instalacion_desde: installDateFrom || undefined,
+        fecha_instalacion_hasta: installDateTo || undefined,
         sortBy: "codigo",
         sortOrder: "ASC",
       });
     },
-    [pagination.itemsPerPage, searchTerm, statusFilter, loadRegistros]
+    [
+      pagination.itemsPerPage,
+      searchTerm,
+      equipoFilter,
+      ubicacionFilter,
+      empresaFilter,
+      areaFilter,
+      statusFilter,
+      installDateFrom,
+      installDateTo,
+      loadRegistros,
+    ]
   );
 
   const handleDeleteRegistro = useCallback(
@@ -279,27 +331,22 @@ export const RegistroList: React.FC = () => {
     const configs = {
       activo: {
         variant: "success" as const,
-        icon: "🟢",
         color: "text-green-600",
       },
       inactivo: {
         variant: "secondary" as const,
-        icon: "⚪",
         color: "text-gray-600",
       },
       mantenimiento: {
         variant: "warning" as const,
-        icon: "🔧",
         color: "text-orange-600",
       },
       por_vencer: {
         variant: "warning" as const,
-        icon: "🟡",
         color: "text-yellow-600",
       },
       vencido: {
         variant: "danger" as const,
-        icon: "🔴",
         color: "text-red-600",
       },
     };
@@ -337,7 +384,7 @@ export const RegistroList: React.FC = () => {
       },
       {
         key: "cliente",
-        label: "Cliente",
+        label: "Empresa",
         sortable: true,
         render: (value: any) => (
           <div className="flex items-center space-x-2">
@@ -348,6 +395,15 @@ export const RegistroList: React.FC = () => {
             </div>
             <span className="font-medium text-gray-900">{String(value)}</span>
           </div>
+        ),
+      },
+      {
+        key: "seec",
+        label: "Área",
+        render: (value: any) => (
+          <span className="inline-flex items-center px-2 py-1 font-mono text-sm text-indigo-800 bg-indigo-100 rounded-md">
+            {String(value)}
+          </span>
         ),
       },
       {
@@ -369,7 +425,7 @@ export const RegistroList: React.FC = () => {
             <div className="font-medium text-gray-900">
               {formatDate(value as Date)}
             </div>
-            <div className="text-xs text-gray-500">📅 Instalado</div>
+            <div className="text-xs text-gray-500">Instalado</div>
           </div>
         ),
       },
@@ -411,7 +467,6 @@ export const RegistroList: React.FC = () => {
                 className="inline-flex items-center px-2 py-1 text-xs text-yellow-800 bg-yellow-100 rounded-md cursor-help"
                 title={String(value)}
               >
-                📝{" "}
                 {String(value).length > 20
                   ? `${String(value).substring(0, 20)}...`
                   : String(value)}
@@ -422,31 +477,14 @@ export const RegistroList: React.FC = () => {
           ),
       },
       {
-        key: "seec",
-        label: "Sección/Área/Planta",
-        render: (value: any) => (
-          <span className="inline-flex items-center px-2 py-1 font-mono text-sm text-indigo-800 bg-indigo-100 rounded-md">
-            {String(value)}
-          </span>
-        ),
-      },
-      {
         key: "tipo_linea",
         label: "Tipo Línea",
         sortable: true,
-        render: (value: any) => {
-          const iconMap: Record<string, string> = {
-            "Fibra Óptica": "🔗",
-            Cobre: "🔗",
-            Inalámbrica: "📡",
-            Satelital: "🛰️",
-          };
-          return (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-              {iconMap[String(value)] || "🔗"} {String(value)}
-            </span>
-          );
-        },
+        render: (value: any) => (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            {String(value)}
+          </span>
+        ),
       },
       {
         key: "ubicacion",
@@ -456,7 +494,7 @@ export const RegistroList: React.FC = () => {
             className="max-w-xs text-gray-600 truncate"
             title={String(value)}
           >
-            📍 {String(value)}
+            {String(value)}
           </div>
         ),
       },
@@ -480,7 +518,7 @@ export const RegistroList: React.FC = () => {
                   isVencido ? "text-red-500" : "text-gray-500"
                 }`}
               >
-                {isVencido ? "⚠️ Vencido" : "⏰ Programado"}
+                {isVencido ? "Vencido" : "Programado"}
               </div>
             </div>
           );
@@ -492,12 +530,7 @@ export const RegistroList: React.FC = () => {
         render: (value: any) => {
           const estado = String(value) as DataRecord["estado_actual"];
           const config = getEstadoConfig(estado);
-          return (
-            <div className="flex items-center space-x-2">
-              <span className="text-lg">{config.emoji}</span>
-              <Badge variant={config.variant}>{estado}</Badge>
-            </div>
-          );
+          return <Badge variant={config.variant}>{estado}</Badge>;
         },
       },
       {
@@ -537,7 +570,7 @@ export const RegistroList: React.FC = () => {
     [navigate, deleting, handleDeleteRegistro, getEstadoConfig, recordImages]
   );
 
-  // Vista en cuadrícula
+  // Vista en cuadrícula (actualizada para mostrar empresa y área)
   const GridView = () => (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
       {registros.map((registro) => {
@@ -571,19 +604,26 @@ export const RegistroList: React.FC = () => {
                     <p className="text-sm text-gray-500">{registro.cliente}</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-1">
-                  <span className={`text-xl ${estadoConfig.color}`}>
-                    {estadoConfig.icon}
-                  </span>
-                  <Badge variant={estadoConfig.variant} size="sm">
-                    {registro.estado_actual === "por_vencer"
-                      ? "Por Vencer"
-                      : registro.estado_actual}
-                  </Badge>
-                </div>
+                <Badge variant={estadoConfig.variant} size="sm">
+                  {registro.estado_actual === "por_vencer"
+                    ? "Por Vencer"
+                    : registro.estado_actual}
+                </Badge>
               </div>
 
               <div className="mb-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500">Empresa:</span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {registro.cliente}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500">Área:</span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                    {registro.seec}
+                  </span>
+                </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-500">Equipo:</span>
                   <span className="text-sm font-medium text-gray-900">
@@ -608,14 +648,14 @@ export const RegistroList: React.FC = () => {
                     className="text-sm text-gray-900 truncate max-w-32"
                     title={registro.ubicacion}
                   >
-                    📍 {registro.ubicacion}
+                    {registro.ubicacion}
                   </span>
                 </div>
                 {hasImage && (
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-500">Imagen:</span>
                     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                      📷 Disponible
+                      Disponible
                     </span>
                   </div>
                 )}
@@ -665,7 +705,7 @@ export const RegistroList: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="mb-4 text-red-600">⚠️</div>
+          <div className="mb-4 text-red-600">Error</div>
           <p className="font-medium text-gray-900">Error al cargar registros</p>
           <p className="mb-4 text-gray-600">{apiError}</p>
           <Button onClick={refreshData} icon={RefreshCw}>
@@ -678,7 +718,7 @@ export const RegistroList: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header mejorado */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <div className="w-12 h-12 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-xl flex items-center justify-center shadow-lg">
@@ -804,9 +844,9 @@ export const RegistroList: React.FC = () => {
       {/* Controles y filtros */}
       <Card className="border border-gray-200 shadow-sm bg-gradient-to-r from-gray-50 to-white">
         <div className="p-6">
-          {/* Top bar: 3 inputs con label + botones */}
+          {/* Top bar: 5 inputs con label + botones */}
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            {/* 3 filtros alineados */}
+            {/* 5 filtros alineados */}
             <div className="flex-1">
               <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
                 {/* Código */}
@@ -833,13 +873,13 @@ export const RegistroList: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Equipo */}
+                {/* Empresa */}
                 <div className="relative">
                   <label
-                    htmlFor="f-equipo"
+                    htmlFor="f-empresa"
                     className="block mb-1 text-xs font-semibold text-gray-700"
                   >
-                    Equipo
+                    Empresa
                   </label>
                   <div className="relative">
                     <Search
@@ -848,25 +888,25 @@ export const RegistroList: React.FC = () => {
                       aria-hidden
                     />
                     <Input
-                      id="f-equipo"
-                      placeholder="Buscar por equipo..."
-                      value={equipoFilter}
+                      id="f-empresa"
+                      placeholder="Buscar por empresa..."
+                      value={empresaFilter}
                       onChange={handleTextFilterChange(
-                        "equipo",
-                        setEquipoFilter
+                        "empresa",
+                        setEmpresaFilter
                       )}
                       className="h-10 pl-9 border-gray-300 focus:border-[#18D043] focus:ring-[#18D043]/20"
                     />
                   </div>
                 </div>
 
-                {/* Ubicación */}
+                {/* Área */}
                 <div className="relative">
                   <label
-                    htmlFor="f-ubicacion"
+                    htmlFor="f-area"
                     className="block mb-1 text-xs font-semibold text-gray-700"
                   >
-                    Ubicación
+                    Área
                   </label>
                   <div className="relative">
                     <Search
@@ -875,13 +915,10 @@ export const RegistroList: React.FC = () => {
                       aria-hidden
                     />
                     <Input
-                      id="f-ubicacion"
-                      placeholder="Buscar por ubicación..."
-                      value={ubicacionFilter}
-                      onChange={handleTextFilterChange(
-                        "ubicacion",
-                        setUbicacionFilter
-                      )}
+                      id="f-area"
+                      placeholder="Buscar por área..."
+                      value={areaFilter}
+                      onChange={handleTextFilterChange("area", setAreaFilter)}
                       className="h-10 pl-9 border-gray-300 focus:border-[#18D043] focus:ring-[#18D043]/20"
                     />
                   </div>
@@ -948,6 +985,8 @@ export const RegistroList: React.FC = () => {
                     codigo: searchTerm || undefined,
                     equipo: equipoFilter || undefined,
                     ubicacion: ubicacionFilter || undefined,
+                    cliente: empresaFilter || undefined,
+                    seec: areaFilter || undefined,
                     estado_actual: statusFilter || undefined,
                     fecha_instalacion_desde: installDateFrom || undefined,
                     fecha_instalacion_hasta: installDateTo || undefined,
@@ -967,12 +1006,44 @@ export const RegistroList: React.FC = () => {
                     onChange={(e) => setStatusFilter(e.target.value)}
                     options={[
                       { value: "", label: "Todos los estados" },
-                      { value: "activo", label: "🟢 Activo" },
-                      { value: "por_vencer", label: "🟡 Por Vencer" },
-                      { value: "vencido", label: "🔴 Vencido" },
-                      { value: "inactivo", label: "⚪ Inactivo" },
-                      { value: "mantenimiento", label: "🔧 Mantenimiento" },
+                      { value: "activo", label: "Activo" },
+                      { value: "por_vencer", label: "Por Vencer" },
+                      { value: "vencido", label: "Vencido" },
+                      { value: "inactivo", label: "Inactivo" },
+                      { value: "mantenimiento", label: "Mantenimiento" },
                     ]}
+                  />
+                </div>
+
+                {/* Equipo */}
+                <div className="md:col-span-4">
+                  <label className="block mb-1 text-xs font-semibold text-gray-700">
+                    Equipo
+                  </label>
+                  <Input
+                    placeholder="Buscar por equipo..."
+                    value={equipoFilter}
+                    onChange={handleExpandedFilterChange(
+                      "equipo",
+                      setEquipoFilter
+                    )}
+                    className="h-10 border-gray-300"
+                  />
+                </div>
+
+                {/* Ubicación */}
+                <div className="md:col-span-4">
+                  <label className="block mb-1 text-xs font-semibold text-gray-700">
+                    Ubicación
+                  </label>
+                  <Input
+                    placeholder="Buscar por ubicación..."
+                    value={ubicacionFilter}
+                    onChange={handleExpandedFilterChange(
+                      "ubicacion",
+                      setUbicacionFilter
+                    )}
+                    className="h-10 border-gray-300"
                   />
                 </div>
 
@@ -1003,7 +1074,7 @@ export const RegistroList: React.FC = () => {
                   />
                 </div>
 
-                {/* Acciones: propia fila/col para que no se mueva */}
+                {/* Acciones */}
                 <div className="flex items-center justify-end gap-2 md:col-span-12">
                   <Button
                     type="submit"
@@ -1014,6 +1085,8 @@ export const RegistroList: React.FC = () => {
                   {(searchTerm ||
                     equipoFilter ||
                     ubicacionFilter ||
+                    empresaFilter ||
+                    areaFilter ||
                     statusFilter ||
                     installDateFrom ||
                     installDateTo) && (
@@ -1025,6 +1098,8 @@ export const RegistroList: React.FC = () => {
                         setSearchTerm("");
                         setEquipoFilter("");
                         setUbicacionFilter("");
+                        setEmpresaFilter("");
+                        setAreaFilter("");
                         setStatusFilter("");
                         setInstallDateFrom("");
                         setInstallDateTo("");
@@ -1065,6 +1140,18 @@ export const RegistroList: React.FC = () => {
             {loading ? (
               <div className="flex items-center justify-center h-64">
                 <LoadingSpinner size="lg" />
+              </div>
+            ) : registros.length === 0 ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="text-center">
+                  <div className="mb-4 text-gray-400">
+                    No se encontró ningún registro
+                  </div>
+                  <p className="text-gray-600">
+                    No hay registros que coincidan con los criterios de
+                    búsqueda.
+                  </p>
+                </div>
               </div>
             ) : (
               <>
