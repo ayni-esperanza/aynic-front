@@ -6,13 +6,13 @@ import {
   Activity,
   Calendar,
   Search,
-  Filter,
   RotateCcw,
   ChevronDown,
   ChevronRight,
   Eye,
   EyeOff,
   Download,
+  Filter,
 } from "lucide-react";
 import { Card } from "../../../components/ui/Card";
 import { Badge } from "../../../components/ui/Badge";
@@ -227,9 +227,9 @@ const MovementHistoryItem: React.FC<{
 // Componente principal
 export const HistorialList: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { error: showError } = useToast();
+  const { success, error: showError } = useToast();
 
-  // Estado local para filtros
+  // ✅ ESTADO SIMPLE - SIN COMPLICACIONES
   const [filters, setFilters] = useState<MovementFilters>({
     search: searchParams.get("search") || "",
     action: (searchParams.get("action") as MovementAction) || undefined,
@@ -242,38 +242,36 @@ export const HistorialList: React.FC = () => {
     sortOrder: "DESC",
   });
 
-  // Estados locales
+  // Estados para datos iniciales
   const [statistics, setStatistics] = useState<MovementStatistics | null>(null);
   const [actionOptions, setActionOptions] = useState<ActionOption[]>([]);
   const [userOptions, setUserOptions] = useState<
     Array<{ value: string; label: string }>
   >([]);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // ✅ SOLUCIÓN 1: Crear función estable que no cambie en cada render
-  const stableGetMovements = useMemo(() => {
-    return () => getMovements(filters);
-  }, [filters]); // Solo se recrea cuando cambian los filtros
-
-  // ✅ SOLUCIÓN 2: useApi SIN immediate, sin dependencias problemáticas
+  // ✅ API HOOK SIMPLE - SIN IMMEDIATE
   const {
     data: movementsData,
     loading,
     error,
     execute: executeGetMovements,
-  } = useApi(stableGetMovements, {
-    immediate: false, // ← IMPORTANTE: No ejecutar automáticamente
-    onError: (error) => showError("Error", error),
+  } = useApi(() => getMovements(filters), {
+    immediate: false,
+    onError: (error) => {
+      console.error("Movement fetch error:", error);
+      showError("Error", error);
+    },
   });
 
-  // ✅ SOLUCIÓN 3: useEffect que solo depende de filters, NO de executeGetMovements
-  useEffect(() => {
-    executeGetMovements();
-  }, [filters]); // ← Solo filters, sin executeGetMovements
-
-  // ✅ SOLUCIÓN 4: Cargar datos iniciales por separado
+  // ✅ CARGAR DATOS INICIALES UNA SOLA VEZ
   useEffect(() => {
     const loadInitialData = async () => {
+      if (isInitialized) return;
+
       try {
+        console.log("📋 Cargando datos iniciales...");
+
         // Cargar estadísticas
         const stats = await getStatistics();
         setStatistics(stats);
@@ -282,45 +280,75 @@ export const HistorialList: React.FC = () => {
         const actions = await getAvailableActions();
         setActionOptions(actions);
 
-        // Crear opciones de usuarios desde las estadísticas
+        // Crear opciones de usuarios (solo numéricas)
         if (stats.byUser.length > 0) {
-          const users = stats.byUser.map(
-            (user: { username: string; count: number }) => ({
+          const users = stats.byUser
+            .filter((user) => /^\d+$/.test(user.username))
+            .map((user: { username: string; count: number }) => ({
               value: user.username,
-              label: user.username,
-            })
-          );
+              label: `Usuario ${user.username}`,
+            }));
           setUserOptions(users);
         }
+
+        setIsInitialized(true);
+        console.log("✅ Datos iniciales cargados");
       } catch (error) {
-        console.error("Error loading initial data:", error);
+        console.error("❌ Error loading initial data:", error);
+        showError("Error", "Error al cargar datos iniciales");
+        setIsInitialized(true); // Marcar como inicializado aunque falle
       }
     };
 
     loadInitialData();
-  }, []); // ← Solo una vez al montar el componente
+  }, []); // ✅ Solo ejecutar UNA VEZ
 
-  // ✅ SOLUCIÓN 5: Funciones de manejo estables
+  // ✅ CARGAR MOVIMIENTOS DESPUÉS DE INICIALIZAR
+  useEffect(() => {
+    if (isInitialized) {
+      console.log("🔄 Cargando movimientos...");
+      executeGetMovements();
+    }
+  }, [isInitialized]); // ✅ Solo cuando se inicialice
+
+  // ✅ FUNCIONES DE MANEJO SIMPLES
   const handleFilterChange = useCallback(
-    (newFilters: Partial<MovementFilters>) => {
-      const updatedFilters = { ...filters, ...newFilters, page: 1 };
-      setFilters(updatedFilters);
+    (field: string, value: string) => {
+      const newFilters = { ...filters, [field]: value || undefined, page: 1 };
+      setFilters(newFilters);
 
       // Actualizar URL
       const params = new URLSearchParams();
-      if (updatedFilters.search) params.set("search", updatedFilters.search);
-      if (updatedFilters.action) params.set("action", updatedFilters.action);
-      if (updatedFilters.user_id) params.set("user_id", updatedFilters.user_id);
-      if (updatedFilters.date_from)
-        params.set("date_from", updatedFilters.date_from);
-      if (updatedFilters.date_to) params.set("date_to", updatedFilters.date_to);
+      Object.entries(newFilters).forEach(([key, val]) => {
+        if (
+          val &&
+          val !== "" &&
+          key !== "page" &&
+          key !== "limit" &&
+          key !== "sortBy" &&
+          key !== "sortOrder"
+        ) {
+          params.set(key, String(val));
+        }
+      });
       setSearchParams(params);
     },
     [filters, setSearchParams]
   );
 
+  const handleSearch = useCallback(() => {
+    if (!isInitialized) return;
+    console.log("🔍 Ejecutando búsqueda manual...");
+    executeGetMovements();
+  }, [executeGetMovements, isInitialized]);
+
   const handleClearFilters = useCallback(() => {
     const clearedFilters: MovementFilters = {
+      search: "",
+      action: undefined,
+      user_id: undefined,
+      date_from: "",
+      date_to: "",
       page: 1,
       limit: 10,
       sortBy: "action_date",
@@ -332,26 +360,24 @@ export const HistorialList: React.FC = () => {
 
   const handlePageChange = useCallback(
     (page: number) => {
-      const updatedFilters = { ...filters, page };
-      setFilters(updatedFilters);
+      setFilters((prev) => ({ ...prev, page }));
+      // Auto-ejecutar cuando cambie la página
+      setTimeout(() => executeGetMovements(), 100);
     },
-    [filters]
+    [executeGetMovements]
   );
 
-  // ✅ SOLUCIÓN 6: Función refresh estable (solo recargar datos actuales)
-  const refresh = useCallback(() => {
-    executeGetMovements();
-  }, [executeGetMovements]);
-
-  // ✅ SOLUCIÓN 7: Función para exportar datos
   const handleExport = useCallback(async () => {
     try {
-      // Obtener todos los datos sin paginación para exportar
-      const exportData = await getMovements({
-        ...filters,
-        page: 1,
-        limit: 10000, // Obtener muchos registros para exportar
-      });
+      const exportFilters = { ...filters, page: 1, limit: 100 };
+      const exportData = await getMovements(exportFilters);
+
+      if (exportData.pagination.totalItems > 100) {
+        showError(
+          "Información",
+          `Se exportaron los primeros 100 registros de ${exportData.pagination.totalItems} total.`
+        );
+      }
 
       // Crear CSV
       const headers = [
@@ -363,12 +389,11 @@ export const HistorialList: React.FC = () => {
         "Usuario",
         "IP",
       ];
-
       const csvData = exportData.data.map((movement) => [
         movement.id,
         movement.record_code || "",
         movement.action_label,
-        movement.description.replace(/,/g, ";"), // Reemplazar comas para CSV
+        movement.description.replace(/,/g, ";"),
         movement.formatted_date,
         movement.user_display_name,
         movement.ip_address || "",
@@ -395,13 +420,19 @@ export const HistorialList: React.FC = () => {
       link.click();
       document.body.removeChild(link);
 
-      showError("Éxito", "Archivo exportado correctamente");
+      success("Éxito", "Archivo exportado correctamente");
     } catch (error) {
-      showError("Error", "No se pudo exportar el archivo");
+      console.error("Export error:", error);
+      showError(
+        "Error",
+        `No se pudo exportar: ${
+          error instanceof Error ? error.message : "Error desconocido"
+        }`
+      );
     }
-  }, [filters, showError]);
+  }, [filters, showError, success]);
 
-  // Obtener fecha de hoy en formato YYYY-MM-DD
+  // Obtener fecha de hoy
   const today = new Date().toISOString().split("T")[0];
 
   // Extraer datos de la respuesta
@@ -492,7 +523,7 @@ export const HistorialList: React.FC = () => {
         </div>
       )}
 
-      {/* Filtros */}
+      {/* ✅ FILTROS SIMPLES - SOLO CAMBIO DE ESTADO */}
       <Card padding="lg">
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
@@ -500,18 +531,24 @@ export const HistorialList: React.FC = () => {
             <Input
               placeholder="Buscar en descripciones..."
               value={filters.search || ""}
-              onChange={(e) => handleFilterChange({ search: e.target.value })}
+              onChange={(e) => handleFilterChange("search", e.target.value)}
               icon={Search}
+            />
+
+            {/* Usuario */}
+            <Select
+              value={filters.user_id || ""}
+              onChange={(e) => handleFilterChange("user_id", e.target.value)}
+              options={[
+                { value: "", label: "Todos los usuarios" },
+                ...userOptions,
+              ]}
             />
 
             {/* Acción */}
             <Select
               value={filters.action || ""}
-              onChange={(e) =>
-                handleFilterChange({
-                  action: (e.target.value as MovementAction) || undefined,
-                })
-              }
+              onChange={(e) => handleFilterChange("action", e.target.value)}
               options={[
                 { value: "", label: "Todas las acciones" },
                 ...actionOptions.map((option) => ({
@@ -521,25 +558,11 @@ export const HistorialList: React.FC = () => {
               ]}
             />
 
-            {/* Usuario */}
-            <Select
-              value={filters.user_id || ""}
-              onChange={(e) =>
-                handleFilterChange({ user_id: e.target.value || undefined })
-              }
-              options={[
-                { value: "", label: "Todos los usuarios" },
-                ...userOptions,
-              ]}
-            />
-
             {/* Fecha Desde */}
             <Input
               type="date"
               value={filters.date_from || ""}
-              onChange={(e) =>
-                handleFilterChange({ date_from: e.target.value })
-              }
+              onChange={(e) => handleFilterChange("date_from", e.target.value)}
               max={today}
             />
 
@@ -547,7 +570,7 @@ export const HistorialList: React.FC = () => {
             <Input
               type="date"
               value={filters.date_to || ""}
-              onChange={(e) => handleFilterChange({ date_to: e.target.value })}
+              onChange={(e) => handleFilterChange("date_to", e.target.value)}
               max={today}
             />
           </div>
@@ -555,17 +578,18 @@ export const HistorialList: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="flex space-x-3">
               <Button
-                onClick={() => executeGetMovements()}
+                onClick={handleSearch}
                 icon={Filter}
-                disabled={loading}
+                disabled={loading || !isInitialized}
+                loading={loading}
               >
-                Filtrar
+                Buscar
               </Button>
               <Button
                 variant="outline"
                 onClick={handleClearFilters}
                 icon={RotateCcw}
-                disabled={loading}
+                disabled={loading || !isInitialized}
               >
                 Limpiar Filtros
               </Button>
@@ -574,9 +598,9 @@ export const HistorialList: React.FC = () => {
             <div className="flex space-x-3">
               <Button
                 variant="outline"
-                onClick={refresh}
+                onClick={handleSearch}
                 icon={RotateCcw}
-                disabled={loading}
+                disabled={loading || !isInitialized}
                 size="sm"
               >
                 Recargar
@@ -586,7 +610,7 @@ export const HistorialList: React.FC = () => {
                 onClick={handleExport}
                 icon={Download}
                 size="sm"
-                disabled={loading}
+                disabled={loading || !isInitialized}
               >
                 Exportar CSV
               </Button>
@@ -602,16 +626,16 @@ export const HistorialList: React.FC = () => {
             <Activity className="w-5 h-5 text-[#18D043]" />
             <span>Registro de Actividades</span>
           </h2>
-          {/* Eliminado: botón de exportar duplicado */}
         </div>
 
         {loading && (
-          <div className="flex items-center justify-center h-64 space-y-4">
+          <div className="flex items-center justify-center h-64">
             <div className="relative">
               <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#18D043]/20 border-t-[#18D043]"></div>
-              <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#18D043] animate-ping"></div>
             </div>
-            <p className="font-medium text-gray-600">Cargando movimientos...</p>
+            <p className="ml-4 font-medium text-gray-600">
+              Cargando movimientos...
+            </p>
           </div>
         )}
 
@@ -625,7 +649,7 @@ export const HistorialList: React.FC = () => {
                 Error al cargar el historial
               </p>
               <p className="mb-4 text-gray-600">{error}</p>
-              <Button onClick={refresh} variant="outline">
+              <Button onClick={handleSearch} variant="outline">
                 Reintentar
               </Button>
             </div>
@@ -657,7 +681,7 @@ export const HistorialList: React.FC = () => {
               ))}
             </div>
 
-            {/* Paginación */}
+            {/* Paginación simple */}
             {pagination.totalPages > 1 && (
               <div className="flex flex-col items-center justify-between px-6 py-4 mt-6 space-y-4 bg-white border border-gray-200 shadow-sm sm:flex-row sm:space-y-0 rounded-xl">
                 <div className="flex items-center space-x-4">
@@ -701,7 +725,6 @@ export const HistorialList: React.FC = () => {
                     Anterior
                   </Button>
 
-                  {/* Números de página */}
                   <div className="flex items-center space-x-1">
                     {Array.from(
                       { length: Math.min(5, pagination.totalPages) },
@@ -721,9 +744,9 @@ export const HistorialList: React.FC = () => {
                           <button
                             key={pageNumber}
                             onClick={() => handlePageChange(pageNumber)}
-                            className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 transform hover:scale-105 ${
+                            className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
                               pageNumber === pagination.currentPage
-                                ? "bg-gradient-to-r from-[#18D043] to-[#16a34a] text-white shadow-lg shadow-[#18D043]/25"
+                                ? "bg-gradient-to-r from-[#18D043] to-[#16a34a] text-white shadow-lg"
                                 : "text-gray-700 hover:bg-gray-100"
                             }`}
                           >

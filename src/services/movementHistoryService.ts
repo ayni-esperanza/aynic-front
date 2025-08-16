@@ -114,6 +114,9 @@ export interface ActionOption {
 // ===== CONSTANTES =====
 const API_BASE_PATH = "/record-movement-history";
 
+// Límite máximo permitido por el backend
+const MAX_LIMIT = 100;
+
 // ===== FUNCIONES UTILITARIAS =====
 /**
  * Mapear acción del backend al frontend
@@ -157,6 +160,87 @@ export const mapFrontendActionToBackend = (
     maintenance: "MAINTENANCE",
   };
   return actionMap[frontendAction] || "UPDATE";
+};
+
+/**
+ * Validar filtros antes de enviar al backend
+ */
+export const validateFilters = (
+  filters: MovementFilters
+): {
+  valid: boolean;
+  errors: string[];
+  sanitizedFilters: MovementFilters;
+} => {
+  const errors: string[] = [];
+  const sanitizedFilters: MovementFilters = { ...filters };
+
+  // user_id debe ser numérico o vacío
+  if (filters.user_id) {
+    const userIdAsNumber = parseInt(filters.user_id, 10);
+    if (isNaN(userIdAsNumber)) {
+      errors.push(
+        `user_id debe ser un número válido. Recibido: "${filters.user_id}"`
+      );
+      delete sanitizedFilters.user_id; // Remover valor inválido
+    } else {
+      sanitizedFilters.user_id = userIdAsNumber.toString();
+    }
+  }
+
+  // limit no debe exceder MAX_LIMIT
+  if (filters.limit && filters.limit > MAX_LIMIT) {
+    errors.push(
+      `limit no debe ser mayor que ${MAX_LIMIT}. Recibido: ${filters.limit}`
+    );
+    sanitizedFilters.limit = MAX_LIMIT;
+  }
+
+  // page debe ser positivo
+  if (filters.page && filters.page < 1) {
+    errors.push(`page debe ser mayor que 0. Recibido: ${filters.page}`);
+    sanitizedFilters.page = 1;
+  }
+
+  // VALIDACIÓN: fechas deben ser válidas
+  if (filters.date_from && !isValidDate(filters.date_from)) {
+    errors.push(
+      `date_from debe ser una fecha válida (YYYY-MM-DD). Recibido: "${filters.date_from}"`
+    );
+    delete sanitizedFilters.date_from;
+  }
+
+  if (filters.date_to && !isValidDate(filters.date_to)) {
+    errors.push(
+      `date_to debe ser una fecha válida (YYYY-MM-DD). Recibido: "${filters.date_to}"`
+    );
+    delete sanitizedFilters.date_to;
+  }
+
+  // sortOrder debe ser válido
+  if (filters.sortOrder && !["ASC", "DESC"].includes(filters.sortOrder)) {
+    errors.push(
+      `sortOrder debe ser "ASC" o "DESC". Recibido: "${filters.sortOrder}"`
+    );
+    sanitizedFilters.sortOrder = "DESC";
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    sanitizedFilters,
+  };
+};
+
+/**
+ * Validar si una fecha está en formato correcto (YYYY-MM-DD)
+ */
+const isValidDate = (dateString: string): boolean => {
+  const regex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!regex.test(dateString)) return false;
+
+  const date = new Date(dateString);
+  return date instanceof Date && !isNaN(date.getTime());
 };
 
 /**
@@ -249,25 +333,51 @@ export const getMovements = async (
   console.log("🔍 getMovements called with filters:", filters);
 
   try {
+    // VALIDAR FILTROS ANTES DE ENVIAR
+    const validation = validateFilters(filters || {});
+
+    if (!validation.valid) {
+      console.warn("⚠️ Filter validation errors:", validation.errors);
+      // Usar filtros sanitizados en lugar de fallar
+      console.log("🔧 Using sanitized filters:", validation.sanitizedFilters);
+    }
+
+    const sanitizedFilters = validation.sanitizedFilters;
     const params = new URLSearchParams();
 
-    // Agregar filtros a los parámetros
-    if (filters?.record_id) params.append("record_id", filters.record_id);
-    if (filters?.action) {
-      params.append("action", mapFrontendActionToBackend(filters.action));
+    // Agregar filtros validados a los parámetros
+    if (sanitizedFilters.record_id)
+      params.append("record_id", sanitizedFilters.record_id);
+    if (sanitizedFilters.action) {
+      params.append(
+        "action",
+        mapFrontendActionToBackend(sanitizedFilters.action)
+      );
     }
-    if (filters?.user_id) params.append("user_id", filters.user_id);
-    if (filters?.record_code) params.append("record_code", filters.record_code);
-    if (filters?.date_from) params.append("date_from", filters.date_from);
-    if (filters?.date_to) params.append("date_to", filters.date_to);
-    if (filters?.is_record_active !== undefined) {
-      params.append("is_record_active", filters.is_record_active.toString());
+    if (sanitizedFilters.user_id)
+      params.append("user_id", sanitizedFilters.user_id);
+    if (sanitizedFilters.record_code)
+      params.append("record_code", sanitizedFilters.record_code);
+    if (sanitizedFilters.date_from)
+      params.append("date_from", sanitizedFilters.date_from);
+    if (sanitizedFilters.date_to)
+      params.append("date_to", sanitizedFilters.date_to);
+    if (sanitizedFilters.is_record_active !== undefined) {
+      params.append(
+        "is_record_active",
+        sanitizedFilters.is_record_active.toString()
+      );
     }
-    if (filters?.search) params.append("search", filters.search);
-    if (filters?.page) params.append("page", filters.page.toString());
-    if (filters?.limit) params.append("limit", filters.limit.toString());
-    if (filters?.sortBy) params.append("sortBy", filters.sortBy);
-    if (filters?.sortOrder) params.append("sortOrder", filters.sortOrder);
+    if (sanitizedFilters.search)
+      params.append("search", sanitizedFilters.search);
+    if (sanitizedFilters.page)
+      params.append("page", sanitizedFilters.page.toString());
+    if (sanitizedFilters.limit)
+      params.append("limit", sanitizedFilters.limit.toString());
+    if (sanitizedFilters.sortBy)
+      params.append("sortBy", sanitizedFilters.sortBy);
+    if (sanitizedFilters.sortOrder)
+      params.append("sortOrder", sanitizedFilters.sortOrder);
 
     const queryString = params.toString();
     const url = `${API_BASE_PATH}${queryString ? `?${queryString}` : ""}`;
@@ -297,6 +407,16 @@ export const getMovements = async (
     return result;
   } catch (error) {
     console.error("❌ Error fetching movements:", error);
+
+    // MANEJO MEJORADO DE ERRORES
+    if (error instanceof ApiClientError) {
+      if (error.status === 400) {
+        // Error de validación del backend
+        throw new Error(`Error de validación: ${error.message}`);
+      }
+      throw new Error(`Error del servidor (${error.status}): ${error.message}`);
+    }
+
     throw error;
   }
 };
@@ -384,8 +504,11 @@ export const getRecentMovements = async (
   limit: number = 20
 ): Promise<MovementHistory[]> => {
   try {
+    // VALIDAR LÍMITE
+    const validLimit = Math.min(limit, MAX_LIMIT);
+
     const response = await apiClient.get<BackendPaginatedMovements>(
-      `${API_BASE_PATH}/recent?limit=${limit}`
+      `${API_BASE_PATH}/recent?limit=${validLimit}`
     );
     return response.data.map((movement) => mapBackendToFrontend(movement));
   } catch (error) {
@@ -445,4 +568,17 @@ export const getActionColor = (action: MovementAction): string => {
     maintenance: "warning",
   };
   return colors[action] || "secondary";
+};
+
+/**
+ * Crear filtros seguros para exportación
+ */
+export const createExportFilters = (
+  baseFilters: MovementFilters
+): MovementFilters => {
+  return {
+    ...baseFilters,
+    page: 1,
+    limit: MAX_LIMIT, // Usar límite máximo seguro
+  };
 };
