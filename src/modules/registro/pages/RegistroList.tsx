@@ -52,6 +52,19 @@ export const RegistroList: React.FC = () => {
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
   const [showFilters, setShowFilters] = useState(false);
 
+  type AppliedFilters = {
+    codigo?: string;
+    equipo?: string;
+    ubicacion?: string;
+    cliente?: string; // empresa
+    seec?: string; // área
+    estado_actual?: string;
+    fecha_instalacion_desde?: string;
+    fecha_instalacion_hasta?: string;
+  };
+
+  const [appliedFilters, setAppliedFilters] = useState<AppliedFilters>({});
+
   // Referencias para el debounce y carga inicial
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const isInitialLoadRef = useRef(true);
@@ -130,6 +143,36 @@ export const RegistroList: React.FC = () => {
     }
   );
 
+  const buildParams = useCallback(
+    (overrides?: Partial<AppliedFilters>, page?: number) => {
+      const f = { ...appliedFilters, ...overrides };
+      return {
+        page: page ?? pagination.currentPage,
+        limit: pagination.itemsPerPage,
+        codigo: f.codigo || undefined,
+        equipo: f.equipo || undefined,
+        ubicacion: f.ubicacion || undefined,
+        cliente: f.cliente || undefined,
+        seec: f.seec || undefined,
+        estado_actual: f.estado_actual || undefined,
+        fecha_instalacion_desde: f.fecha_instalacion_desde || undefined,
+        fecha_instalacion_hasta: f.fecha_instalacion_hasta || undefined,
+        sortBy: "codigo",
+        sortOrder: "ASC",
+      };
+    },
+    [appliedFilters, pagination.currentPage, pagination.itemsPerPage]
+  );
+
+  const fetchWith = useCallback(
+    async (overrides?: Partial<AppliedFilters>, page?: number) => {
+      setAppliedFilters((prev) => ({ ...prev, ...overrides }));
+      const params = buildParams(overrides, page);
+      await Promise.all([loadRegistros(params), loadStats()]);
+    },
+    [buildParams, loadRegistros, loadStats]
+  );
+
   // Función para cargar imágenes de los registros
   const loadImagesForRecords = useCallback(async (records: DataRecord[]) => {
     const imagePromises = records.map(async (record) => {
@@ -194,36 +237,11 @@ export const RegistroList: React.FC = () => {
   // refreshData con dependencias estables
   const refreshData = useCallback(async () => {
     try {
-      await Promise.all([
-        loadRegistros({
-          page: pagination.currentPage,
-          limit: pagination.itemsPerPage,
-          codigo: searchTerm || undefined,
-          equipo: equipoFilter || undefined,
-          ubicacion: ubicacionFilter || undefined,
-          cliente: empresaFilter || undefined,
-          seec: areaFilter || undefined,
-          estado_actual: statusFilter || undefined,
-          sortBy: "codigo",
-          sortOrder: "ASC",
-        }),
-        loadStats(),
-      ]);
+      await fetchWith({}, pagination.currentPage);
     } catch (error) {
       console.error("Error refreshing data:", error);
     }
-  }, [
-    pagination.currentPage,
-    pagination.itemsPerPage,
-    searchTerm,
-    equipoFilter,
-    ubicacionFilter,
-    empresaFilter,
-    areaFilter,
-    statusFilter,
-    loadRegistros,
-    loadStats,
-  ]);
+  }, [fetchWith, pagination.currentPage]);
 
   const handleTextFilterChange = useCallback(
     (field: string, setter: (v: string) => void) =>
@@ -238,10 +256,7 @@ export const RegistroList: React.FC = () => {
         // búsqueda automática solo si NO hay estado/fechas activos
         if (!statusFilter && !installDateFrom && !installDateTo) {
           debounceRefs.current[field] = setTimeout(() => {
-            // construir payload combinando todos los filtros de texto
-            const payload = {
-              page: 1,
-              limit: pagination.itemsPerPage,
+            const patch: Partial<AppliedFilters> = {
               codigo:
                 (field === "codigo" ? value : searchTerm).trim() || undefined,
               equipo:
@@ -253,10 +268,9 @@ export const RegistroList: React.FC = () => {
                 (field === "empresa" ? value : empresaFilter).trim() ||
                 undefined,
               seec: (field === "area" ? value : areaFilter).trim() || undefined,
-              sortBy: "codigo",
-              sortOrder: "ASC",
             };
-            loadRegistros(payload);
+            // Aplica filtros y resetea a página 1
+            fetchWith(patch, 1);
           }, 500);
         }
       },
@@ -266,11 +280,10 @@ export const RegistroList: React.FC = () => {
       installDateTo,
       empresaFilter,
       areaFilter,
-      pagination.itemsPerPage,
-      loadRegistros,
       searchTerm,
       equipoFilter,
       ubicacionFilter,
+      fetchWith,
     ]
   );
 
@@ -285,33 +298,10 @@ export const RegistroList: React.FC = () => {
 
   const handlePageChange = useCallback(
     (newPage: number) => {
-      loadRegistros({
-        page: newPage,
-        limit: pagination.itemsPerPage,
-        codigo: searchTerm || undefined,
-        equipo: equipoFilter || undefined,
-        ubicacion: ubicacionFilter || undefined,
-        cliente: empresaFilter || undefined,
-        seec: areaFilter || undefined,
-        estado_actual: statusFilter || undefined,
-        fecha_instalacion_desde: installDateFrom || undefined,
-        fecha_instalacion_hasta: installDateTo || undefined,
-        sortBy: "codigo",
-        sortOrder: "ASC",
-      });
+      // Paginación respetando siempre los últimos filtros aplicados
+      fetchWith({}, newPage);
     },
-    [
-      pagination.itemsPerPage,
-      searchTerm,
-      equipoFilter,
-      ubicacionFilter,
-      empresaFilter,
-      areaFilter,
-      statusFilter,
-      installDateFrom,
-      installDateTo,
-      loadRegistros,
-    ]
+    [fetchWith]
   );
 
   const handleDeleteRegistro = useCallback(
@@ -972,27 +962,82 @@ export const RegistroList: React.FC = () => {
               </div>
             </div>
           </div>
+          {/* Indicador de filtros activos */}
+          {Object.values(appliedFilters).some(Boolean) && (
+            <div className="flex flex-wrap items-center gap-2 mt-3">
+              <span className="mr-1 text-xs font-semibold text-gray-600">
+                Filtros activos:
+              </span>
 
+              {[
+                { key: "codigo", label: "Código" },
+                { key: "cliente", label: "Empresa" },
+                { key: "seec", label: "Área" },
+                { key: "equipo", label: "Equipo" },
+                { key: "ubicacion", label: "Ubicación" },
+                { key: "estado_actual", label: "Estado" },
+                { key: "fecha_instalacion_desde", label: "Desde" },
+                { key: "fecha_instalacion_hasta", label: "Hasta" },
+              ].map(({ key, label }) => {
+                const val = (appliedFilters as any)[key];
+                if (!val) return null;
+
+                // Normaliza visualmente algunos valores si quieres
+                const display =
+                  key === "estado_actual" && val === "por_vencer"
+                    ? "Por Vencer"
+                    : String(val);
+
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => {
+                      // al quitar chip, sincronizamos input visible y aplicamos
+                      if (key === "codigo") setSearchTerm("");
+                      if (key === "cliente") setEmpresaFilter("");
+                      if (key === "seec") setAreaFilter("");
+                      if (key === "equipo") setEquipoFilter("");
+                      if (key === "ubicacion") setUbicacionFilter("");
+                      if (key === "estado_actual") setStatusFilter("");
+                      if (key === "fecha_instalacion_desde")
+                        setInstallDateFrom("");
+                      if (key === "fecha_instalacion_hasta")
+                        setInstallDateTo("");
+
+                      // aplica removiendo solo ese filtro y vuelve a página 1
+                      fetchWith({ [key]: undefined } as any, 1);
+                    }}
+                    className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                    title={`${label}: ${val}`}
+                  >
+                    <span className="font-medium">{label}:</span>
+                    <span className="truncate max-w-[140px]">{display}</span>
+                    <span className="ml-1 rounded-full bg-emerald-600/10 px-1.5">
+                      ✕
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
           {/* Panel de filtros */}
           {showFilters && (
             <div className="pt-4 mt-4 border-t border-gray-200">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
-                  loadRegistros({
-                    page: 1,
-                    limit: pagination.itemsPerPage,
-                    codigo: searchTerm || undefined,
-                    equipo: equipoFilter || undefined,
-                    ubicacion: ubicacionFilter || undefined,
-                    cliente: empresaFilter || undefined,
-                    seec: areaFilter || undefined,
+                  const patch: Partial<AppliedFilters> = {
+                    codigo: searchTerm.trim() || undefined,
+                    equipo: equipoFilter.trim() || undefined,
+                    ubicacion: ubicacionFilter.trim() || undefined,
+                    cliente: empresaFilter.trim() || undefined,
+                    seec: areaFilter.trim() || undefined,
                     estado_actual: statusFilter || undefined,
                     fecha_instalacion_desde: installDateFrom || undefined,
                     fecha_instalacion_hasta: installDateTo || undefined,
-                    sortBy: "codigo",
-                    sortOrder: "ASC",
-                  });
+                  };
+                  fetchWith(patch, 1);
                 }}
                 className="grid grid-cols-1 gap-4 md:grid-cols-12"
               >
@@ -1103,12 +1148,20 @@ export const RegistroList: React.FC = () => {
                         setStatusFilter("");
                         setInstallDateFrom("");
                         setInstallDateTo("");
-                        loadRegistros({
-                          page: 1,
-                          limit: pagination.itemsPerPage,
-                          sortBy: "codigo",
-                          sortOrder: "ASC",
-                        });
+                        setAppliedFilters({});
+                        fetchWith(
+                          {
+                            codigo: undefined,
+                            equipo: undefined,
+                            ubicacion: undefined,
+                            cliente: undefined,
+                            seec: undefined,
+                            estado_actual: undefined,
+                            fecha_instalacion_desde: undefined,
+                            fecha_instalacion_hasta: undefined,
+                          },
+                          1
+                        );
                       }}
                     >
                       Limpiar
