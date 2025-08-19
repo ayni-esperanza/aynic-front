@@ -297,6 +297,22 @@ export const RegistroDetail: React.FC = () => {
                   </div>
                 </div>
 
+                {registro.codigo_placa && (
+                  <div className="flex items-center p-4 space-x-3 border border-purple-200 bg-purple-50 rounded-xl">
+                    <div className="flex items-center justify-center w-10 h-10 bg-purple-100 rounded-lg">
+                      <span className="text-lg">🏷️</span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-purple-600">
+                        Código de Placa
+                      </p>
+                      <p className="font-mono text-lg font-bold text-purple-900">
+                        {registro.codigo_placa}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex items-center p-4 space-x-3 border border-purple-200 bg-purple-50 rounded-xl">
                   <div className="flex items-center justify-center w-10 h-10 bg-purple-100 rounded-lg">
                     <User className="w-5 h-5 text-purple-600" />
@@ -429,6 +445,22 @@ export const RegistroDetail: React.FC = () => {
                   </p>
                 </div>
               </Card>
+
+              {registro.codigo_placa && (
+                <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100">
+                  <div className="p-6 text-center">
+                    <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-purple-200 rounded-full">
+                      <span className="text-2xl">🏷️</span>
+                    </div>
+                    <h4 className="mb-2 font-semibold text-purple-900">
+                      Código de Placa
+                    </h4>
+                    <p className="font-mono text-lg font-medium text-purple-700">
+                      {registro.codigo_placa}
+                    </p>
+                  </div>
+                </Card>
+              )}
             </div>
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -445,6 +477,14 @@ export const RegistroDetail: React.FC = () => {
                         {registro.equipo}
                       </span>
                     </div>
+                    {registro.codigo_placa && (
+                      <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-600">Código de Placa:</span>
+                        <span className="px-2 py-1 font-mono font-medium text-purple-800 bg-purple-100 rounded">
+                          {registro.codigo_placa}
+                        </span>
+                      </div>
+                    )}
                     <div className="flex items-center justify-between py-2 border-b border-gray-100">
                       <span className="text-gray-600">
                         Sección/Área/Planta:

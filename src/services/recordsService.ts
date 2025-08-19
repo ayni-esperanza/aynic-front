@@ -8,6 +8,7 @@ import type { DataRecord } from "../types";
 
 export interface RecordFilters {
   codigo?: string;
+  codigo_placa?: string;
   cliente?: string;
   equipo?: string;
   estado_actual?: string;
@@ -25,6 +26,7 @@ export interface RecordFilters {
 
 export interface CreateRecordData {
   codigo: string;
+  codigo_placa?: string;
   cliente?: string;
   equipo?: string;
   fv_anios?: number;
@@ -43,6 +45,7 @@ export interface CreateRecordData {
 export interface BackendRecord {
   id: number;
   codigo: string;
+  codigo_placa?: string;
   cliente?: string;
   equipo?: string;
   fv_anios?: number;
@@ -149,6 +152,7 @@ class RecordsService {
     return {
       id: backendRecord.id.toString(),
       codigo: backendRecord.codigo,
+      codigo_placa: backendRecord.codigo_placa,
       cliente: backendRecord.cliente || "",
       equipo: backendRecord.equipo || "",
       fv_anios: backendRecord.fv_anios || 0,
@@ -179,6 +183,7 @@ class RecordsService {
   ): CreateRecordData {
     return {
       codigo: frontendData.codigo,
+      codigo_placa: frontendData.codigo_placa || undefined,
       cliente: frontendData.cliente || undefined,
       equipo: frontendData.equipo || undefined,
       fv_anios: frontendData.fv_anios || undefined,
@@ -217,6 +222,8 @@ class RecordsService {
       const params = new URLSearchParams();
 
       if (filters?.codigo) params.append("codigo", filters.codigo);
+      if (filters?.codigo_placa)
+        params.append("codigo_placa", filters.codigo_placa);
       if (filters?.cliente) params.append("cliente", filters.cliente);
       if (filters?.equipo) params.append("equipo", filters.equipo);
       if (filters?.anclaje_equipos)
@@ -320,6 +327,8 @@ class RecordsService {
 
       if (recordData.codigo !== undefined)
         backendData.codigo = recordData.codigo;
+      if (recordData.codigo_placa !== undefined)
+        backendData.codigo_placa = recordData.codigo_placa;
       if (recordData.cliente !== undefined)
         backendData.cliente = recordData.cliente;
       if (recordData.equipo !== undefined)

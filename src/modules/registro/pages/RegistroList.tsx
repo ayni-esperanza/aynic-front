@@ -47,6 +47,7 @@ export const RegistroList: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState("");
   const [empresaFilter, setEmpresaFilter] = useState("");
   const [areaFilter, setAreaFilter] = useState("");
+  const [codigoPlacaFilter, setCodigoPlacaFilter] = useState("");
   const [installDateFrom, setInstallDateFrom] = useState("");
   const [installDateTo, setInstallDateTo] = useState("");
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
@@ -54,6 +55,7 @@ export const RegistroList: React.FC = () => {
 
   type AppliedFilters = {
     codigo?: string;
+    codigo_placa?: string;
     equipo?: string;
     ubicacion?: string;
     cliente?: string; // empresa
@@ -91,6 +93,7 @@ export const RegistroList: React.FC = () => {
 
   const debounceRefs = useRef<Record<string, any>>({
     codigo: null,
+    codigo_placa: null,
     equipo: null,
     ubicacion: null,
     empresa: null,
@@ -158,6 +161,7 @@ export const RegistroList: React.FC = () => {
         page: page ?? pagination.currentPage,
         limit: pagination.itemsPerPage,
         codigo: f.codigo || undefined,
+        codigo_placa: f.codigo_placa || undefined,
         equipo: f.equipo || undefined,
         ubicacion: f.ubicacion || undefined,
         cliente: f.cliente || undefined,
@@ -268,6 +272,8 @@ export const RegistroList: React.FC = () => {
             const patch: Partial<AppliedFilters> = {
               codigo:
                 (field === "codigo" ? value : searchTerm).trim() || undefined,
+              codigo_placa: // ← AGREGAR ESTAS 2 LÍNEAS
+                (field === "codigo_placa" ? value : codigoPlacaFilter).trim() || undefined,
               equipo:
                 (field === "equipo" ? value : equipoFilter).trim() || undefined,
               ubicacion:
@@ -290,6 +296,7 @@ export const RegistroList: React.FC = () => {
       empresaFilter,
       areaFilter,
       searchTerm,
+      codigoPlacaFilter,
       equipoFilter,
       ubicacionFilter,
       fetchWith,
@@ -405,6 +412,20 @@ export const RegistroList: React.FC = () => {
               )}
             </div>
           </div>
+        ),
+      },
+      {
+        key: "codigo_placa",
+        label: "Código Placa",
+        sortable: true,
+        render: (value: any) => (
+          value ? (
+            <span className="inline-flex items-center px-2 py-1 font-mono text-sm text-purple-800 bg-purple-100 rounded-md">
+              {String(value)}
+            </span>
+          ) : (
+            <span className="text-sm text-gray-400">-</span>
+          )
         ),
       },
       {
@@ -598,7 +619,7 @@ export const RegistroList: React.FC = () => {
 
   // Vista en cuadrícula (actualizada para mostrar empresa y área)
   const GridView = () => (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
       {registros.map((registro) => {
         const estadoConfig = getEstadoConfig(registro.estado_actual);
         const hasImage = recordImages.has(registro.id);
@@ -644,6 +665,14 @@ export const RegistroList: React.FC = () => {
                     {registro.cliente}
                   </span>
                 </div>
+                {registro.codigo_placa && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-500">Código Placa:</span>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                      {registro.codigo_placa}
+                    </span>
+                  </div>
+                )}
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-500">Área:</span>
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
@@ -899,6 +928,33 @@ export const RegistroList: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Código Placa */}
+                <div className="relative">
+                  <label
+                    htmlFor="f-codigo-placa"
+                    className="block mb-1 text-xs font-semibold text-gray-700"
+                  >
+                    Código Placa
+                  </label>
+                  <div className="relative">
+                    <Search
+                      className="absolute text-gray-400 -translate-y-1/2 left-3 top-1/2"
+                      size={18}
+                      aria-hidden
+                    />
+                    <Input
+                      id="f-codigo-placa"
+                      placeholder="Buscar por código placa..."
+                      value={codigoPlacaFilter}
+                      onChange={handleTextFilterChange(
+                        "codigo_placa",
+                        setCodigoPlacaFilter
+                      )}
+                      className="h-10 pl-9 border-gray-300 focus:border-[#18D043] focus:ring-[#18D043]/20"
+                    />
+                  </div>
+                </div>
+
                 {/* Empresa */}
                 <div className="relative">
                   <label
@@ -1007,6 +1063,7 @@ export const RegistroList: React.FC = () => {
 
               {[
                 { key: "codigo", label: "Código" },
+                { key: "codigo_placa", label: "Código Placa" },
                 { key: "cliente", label: "Empresa" },
                 { key: "seec", label: "Área" },
                 { key: "equipo", label: "Equipo" },
@@ -1031,6 +1088,7 @@ export const RegistroList: React.FC = () => {
                     onClick={() => {
                       // al quitar chip, sincronizamos input visible y aplicamos
                       if (key === "codigo") setSearchTerm("");
+                      if (key === "codigo_placa") setCodigoPlacaFilter("");
                       if (key === "cliente") setEmpresaFilter("");
                       if (key === "seec") setAreaFilter("");
                       if (key === "equipo") setEquipoFilter("");
@@ -1065,6 +1123,7 @@ export const RegistroList: React.FC = () => {
                   e.preventDefault();
                   const patch: Partial<AppliedFilters> = {
                     codigo: searchTerm.trim() || undefined,
+                    codigo_placa: codigoPlacaFilter.trim() || undefined,
                     equipo: equipoFilter.trim() || undefined,
                     ubicacion: ubicacionFilter.trim() || undefined,
                     cliente: empresaFilter.trim() || undefined,
@@ -1164,6 +1223,7 @@ export const RegistroList: React.FC = () => {
                     Aplicar filtros
                   </Button>
                   {(searchTerm ||
+                    codigoPlacaFilter ||
                     equipoFilter ||
                     ubicacionFilter ||
                     empresaFilter ||
@@ -1177,6 +1237,7 @@ export const RegistroList: React.FC = () => {
                       className="h-10 text-gray-600 hover:text-gray-800"
                       onClick={() => {
                         setSearchTerm("");
+                        setCodigoPlacaFilter("");
                         setEquipoFilter("");
                         setUbicacionFilter("");
                         setEmpresaFilter("");
@@ -1188,6 +1249,7 @@ export const RegistroList: React.FC = () => {
                         fetchWith(
                           {
                             codigo: undefined,
+                            codigo_placa: undefined,
                             equipo: undefined,
                             ubicacion: undefined,
                             cliente: undefined,

@@ -288,6 +288,7 @@ export const RegistroForm: React.FC = () => {
 
   const [formData, setFormData] = useState({
     codigo: "",
+    codigo_placa: "",
     cliente: "",
     equipo: "",
     fv_anios: 0,
@@ -357,6 +358,9 @@ export const RegistroForm: React.FC = () => {
       if (!formData.cliente.trim()) e.cliente = "Requerido";
       if (!formData.equipo.trim()) e.equipo = "Requerido";
       if (!formData.seec.trim()) e.seec = "Requerido";
+      if (formData.codigo_placa && formData.codigo_placa.length > 50) {
+        e.codigo_placa = "No puede exceder 50 caracteres";
+      }
     }
     if (step === 2) {
       if (!formData.tipo_linea) e.tipo_linea = "Requerido";
@@ -407,6 +411,7 @@ export const RegistroForm: React.FC = () => {
 
     const payload: Omit<DataRecord, "id"> = {
       codigo: formData.codigo,
+      codigo_placa: formData.codigo_placa || undefined,
       cliente: formData.cliente,
       equipo: formData.equipo,
       fv_anios: formData.fv_anios,
@@ -624,6 +629,13 @@ export const RegistroForm: React.FC = () => {
                     error={errors.codigo}
                     placeholder="COD-0001"
                     required
+                  />
+                  <Input
+                    label="Código de Placa"
+                    value={formData.codigo_placa}
+                    onChange={(e) => handleChange("codigo_placa", e.target.value)}
+                    error={errors.codigo_placa}
+                    placeholder="PLC-001-A"
                   />
 
                   {/* Cliente con SearchableSelect y funcionalidad de agregar */}

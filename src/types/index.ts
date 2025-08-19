@@ -11,6 +11,7 @@ export interface User extends Record<string, unknown> {
 export interface DataRecord extends Record<string, unknown> {
   id: string;
   codigo: string;
+  codigo_placa?: string;
   cliente: string;
   equipo: string;
   fv_anios: number;
