@@ -68,7 +68,8 @@ export const RegistroList: React.FC = () => {
   type SortOrder = "ASC" | "DESC";
   type SortState = { field: "fecha_instalacion" | string; order: SortOrder };
 
-  const DEFAULT_SORT: SortState = { field: "fecha_instalacion", order: "ASC" };
+  // CAMBIO: Orden por defecto ahora es fecha_instalacion DESC
+  const DEFAULT_SORT: SortState = { field: "fecha_instalacion", order: "DESC" };
   const [sort, setSort] = useState<SortState>(DEFAULT_SORT);
 
   const [appliedFilters, setAppliedFilters] = useState<AppliedFilters>({});
