@@ -422,8 +422,19 @@ export const EditarRegistroForm: React.FC = () => {
     if (step === 3) {
       if (!formData.fecha_instalacion) e.fecha_instalacion = "Requerido";
       if (!formData.fecha_caducidad) e.fecha_caducidad = "Requerido";
+
+      // Validación corregida para años
       if (formData.fv_anios < 0) e.fv_anios = "No negativo";
-      if (formData.fv_meses < 0 || formData.fv_meses > 11) e.fv_meses = "0-11";
+
+      // Validación corregida para meses
+      const meses = Number(formData.fv_meses);
+      if (isNaN(meses)) {
+        e.fv_meses = "Debe ser un número válido";
+      } else if (meses < 1 || meses > 120) {
+        e.fv_meses = "Debe estar entre 1 y 120 meses";
+      } else if (!Number.isInteger(meses)) {
+        e.fv_meses = "Debe ser un número entero";
+      }
 
       const inst = new Date(formData.fecha_instalacion);
       const venc = new Date(formData.fecha_caducidad);
