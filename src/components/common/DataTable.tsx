@@ -244,17 +244,21 @@ export const DataTable = <T extends Record<string, unknown>>({
 
   if (data.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 space-y-4">
-        <div className="flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full">
-          <span className="text-2xl">📄</span>
+      <div className="flex flex-col items-center justify-center px-4 py-16">
+        <div className="flex items-center justify-center w-20 h-20 mb-6 bg-gray-100 rounded-full">
+          <span className="text-3xl">🔍</span>
         </div>
-        <div className="text-center">
-          <p className="mb-2 text-lg font-medium text-gray-900">
-            No hay datos disponibles
+        <div className="max-w-md text-center">
+          <h3 className="mb-3 text-xl font-semibold text-gray-900">
+            No se encontró ningún registro
+          </h3>
+          <p className="mb-2 text-gray-600">
+            No hay registros que coincidan con los criterios de búsqueda
+            actuales.
           </p>
-          <p className="text-gray-600">
-            No se encontraron registros que coincidan con los criterios de
-            búsqueda.
+          <p className="text-sm text-gray-500">
+            Intenta ajustar los filtros o términos de búsqueda para obtener
+            resultados.
           </p>
         </div>
       </div>

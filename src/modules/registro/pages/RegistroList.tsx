@@ -386,6 +386,71 @@ export const RegistroList: React.FC = () => {
     return configs[estado];
   }, []);
 
+  const NoResultsMessage = () => {
+    const hasActiveFilters = Object.values(appliedFilters).some(Boolean);
+
+    return (
+      <div className="flex flex-col items-center justify-center px-4 py-16">
+        <div className="flex items-center justify-center w-20 h-20 mb-6 bg-gray-100 rounded-full">
+          <span className="text-3xl">🔍</span>
+        </div>
+        <div className="max-w-md text-center">
+          <h3 className="mb-3 text-xl font-semibold text-gray-900">
+            No se encontró ningún registro
+          </h3>
+          {hasActiveFilters ? (
+            <div className="space-y-2">
+              <p className="text-gray-600">
+                No hay registros que coincidan con los criterios de búsqueda
+                aplicados.
+              </p>
+              <p className="text-sm text-gray-500">
+                Intenta ajustar o eliminar algunos filtros para obtener más
+                resultados.
+              </p>
+            </div>
+          ) : (
+            <p className="text-gray-600">
+              No hay registros de líneas de vida disponibles en el sistema.
+            </p>
+          )}
+        </div>
+        {hasActiveFilters && (
+          <Button
+            variant="outline"
+            className="mt-6"
+            onClick={async () => {
+              // Limpiar todos los filtros de estado
+              setSearchTerm("");
+              setCodigoPlacaFilter("");
+              setEquipoFilter("");
+              setUbicacionFilter("");
+              setEmpresaFilter("");
+              setAreaFilter("");
+              setStatusFilter("");
+              setInstallDateFrom("");
+              setInstallDateTo("");
+              setAppliedFilters({});
+              // Cargar todos los registros sin filtros
+              try {
+                await loadRegistros({
+                  page: 1,
+                  limit: pagination.itemsPerPage,
+                  sortBy: sort.field,
+                  sortOrder: sort.order,
+                });
+              } catch (error) {
+                console.error("Error al limpiar filtros:", error);
+              }
+            }}
+          >
+            Limpiar filtros
+          </Button>
+        )}
+      </div>
+    );
+  };
+
   const columns: TableColumn<DataRecord>[] = useMemo(
     () => [
       {
@@ -1236,7 +1301,7 @@ export const RegistroList: React.FC = () => {
                       type="button"
                       variant="ghost"
                       className="h-10 text-gray-600 hover:text-gray-800"
-                      onClick={() => {
+                      onClick={async () => {
                         setSearchTerm("");
                         setCodigoPlacaFilter("");
                         setEquipoFilter("");
@@ -1247,20 +1312,17 @@ export const RegistroList: React.FC = () => {
                         setInstallDateFrom("");
                         setInstallDateTo("");
                         setAppliedFilters({});
-                        fetchWith(
-                          {
-                            codigo: undefined,
-                            codigo_placa: undefined,
-                            equipo: undefined,
-                            ubicacion: undefined,
-                            cliente: undefined,
-                            seec: undefined,
-                            estado_actual: undefined,
-                            fecha_instalacion_desde: undefined,
-                            fecha_instalacion_hasta: undefined,
-                          },
-                          1
-                        );
+                        // Cargar todos los registros sin filtros
+                        try {
+                          await loadRegistros({
+                            page: 1,
+                            limit: pagination.itemsPerPage,
+                            sortBy: sort.field,
+                            sortOrder: sort.order,
+                          });
+                        } catch (error) {
+                          console.error("Error al limpiar filtros:", error);
+                        }
                       }}
                     >
                       Limpiar
@@ -1277,43 +1339,47 @@ export const RegistroList: React.FC = () => {
       <Card className="bg-white border-0 shadow-lg">
         {viewMode === "table" ? (
           <div className="p-6">
-            <DataTable
-              data={registros}
-              columns={columns}
-              currentPage={pagination.currentPage}
-              totalPages={pagination.totalPages}
-              totalItems={pagination.totalItems}
-              onPageChange={handlePageChange}
-              loading={loading}
-              sortColumn={sort.field as any}
-              sortDirection={sort.order.toLowerCase() as "asc" | "desc"}
-              onSort={(column, direction) => {
-                setSort({
-                  field: String(column),
-                  order: direction.toUpperCase() as SortOrder,
-                });
-                fetchWith({}, pagination.currentPage);
-              }}
-            />
+            {loading && registros.length === 0 ? (
+              <div className="flex items-center justify-center py-16">
+                <div className="text-center">
+                  <LoadingSpinner size="lg" className="mb-4" />
+                  <p className="text-gray-600">Cargando registros...</p>
+                </div>
+              </div>
+            ) : registros.length === 0 ? (
+              <NoResultsMessage />
+            ) : (
+              <DataTable
+                data={registros}
+                columns={columns}
+                currentPage={pagination.currentPage}
+                totalPages={pagination.totalPages}
+                totalItems={pagination.totalItems}
+                onPageChange={handlePageChange}
+                loading={loading}
+                sortColumn={sort.field as any}
+                sortDirection={sort.order.toLowerCase() as "asc" | "desc"}
+                onSort={(column, direction) => {
+                  setSort({
+                    field: String(column),
+                    order: direction.toUpperCase() as SortOrder,
+                  });
+                  fetchWith({}, pagination.currentPage);
+                }}
+              />
+            )}
           </div>
         ) : (
           <div className="p-6">
-            {loading ? (
-              <div className="flex items-center justify-center h-64">
-                <LoadingSpinner size="lg" />
-              </div>
-            ) : registros.length === 0 ? (
-              <div className="flex items-center justify-center h-64">
+            {loading && registros.length === 0 ? (
+              <div className="flex items-center justify-center py-16">
                 <div className="text-center">
-                  <div className="mb-4 text-gray-400">
-                    No se encontró ningún registro
-                  </div>
-                  <p className="text-gray-600">
-                    No hay registros que coincidan con los criterios de
-                    búsqueda.
-                  </p>
+                  <LoadingSpinner size="lg" className="mb-4" />
+                  <p className="text-gray-600">Cargando registros...</p>
                 </div>
               </div>
+            ) : registros.length === 0 ? (
+              <NoResultsMessage />
             ) : (
               <>
                 <GridView />
@@ -1331,7 +1397,7 @@ export const RegistroList: React.FC = () => {
                       {Math.min(
                         pagination.currentPage * pagination.itemsPerPage,
                         pagination.totalItems
-                      )}{" "}
+                      )}
                       de {pagination.totalItems} registros
                     </div>
                     <div className="flex items-center space-x-2">
