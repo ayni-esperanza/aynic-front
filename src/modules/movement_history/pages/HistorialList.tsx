@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   History,
@@ -37,7 +37,7 @@ import {
 // Componente para mostrar datos JSON expandibles
 const JsonDataView: React.FC<{
   title: string;
-  data: Record<string, any> | null;
+  data: Record<string, unknown> | null;
   expanded?: boolean;
 }> = ({ title, data, expanded = false }) => {
   const [isExpanded, setIsExpanded] = useState(expanded);
@@ -226,12 +226,157 @@ const MovementHistoryItem: React.FC<{
   );
 };
 
+// Componente de paginación FUERA del componente principal
+interface PaginationComponentProps {
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
+  };
+  loading: boolean;
+  handlePageChange: (page: number) => void;
+}
+
+const PaginationComponent: React.FC<PaginationComponentProps> = React.memo(
+  ({ pagination, loading, handlePageChange }) => {
+    if (pagination.totalPages <= 1) return null;
+
+    // Calcular rango de páginas a mostrar (máximo 10)
+    const maxVisiblePages = 10;
+    const currentPage = pagination.currentPage;
+    const totalPages = pagination.totalPages;
+
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    // Ajustar si no hay suficientes páginas al final
+    if (endPage - startPage + 1 < maxVisiblePages && startPage > 1) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    const pageNumbers = [];
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i);
+    }
+
+    return (
+      <div className="flex flex-col items-center justify-between px-6 py-4 mt-6 space-y-4 bg-white border border-gray-200 shadow-sm sm:flex-row sm:space-y-0 rounded-xl">
+        {/* Información de registros */}
+        <div className="flex items-center space-x-4">
+          <div className="px-3 py-2 text-sm text-gray-700 rounded-lg bg-gray-50">
+            <span className="font-medium">
+              {Math.min(
+                (pagination.currentPage - 1) * 10 + 1,
+                pagination.totalItems
+              )}{" "}
+              - {Math.min(pagination.currentPage * 10, pagination.totalItems)}
+            </span>
+            <span className="text-gray-500"> de </span>
+            <span className="font-medium">{pagination.totalItems}</span>
+            <span className="text-gray-500"> registros</span>
+          </div>
+
+          <div className="px-3 py-2 text-sm text-gray-500 rounded-lg bg-blue-50">
+            Página{" "}
+            <span className="font-medium text-blue-600">
+              {pagination.currentPage}
+            </span>{" "}
+            de{" "}
+            <span className="font-medium text-blue-600">
+              {pagination.totalPages}
+            </span>
+          </div>
+        </div>
+
+        {/* Controles de paginación */}
+        <div className="flex items-center space-x-3">
+          {/* Botón Anterior */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(pagination.currentPage - 1)}
+            disabled={pagination.currentPage === 1 || loading}
+            className="border-gray-300 hover:border-[#18D043] hover:text-[#18D043] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Anterior
+          </Button>
+
+          {/* Números de página */}
+          <div className="flex items-center space-x-1">
+            {/* Primera página si no está visible */}
+            {startPage > 1 && (
+              <>
+                <button
+                  onClick={() => handlePageChange(1)}
+                  disabled={loading}
+                  className="px-3 py-2 text-sm font-medium text-gray-700 transition-all duration-200 rounded-lg hover:bg-gray-100 disabled:opacity-50"
+                >
+                  1
+                </button>
+                {startPage > 2 && (
+                  <span className="px-2 text-sm text-gray-500">...</span>
+                )}
+              </>
+            )}
+
+            {/* Páginas visibles */}
+            {pageNumbers.map((pageNumber) => (
+              <button
+                key={pageNumber}
+                onClick={() => handlePageChange(pageNumber)}
+                disabled={loading}
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 ${
+                  pageNumber === pagination.currentPage
+                    ? "bg-gradient-to-r from-[#18D043] to-[#16a34a] text-white shadow-lg shadow-[#18D043]/25"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                {pageNumber}
+              </button>
+            ))}
+
+            {/* Última página si no está visible */}
+            {endPage < totalPages && (
+              <>
+                {endPage < totalPages - 1 && (
+                  <span className="px-2 text-sm text-gray-500">...</span>
+                )}
+                <button
+                  onClick={() => handlePageChange(totalPages)}
+                  disabled={loading}
+                  className="px-3 py-2 text-sm font-medium text-gray-700 transition-all duration-200 rounded-lg hover:bg-gray-100 disabled:opacity-50"
+                >
+                  {totalPages}
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Botón Siguiente */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(pagination.currentPage + 1)}
+            disabled={
+              pagination.currentPage === pagination.totalPages || loading
+            }
+            className="border-gray-300 hover:border-[#18D043] hover:text-[#18D043] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Siguiente
+          </Button>
+        </div>
+      </div>
+    );
+  }
+);
+
 // Componente principal
 export const HistorialList: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { success, error: showError } = useToast();
 
-  // ✅ ESTADO CON FILTROS SEPARADOS: rol y usuario
+  // ESTADO CON FILTROS SEPARADOS: rol y usuario
   const [filters, setFilters] = useState<MovementFilters>({
     search: searchParams.get("search") || "",
     action: (searchParams.get("action") as MovementAction) || undefined,
@@ -239,7 +384,7 @@ export const HistorialList: React.FC = () => {
     date_from: searchParams.get("date_from") || "",
     date_to: searchParams.get("date_to") || "",
     page: 1,
-    limit: 10,
+    limit: 10, // 10 elementos por página
     sortBy: "action_date",
     sortOrder: "DESC",
   });
@@ -252,19 +397,48 @@ export const HistorialList: React.FC = () => {
   >([]);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // API HOOK SIMPLE
-  const {
-    data: movementsData,
-    loading,
-    error,
-    execute: executeGetMovements,
-  } = useApi(() => getMovements(filters), {
-    immediate: false,
-    onError: (error) => {
-      console.error("Movement fetch error:", error);
-      showError("Error", error);
+  // CONTROL MANUAL COMPLETO 
+  const [movementsData, setMovementsData] = useState<{
+    data: MovementHistory[];
+    pagination: {
+      currentPage: number;
+      totalPages: number;
+      totalItems: number;
+      itemsPerPage: number;
+    };
+  } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Función de ejecución manual CONTROLADA - acepta filtros específicos
+  const executeGetMovements = useCallback(
+    async (customFilters?: MovementFilters) => {
+      if (loading) return; // Prevenir ejecuciones múltiples
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const filtersToUse = customFilters || filters;
+        const result = await getMovements(filtersToUse);
+        setMovementsData(result);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Error desconocido";
+        setError(errorMessage);
+        console.error("Movement fetch error:", errorMessage);
+        showError("Error", errorMessage);
+      } finally {
+        setLoading(false);
+      }
     },
-  });
+    [filters, loading, showError]
+  );
+
+  // FUNCIÓN handlePageChange DECLARADA PRIMERO
+  const handlePageChange = useCallback((page: number) => {
+    setFilters((prev) => ({ ...prev, page }));
+  }, []);
 
   // CARGAR DATOS INICIALES UNA SOLA VEZ
   useEffect(() => {
@@ -293,16 +467,9 @@ export const HistorialList: React.FC = () => {
     };
 
     loadInitialData();
-  }, []);
+  }, [showError]);
 
-  // CARGAR MOVIMIENTOS DESPUÉS DE INICIALIZAR
-  useEffect(() => {
-    if (isInitialized) {
-      executeGetMovements();
-    }
-  }, [isInitialized]); // Solo cuando se inicialice
-
-  // FUNCIONES DE MANEJO SIMPLES
+  // FUNCIONES DE MANEJO - Solo ejecutan cuando el usuario hace clic
   const handleFilterChange = useCallback(
     (field: string, value: string) => {
       const newFilters = { ...filters, [field]: value || undefined, page: 1 };
@@ -327,10 +494,34 @@ export const HistorialList: React.FC = () => {
     [filters, setSearchParams]
   );
 
+  // Esta función SI ejecuta la búsqueda cuando el usuario hace clic en "Buscar"
   const handleSearch = useCallback(() => {
     if (!isInitialized) return;
     executeGetMovements();
   }, [executeGetMovements, isInitialized]);
+
+  // Ejecutar búsqueda inicial SOLO cuando se inicializa
+  useEffect(() => {
+    if (isInitialized && !movementsData) {
+      // Solo ejecutar si no hay datos cargados aún
+      executeGetMovements();
+    }
+  }, [isInitialized]); // ← Solo depende de isInitialized
+
+  // Función para cambiar página CON ejecución inmediata de filtros correctos
+  const handlePageChangeAndSearch = useCallback(
+    (page: number) => {
+      // Crear los nuevos filtros con la página actualizada
+      const newFilters = { ...filters, page };
+
+      // Actualizar el estado
+      setFilters(newFilters);
+
+      // Ejecutar INMEDIATAMENTE con los filtros correctos
+      executeGetMovements(newFilters);
+    },
+    [filters, executeGetMovements]
+  );
 
   const handleClearFilters = useCallback(() => {
     const clearedFilters: MovementFilters = {
@@ -347,15 +538,6 @@ export const HistorialList: React.FC = () => {
     setFilters(clearedFilters);
     setSearchParams(new URLSearchParams());
   }, [setSearchParams]);
-
-  const handlePageChange = useCallback(
-    (page: number) => {
-      setFilters((prev) => ({ ...prev, page }));
-      // Auto-ejecutar cuando cambie la página
-      setTimeout(() => executeGetMovements(), 100);
-    },
-    [executeGetMovements]
-  );
 
   const handleExport = useCallback(async () => {
     try {
@@ -681,93 +863,12 @@ export const HistorialList: React.FC = () => {
               ))}
             </div>
 
-            {/* Paginación simple */}
-            {pagination.totalPages > 1 && (
-              <div className="flex flex-col items-center justify-between px-6 py-4 mt-6 space-y-4 bg-white border border-gray-200 shadow-sm sm:flex-row sm:space-y-0 rounded-xl">
-                <div className="flex items-center space-x-4">
-                  <div className="px-3 py-2 text-sm text-gray-700 rounded-lg bg-gray-50">
-                    <span className="font-medium">
-                      {Math.min(
-                        (pagination.currentPage - 1) * pagination.itemsPerPage +
-                          1,
-                        pagination.totalItems
-                      )}{" "}
-                      -{" "}
-                      {Math.min(
-                        pagination.currentPage * pagination.itemsPerPage,
-                        pagination.totalItems
-                      )}
-                    </span>
-                    <span className="text-gray-500"> de </span>
-                    <span className="font-medium">{pagination.totalItems}</span>
-                    <span className="text-gray-500"> registros</span>
-                  </div>
-
-                  <div className="px-3 py-2 text-sm text-gray-500 rounded-lg bg-blue-50">
-                    Página{" "}
-                    <span className="font-medium text-blue-600">
-                      {pagination.currentPage}
-                    </span>{" "}
-                    de{" "}
-                    <span className="font-medium text-blue-600">
-                      {pagination.totalPages}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-3">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(pagination.currentPage - 1)}
-                    disabled={pagination.currentPage === 1}
-                  >
-                    Anterior
-                  </Button>
-
-                  <div className="flex items-center space-x-1">
-                    {Array.from(
-                      { length: Math.min(5, pagination.totalPages) },
-                      (_, i) => {
-                        const pageNumber =
-                          Math.max(
-                            1,
-                            Math.min(
-                              pagination.totalPages - 4,
-                              pagination.currentPage - 2
-                            )
-                          ) + i;
-
-                        if (pageNumber > pagination.totalPages) return null;
-
-                        return (
-                          <button
-                            key={pageNumber}
-                            onClick={() => handlePageChange(pageNumber)}
-                            className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                              pageNumber === pagination.currentPage
-                                ? "bg-gradient-to-r from-[#18D043] to-[#16a34a] text-white shadow-lg"
-                                : "text-gray-700 hover:bg-gray-100"
-                            }`}
-                          >
-                            {pageNumber}
-                          </button>
-                        );
-                      }
-                    )}
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(pagination.currentPage + 1)}
-                    disabled={pagination.currentPage === pagination.totalPages}
-                  >
-                    Siguiente
-                  </Button>
-                </div>
-              </div>
-            )}
+            {/* Paginación usa handlePageChangeAndSearch */}
+            <PaginationComponent
+              pagination={pagination}
+              loading={loading}
+              handlePageChange={handlePageChangeAndSearch}
+            />
           </>
         )}
       </Card>
