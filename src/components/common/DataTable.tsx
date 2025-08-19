@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -178,6 +178,14 @@ export const DataTable = <T extends Record<string, unknown>>({
   const [localSortOrder, setLocalSortOrder] = useState<"asc" | "desc">(
     sortDirection || "asc"
   );
+
+  useEffect(() => {
+    setLocalSortBy((sortColumn as keyof T) || null);
+  }, [sortColumn]);
+
+  useEffect(() => {
+    if (sortDirection) setLocalSortOrder(sortDirection);
+  }, [sortDirection]);
 
   const handleSort = useCallback(
     (column: keyof T) => {

@@ -63,6 +63,12 @@ export const RegistroList: React.FC = () => {
     fecha_instalacion_hasta?: string;
   };
 
+  type SortOrder = "ASC" | "DESC";
+  type SortState = { field: "fecha_instalacion" | string; order: SortOrder };
+
+  const DEFAULT_SORT: SortState = { field: "fecha_instalacion", order: "ASC" };
+  const [sort, setSort] = useState<SortState>(DEFAULT_SORT);
+
   const [appliedFilters, setAppliedFilters] = useState<AppliedFilters>({});
 
   // Referencias para el debounce y carga inicial
@@ -157,11 +163,11 @@ export const RegistroList: React.FC = () => {
         estado_actual: f.estado_actual || undefined,
         fecha_instalacion_desde: f.fecha_instalacion_desde || undefined,
         fecha_instalacion_hasta: f.fecha_instalacion_hasta || undefined,
-        sortBy: "codigo",
-        sortOrder: "ASC",
+        sortBy: sort.field,
+        sortOrder: sort.order,
       };
     },
-    [appliedFilters, pagination.currentPage, pagination.itemsPerPage]
+    [appliedFilters, pagination.currentPage, pagination.itemsPerPage, sort]
   );
 
   const fetchWith = useCallback(
@@ -206,8 +212,8 @@ export const RegistroList: React.FC = () => {
             loadRegistros({
               page: 1,
               limit: 10,
-              sortBy: "codigo",
-              sortOrder: "ASC",
+              sortBy: DEFAULT_SORT.field,
+              sortOrder: DEFAULT_SORT.order,
             }),
             loadStats(),
           ]);
@@ -302,6 +308,28 @@ export const RegistroList: React.FC = () => {
       fetchWith({}, newPage);
     },
     [fetchWith]
+  );
+
+  const handleSortChange = useCallback(
+    (field: string) => {
+      // Calcula el siguiente estado de orden
+      const next: SortState =
+        sort.field === field
+          ? { field, order: sort.order === "ASC" ? "DESC" : "ASC" }
+          : { field, order: "ASC" };
+
+      setSort(next);
+
+      // Refetch inmediato usando el "next" (mantiene página actual)
+      const params = buildParams({}, pagination.currentPage);
+      (params as any).sortBy = next.field;
+      (params as any).sortOrder = next.order;
+
+      Promise.all([loadRegistros(params), loadStats()]).catch((e) =>
+        console.error("Error sorting:", e)
+      );
+    },
+    [sort, buildParams, pagination.currentPage, loadRegistros, loadStats]
   );
 
   const handleDeleteRegistro = useCallback(
@@ -410,6 +438,7 @@ export const RegistroList: React.FC = () => {
       {
         key: "fecha_instalacion",
         label: "F. Instalación",
+        sortable: true,
         render: (value: any) => (
           <div className="text-sm">
             <div className="font-medium text-gray-900">
@@ -1186,6 +1215,15 @@ export const RegistroList: React.FC = () => {
               totalItems={pagination.totalItems}
               onPageChange={handlePageChange}
               loading={loading}
+              sortColumn={sort.field as any}
+              sortDirection={sort.order.toLowerCase() as "asc" | "desc"}
+              onSort={(column, direction) => {
+                setSort({
+                  field: String(column),
+                  order: direction.toUpperCase() as SortOrder,
+                });
+                fetchWith({}, pagination.currentPage);
+              }}
             />
           </div>
         ) : (
