@@ -141,12 +141,19 @@ export const Login: React.FC = () => {
                   className="pl-11 pr-11"
                   required
                   disabled={loading}
+                  style={
+                    {
+                      // Deshabilitar el icono nativo de Edge/IE para mostrar contraseña
+                      msReveal: "none",
+                    } as React.CSSProperties & { msReveal?: string }
+                  }
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute text-gray-400 transition-colors duration-200 right-3 top-9 hover:text-gray-600 disabled:opacity-50"
+                  className="absolute text-gray-400 transition-colors duration-200 right-3 hover:text-gray-600 disabled:opacity-50"
                   disabled={loading}
+                  style={{ top: "2.5rem" }}
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>

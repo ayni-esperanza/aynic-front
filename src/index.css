@@ -1,3 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Fix para deshabilitar el icono nativo de contraseña en Edge */
+input[type="password"]::-ms-reveal {
+  display: none;
+}
