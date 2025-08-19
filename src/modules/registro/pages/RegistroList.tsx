@@ -71,6 +71,8 @@ export const RegistroList: React.FC = () => {
 
   const [appliedFilters, setAppliedFilters] = useState<AppliedFilters>({});
 
+  const lastQueryRef = useRef<any>(null);
+
   // Referencias para el debounce y carga inicial
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const isInitialLoadRef = useRef(true);
@@ -174,6 +176,7 @@ export const RegistroList: React.FC = () => {
     async (overrides?: Partial<AppliedFilters>, page?: number) => {
       setAppliedFilters((prev) => ({ ...prev, ...overrides }));
       const params = buildParams(overrides, page);
+      lastQueryRef.current = params;
       await Promise.all([loadRegistros(params), loadStats()]);
     },
     [buildParams, loadRegistros, loadStats]
@@ -304,10 +307,14 @@ export const RegistroList: React.FC = () => {
 
   const handlePageChange = useCallback(
     (newPage: number) => {
-      // Paginación respetando siempre los últimos filtros aplicados
-      fetchWith({}, newPage);
+      if (lastQueryRef.current) {
+        const params = { ...lastQueryRef.current, page: newPage };
+        Promise.all([loadRegistros(params), loadStats()]).catch(console.error);
+      } else {
+        fetchWith({ ...appliedFilters }, newPage);
+      }
     },
-    [fetchWith]
+    [fetchWith, appliedFilters, loadRegistros, loadStats]
   );
 
   const handleSortChange = useCallback(

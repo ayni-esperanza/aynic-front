@@ -99,6 +99,7 @@ const PaginationButtons = React.memo(
       if (startPage > 1) {
         buttonList.push(
           <button
+            type="button"
             key="first"
             onClick={() => onPageChange(1)}
             className="px-3 py-2 text-sm font-medium text-gray-700 transition-all duration-200 rounded-lg hover:bg-gray-100 hover:scale-105"
@@ -118,6 +119,7 @@ const PaginationButtons = React.memo(
       for (let i = startPage; i <= endPage; i++) {
         buttonList.push(
           <button
+            type="button"
             key={i}
             onClick={() => onPageChange(i)}
             className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 transform hover:scale-105 ${
@@ -141,6 +143,7 @@ const PaginationButtons = React.memo(
         }
         buttonList.push(
           <button
+            type="button"
             key="last"
             onClick={() => onPageChange(totalPages)}
             className="px-3 py-2 text-sm font-medium text-gray-700 transition-all duration-200 rounded-lg hover:bg-gray-100 hover:scale-105"
@@ -365,6 +368,7 @@ export const DataTable = <T extends Record<string, unknown>>({
         {totalPages > 1 && (
           <div className="flex items-center space-x-3">
             <Button
+              type="button"
               variant="outline"
               size="sm"
               onClick={() => onPageChange(currentPage - 1)}
@@ -382,6 +386,7 @@ export const DataTable = <T extends Record<string, unknown>>({
             />
 
             <Button
+              type="button"
               variant="outline"
               size="sm"
               onClick={() => onPageChange(currentPage + 1)}
