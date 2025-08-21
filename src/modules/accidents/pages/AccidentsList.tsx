@@ -7,6 +7,7 @@ import { useToast } from "../../../components/ui/Toast";
 import { AccidentStats } from "../components/AccidentStats";
 import { AccidentFilters } from "../components/AccidentFilters";
 import { AccidentForm } from "./AccidentForm";
+import { AccidentDetails } from "../components/AccidentDetails";
 import { Plus, Eye, Edit, Trash2 } from "lucide-react";
 import { accidentService } from "../services/accidentService";
 import { formatDate } from "../../../utils/formatters";
@@ -39,6 +40,7 @@ export const AccidentsList: React.FC = () => {
     Array<{ id: number; codigo: string; cliente: string; ubicacion: string }>
   >([]);
   const [showForm, setShowForm] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const [selectedAccident, setSelectedAccident] = useState<
     Accident | undefined
   >();
@@ -143,7 +145,8 @@ export const AccidentsList: React.FC = () => {
   };
 
   const handleViewAccident = (accident: Accident) => {
-    console.log("Ver accidente:", accident);
+    setSelectedAccident(accident);
+    setShowDetails(true);
   };
 
   const handleEditAccident = (accident: Accident) => {
@@ -185,6 +188,11 @@ export const AccidentsList: React.FC = () => {
 
   const handleCloseForm = () => {
     setShowForm(false);
+    setSelectedAccident(undefined);
+  };
+
+  const handleCloseDetails = () => {
+    setShowDetails(false);
     setSelectedAccident(undefined);
   };
 
@@ -388,6 +396,15 @@ export const AccidentsList: React.FC = () => {
         onSuccess={handleFormSuccess}
         lineasVida={lineasVida}
       />
+
+      {/* Modal de detalles */}
+      {selectedAccident && (
+        <AccidentDetails
+          accident={selectedAccident}
+          isOpen={showDetails}
+          onClose={handleCloseDetails}
+        />
+      )}
     </div>
   );
 };
