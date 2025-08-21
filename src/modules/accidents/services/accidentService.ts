@@ -103,27 +103,38 @@ export const accidentService = {
   },
 
   /**
+   * Buscar líneas de vida para formularios (sin paginación)
+   */
+  async searchLineasVida(
+    searchTerm?: string
+  ): Promise<
+    Array<{ id: number; codigo: string; cliente: string; ubicacion: string }>
+  > {
+    try {
+      const params = searchTerm
+        ? `?search=${encodeURIComponent(searchTerm)}`
+        : "";
+      const response = await apiClient.get<
+        Array<{
+          id: number;
+          codigo: string;
+          cliente: string;
+          ubicacion: string;
+        }>
+      >(`/records/search/lineas-vida${params}`);
+      return response;
+    } catch (error) {
+      console.error("Error searching líneas de vida:", error);
+      return [];
+    }
+  },
+
+  /**
    * Obtener líneas de vida para filtros
    */
   async getLineasVida(): Promise<
     Array<{ id: number; codigo: string; cliente: string; ubicacion: string }>
   > {
-    try {
-      // Llamada a la API de records con límite máximo permitido
-      const response = await apiClient.get<{ data: any[] }>(
-        "/records?limit=100"
-      );
-
-      // Mapear la respuesta a la estructura que necesitamos
-      return response.data.map((record) => ({
-        id: record.id,
-        codigo: record.codigo,
-        cliente: record.cliente || "",
-        ubicacion: record.ubicacion || "",
-      }));
-    } catch (error) {
-      console.error("Error fetching líneas de vida:", error);
-      return [];
-    }
+    return this.searchLineasVida();
   },
 };

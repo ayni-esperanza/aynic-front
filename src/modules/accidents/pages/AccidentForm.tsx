@@ -173,17 +173,13 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
     }
   };
 
-  // Opciones para líneas de vida
-  const lineaVidaOptions = lineasVida.map(
-    (linea) => `${linea.codigo} - ${linea.cliente} (${linea.ubicacion})`
-  );
+  // Opciones para líneas de vida - simplificado para debugging
+  const lineaVidaOptions = lineasVida.map((linea) => linea.codigo);
 
   const getSelectedLineaVida = () => {
     if (!formData.linea_vida_id) return "";
     const linea = lineasVida.find((l) => l.id === formData.linea_vida_id);
-    return linea
-      ? `${linea.codigo} - ${linea.cliente} (${linea.ubicacion})`
-      : "";
+    return linea ? linea.codigo : "";
   };
 
   const handleLineaVidaChange = (value: string) => {
@@ -192,8 +188,7 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
       return;
     }
 
-    const codigo = value.split(" - ")[0];
-    const linea = lineasVida.find((l) => l.codigo === codigo);
+    const linea = lineasVida.find((l) => l.codigo === value);
     if (linea) {
       handleChange("linea_vida_id", linea.id);
     }
@@ -231,8 +226,9 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="w-full max-w-2xl max-h-screen overflow-y-auto bg-white shadow-xl rounded-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+      <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white rounded-xl shadow-xl">
+        {/* Cambié de max-w-2xl a max-w-4xl */}
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-red-500 to-red-600">
           <div className="flex items-center space-x-3">
@@ -268,12 +264,12 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
               Información Básica del Incidente
             </h3>
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               <SearchableSelect
                 options={lineaVidaOptions}
                 value={getSelectedLineaVida()}
                 onChange={handleLineaVidaChange}
-                placeholder="Buscar por código (ej: LV-X)"
+                placeholder="Buscar por código, cliente o ubicación..."
                 label="Línea de Vida Asociada"
                 error={errors.linea_vida_id}
                 required
@@ -337,7 +333,7 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <Input
                   label="Persona Involucrada"
                   value={formData.persona_involucrada}
@@ -345,7 +341,6 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
                     handleChange("persona_involucrada", e.target.value)
                   }
                   placeholder="Nombre completo (opcional)"
-                  helperText="Nombre de la persona afectada por el accidente (si aplica)"
                 />
 
                 <div>
