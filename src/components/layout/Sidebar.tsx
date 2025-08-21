@@ -6,9 +6,9 @@ import {
   Database,
   Users,
   History,
+  AlertTriangle,
   ChevronLeft,
   ChevronRight,
-  LogOut,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -36,6 +36,16 @@ const menuItems = [
     bgColor: "bg-green-50",
     hoverColor: "hover:bg-green-100",
     activeColor: "bg-gradient-to-r from-[#18D043] to-[#16a34a]",
+  },
+  {
+    path: "/accidentes",
+    icon: AlertTriangle,
+    label: "Accidentes",
+    description: "Gestión de incidentes",
+    color: "text-red-600",
+    bgColor: "bg-red-50",
+    hoverColor: "hover:bg-red-100",
+    activeColor: "bg-gradient-to-r from-red-500 to-red-600",
   },
   {
     path: "/usuarios",

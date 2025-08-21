@@ -21,6 +21,11 @@ const MovementHistoryModule = React.lazy(() =>
     default: module.MovementHistoryModule,
   }))
 );
+const AccidentsModule = React.lazy(() =>
+  import("../modules/accidents").then((module) => ({
+    default: module.AccidentsModule,
+  }))
+);
 
 // Componente de loading para Suspense
 const PageLoadingFallback = () => (
@@ -136,6 +141,17 @@ export const AppRoutes: React.FC = () => {
             <ModuleErrorBoundary>
               <Suspense fallback={<PageLoadingFallback />}>
                 <MovementHistoryModule />
+              </Suspense>
+            </ModuleErrorBoundary>
+          }
+        />
+
+        <Route
+          path="accidentes/*"
+          element={
+            <ModuleErrorBoundary>
+              <Suspense fallback={<PageLoadingFallback />}>
+                <AccidentsModule />
               </Suspense>
             </ModuleErrorBoundary>
           }
