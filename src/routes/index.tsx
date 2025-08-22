@@ -26,6 +26,11 @@ const AccidentsModule = React.lazy(() =>
     default: module.AccidentsModule,
   }))
 );
+const SolicitudesModule = React.lazy(() =>
+  import("../modules/solicitudes").then((module) => ({
+    default: module.SolicitudesModule,
+  }))
+);
 
 // Componente de loading para Suspense
 const PageLoadingFallback = () => (
@@ -154,6 +159,20 @@ export const AppRoutes: React.FC = () => {
                 <AccidentsModule />
               </Suspense>
             </ModuleErrorBoundary>
+          }
+        />
+
+        {/* Módulo de Solicitudes - Solo para administradores */}
+        <Route
+          path="solicitudes/*"
+          element={
+            <ProtectedRoute requiredRoles={["admin"]}>
+              <ModuleErrorBoundary>
+                <Suspense fallback={<PageLoadingFallback />}>
+                  <SolicitudesModule />
+                </Suspense>
+              </ModuleErrorBoundary>
+            </ProtectedRoute>
           }
         />
       </Route>

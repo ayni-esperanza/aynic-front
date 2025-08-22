@@ -34,11 +34,15 @@ import {
   type ImageResponse,
 } from "../../../services/imageService";
 import { formatDate } from "../../../utils/formatters";
+import { useAuthStore } from "../../../store/authStore";
+import { DeleteModal } from "../../solicitudes/components/DeleteModal";
+import { apiClient } from "../../../services/apiClient";
 import type { DataRecord, TableColumn } from "../../../types";
 
 export const RegistroList: React.FC = () => {
   const navigate = useNavigate();
   const { success, error: showError } = useToast();
+  const { user } = useAuthStore();
 
   // Estados para filtros y vista
   const [searchTerm, setSearchTerm] = useState("");
@@ -85,6 +89,10 @@ export const RegistroList: React.FC = () => {
   const [recordImages, setRecordImages] = useState<Map<string, ImageResponse>>(
     new Map()
   );
+  
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [recordToDelete, setRecordToDelete] = useState<DataRecord | null>(null);
+  
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -347,17 +355,38 @@ export const RegistroList: React.FC = () => {
     [sort, buildParams, pagination.currentPage, loadRegistros, loadStats]
   );
 
-  const handleDeleteRegistro = useCallback(
-    async (registroId: string, codigo: string) => {
-      if (
-        confirm(
-          `¿Estás seguro de que quieres eliminar el registro "${codigo}"?`
-        )
-      ) {
-        await deleteRegistro(registroId);
+  const handleDeleteRegistro = useCallback((registro: DataRecord) => {
+    setRecordToDelete(registro);
+    setDeleteModalOpen(true);
+  }, []);
+
+  const handleConfirmDelete = useCallback(
+    async (authorizationCode?: string) => {
+      if (!recordToDelete) return;
+
+      try {
+        const params = new URLSearchParams();
+        if (authorizationCode) {
+          params.append("authorization_code", authorizationCode);
+        }
+
+        const url = `/records/${recordToDelete.id}${
+          params.toString() ? `?${params.toString()}` : ""
+        }`;
+
+        await apiClient.delete(url);
+
+        success("Registro eliminado exitosamente");
+        setDeleteModalOpen(false);
+        setRecordToDelete(null);
+        refreshData();
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Error al eliminar registro";
+        showError("Error al eliminar registro", errorMessage);
       }
     },
-    [deleteRegistro]
+    [recordToDelete, success, showError, refreshData]
   );
 
   const getEstadoConfig = useCallback((estado: DataRecord["estado_actual"]) => {
@@ -670,7 +699,7 @@ export const RegistroList: React.FC = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => handleDeleteRegistro(registro.id, registro.codigo)}
+              onClick={() => handleDeleteRegistro(registro)}
               icon={Trash2}
               className="text-red-600 hover:text-red-700 hover:bg-red-50"
               title="Eliminar registro"
@@ -1425,6 +1454,17 @@ export const RegistroList: React.FC = () => {
           </div>
         )}
       </Card>
+      {/* Modal de eliminación con autorización */}
+      <DeleteModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false);
+          setRecordToDelete(null);
+        }}
+        record={recordToDelete}
+        onConfirm={handleConfirmDelete}
+        loading={deleting}
+      />
     </div>
   );
 };

@@ -12,6 +12,7 @@ import {
   Check,
   ExternalLink,
   BellRing,
+  FileText,
 } from "lucide-react";
 import { useAuthStore } from "../../store/authStore";
 import { useApi } from "../../hooks/useApi";
@@ -173,6 +174,9 @@ export const Header: React.FC = () => {
     navigate("/");
     setShowNotifications(false);
   };
+
+  // Determinar si mostrar opción de solicitudes (solo para administradores)
+  const isAdmin = user?.rol === "admin";
 
   return (
     <header className="px-6 py-4 bg-white border-b border-gray-200 shadow-sm">
@@ -432,17 +436,41 @@ export const Header: React.FC = () => {
                     </div>
                   </button>
 
-                  <button className="flex items-center w-full px-4 py-3 space-x-3 text-gray-700 transition-colors duration-200 hover:bg-gray-50">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-50">
-                      <Settings size={16} className="text-purple-600" />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-medium">Configuración</p>
-                      <p className="text-xs text-gray-500">
-                        Ajustes del sistema
-                      </p>
-                    </div>
-                  </button>
+                  {/* Mostrar "Solicitudes" solo para administradores */}
+                  {isAdmin && (
+                    <button
+                      onClick={() => {
+                        navigate("/solicitudes");
+                        setShowUserMenu(false);
+                      }}
+                      className="flex items-center w-full px-4 py-3 space-x-3 text-gray-700 transition-colors duration-200 hover:bg-gray-50"
+                    >
+                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-orange-50">
+                        <FileText size={16} className="text-orange-600" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-sm font-medium">Solicitudes</p>
+                        <p className="text-xs text-gray-500">
+                          Gestionar autorizaciones
+                        </p>
+                      </div>
+                    </button>
+                  )}
+
+                  {/* Mostrar "Configuración" solo para usuarios no-admin */}
+                  {!isAdmin && (
+                    <button className="flex items-center w-full px-4 py-3 space-x-3 text-gray-700 transition-colors duration-200 hover:bg-gray-50">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-50">
+                        <Settings size={16} className="text-purple-600" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-sm font-medium">Configuración</p>
+                        <p className="text-xs text-gray-500">
+                          Ajustes del sistema
+                        </p>
+                      </div>
+                    </button>
+                  )}
 
                   <div className="pt-2 mt-2 border-t border-gray-100">
                     <button
