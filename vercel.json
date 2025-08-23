@@ -1,9 +1,0 @@
-{
-  "version": 2,
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "http://ec2-3-137-152-52.us-east-2.compute.amazonaws.com:3000/$1"
-    }
-  ]
-}
