@@ -5,6 +5,7 @@ interface SearchableSelectProps {
   options: string[];
   value: string;
   onChange: (value: string) => void;
+  onSearch?: (term: string) => void;
   placeholder?: string;
   label?: string;
   error?: string;
@@ -16,6 +17,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   options,
   value,
   onChange,
+  onSearch,
   placeholder = "Buscar y seleccionar...",
   label,
   error,
@@ -28,12 +30,10 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Filtrar opciones basado en el término de búsqueda
   const filteredOptions = options.filter((option) =>
     option.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Cerrar dropdown cuando se hace clic fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -45,12 +45,10 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         setHighlightedIndex(-1);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Manejar navegación con teclado
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!isOpen) {
       if (e.key === "Enter" || e.key === "ArrowDown") {
@@ -60,7 +58,6 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
       }
       return;
     }
-
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault();
@@ -104,14 +101,14 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 
   const handleInputClick = () => {
     setIsOpen(true);
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
+    inputRef.current?.focus();
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
+    const term = e.target.value;
+    setSearchTerm(term);
     setHighlightedIndex(-1);
+    onSearch?.(term); // dispara búsqueda remota
     if (!isOpen) setIsOpen(true);
   };
 
@@ -123,9 +120,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
           {required && <span className="ml-1 text-red-500">*</span>}
         </label>
       )}
-
       <div className="relative" ref={dropdownRef}>
-        {/* Input principal */}
         <div
           className={`relative w-full px-4 py-3 border-2 rounded-xl transition-all duration-200 font-medium cursor-pointer
             ${
@@ -133,14 +128,11 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 ? "border-red-300 focus-within:border-red-500 focus-within:ring-red-500/20"
                 : "border-gray-200 hover:border-gray-300 focus-within:border-[#18D043] focus-within:ring-[#18D043]/20"
             }
-            ${isOpen ? "ring-2" : ""}
-          `}
+            ${isOpen ? "ring-2" : ""}`}
           onClick={handleInputClick}
         >
           <div className="flex items-center">
             <span className="mr-3 text-gray-400">🔍</span>
-
-            {/* Mostrar valor seleccionado o input de búsqueda */}
             {value && !isOpen ? (
               <div className="flex items-center justify-between w-full">
                 <span className="text-gray-900">{value}</span>
@@ -184,7 +176,6 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
           </div>
         </div>
 
-        {/* Dropdown */}
         {isOpen && (
           <div className="absolute z-50 w-full mt-1 overflow-y-auto bg-white border border-gray-200 shadow-lg rounded-xl max-h-60">
             {searchTerm && (
@@ -194,7 +185,6 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 {filteredOptions.length !== 1 ? "s" : ""}
               </div>
             )}
-
             {filteredOptions.length === 0 ? (
               <div className="px-4 py-8 text-center text-gray-500">
                 <div className="mb-2">🔍</div>
@@ -213,15 +203,14 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                         index === highlightedIndex
                           ? "bg-[#18D043]/10 text-[#16a34a]"
                           : "hover:bg-gray-50 text-gray-900"
-                      }
-                    `}
+                      }`}
                     onClick={() => handleSelectOption(option)}
                     onMouseEnter={() => setHighlightedIndex(index)}
                   >
                     <div className="flex items-center justify-between w-full">
                       <span className="font-medium">{option}</span>
                       {value === option && (
-                        <div className="w-2 h-2 bg-[#18D043] rounded-full"></div>
+                        <div className="w-2 h-2 bg-[#18D043] rounded-full" />
                       )}
                     </div>
                   </div>
@@ -232,7 +221,6 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         )}
       </div>
 
-      {/* Error message */}
       {error && (
         <p className="flex items-center mt-2 space-x-1 text-sm text-red-600">
           <span className="text-red-500">⚠️</span>

@@ -166,11 +166,14 @@ interface PaginationResponse {
   limit: number;
   total: number;
   totalPages: number;
+  hasNextPage?: boolean;
+  hasPreviousPage?: boolean;
 }
 
 interface PaginatedApiResponse<T> {
   data: T[];
-  pagination: PaginationResponse;
+  pagination?: PaginationResponse;
+  meta?: PaginationResponse;
 }
 
 // Specialized hook for paginated data
@@ -215,20 +218,53 @@ export const usePaginatedApi = <
   } = useApi(wrappedApiFunction, {
     ...options,
     onSuccess: (result) => {
-      const currentFilters = filters as F & { page?: number };
-      if (currentFilters.page === 1) {
-        setAllData(result.data);
+      const currentFilters = filters as F & { page?: number; limit?: number };
+
+      // merge/append data
+      if ((currentFilters.page ?? 1) === 1) {
+        setAllData(result.data ?? []);
       } else {
-        setAllData((prev) => [...prev, ...result.data]);
+        setAllData((prev) => [...prev, ...(result.data ?? [])]);
       }
-      setPagination(result.pagination);
+
+      // normalizar paginación: usa "pagination" si existe, sino "meta", y sino calcula fallback
+      const from = (result as any).pagination ?? (result as any).meta;
+
+      const normalized: PaginationResponse = from
+        ? {
+            page: Number(from.page) || 1,
+            limit: Number(from.limit) || (currentFilters.limit ?? 10),
+            total: Number(from.total) || (result.data?.length ?? 0),
+            totalPages:
+              Number(from.totalPages) ||
+              Math.max(
+                1,
+                Math.ceil(
+                  (Number(from.total) || 0) /
+                    (Number(from.limit) || (currentFilters.limit ?? 10))
+                )
+              ),
+            hasNextPage: from.hasNextPage ?? undefined,
+            hasPreviousPage: from.hasPreviousPage ?? undefined,
+          }
+        : {
+            // Fallback cuando ni "pagination" ni "meta" existen (paginamos en cliente)
+            page: currentFilters.page ?? 1,
+            limit: currentFilters.limit ?? 10,
+            total: result.data?.length ?? 0,
+            totalPages: 1,
+            hasNextPage: false,
+            hasPreviousPage: false,
+          };
+
+      setPagination(normalized);
       options.onSuccess?.(result);
     },
   });
 
   const execute = useCallback(
     (newFilters?: Partial<F>) => {
-      const updatedFilters = { ...filters, ...newFilters };
+      const updatedFilters = { ...filters, ...(newFilters || {}) };
       setFilters(updatedFilters);
       return originalExecute(updatedFilters);
     },
@@ -249,11 +285,11 @@ export const usePaginatedApi = <
   const updateFilters = useCallback(
     (newFilters: Partial<F>) => {
       setAllData([]);
-      return execute({ ...filters, ...newFilters, page: 1 } as F);
+      return execute({ ...filters, ...(newFilters || {}), page: 1 } as F);
     },
     [execute, filters]
   );
-
+  
   return {
     data: allData,
     currentPageData: data?.data || [],

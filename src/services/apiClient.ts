@@ -377,4 +377,9 @@ export const API_ENDPOINTS = {
     CLEANUP: (days: number) => `/alerts/cleanup/${days}`,
     STATS_BY_PERIOD: "/alerts/stats-by-period",
   },
+  MAINTENANCE: {
+    BASE: "/maintenance",
+    BY_ID: (id: number) => `/maintenance/${id}`,
+    BY_RECORD: (recordId: number) => `/maintenance/by-record/${recordId}`,
+  },
 } as const;

@@ -7,6 +7,7 @@ import {
   Users,
   History,
   AlertTriangle,
+  Settings,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -36,6 +37,16 @@ const menuItems = [
     bgColor: "bg-green-50",
     hoverColor: "hover:bg-green-100",
     activeColor: "bg-gradient-to-r from-[#18D043] to-[#16a34a]",
+  },
+  {
+    path: "/mantenimiento",
+    icon: Settings,
+    label: "Mantenimiento",
+    description: "Gestión de mantenimientos",
+    color: "text-indigo-600",
+    bgColor: "bg-indigo-50",
+    hoverColor: "hover:bg-indigo-100",
+    activeColor: "bg-gradient-to-r from-indigo-500 to-indigo-600",
   },
   {
     path: "/accidentes",

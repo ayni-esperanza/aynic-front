@@ -23,5 +23,13 @@ export {
   Phone,
   Shield,
   TrendingUp,
+  TrendingDown,
   Activity,
-} from 'lucide-react';
+  Image,
+  Upload,
+  Download,
+  Filter,
+  Building,
+  Wrench,
+  Cog,
+} from "lucide-react";
