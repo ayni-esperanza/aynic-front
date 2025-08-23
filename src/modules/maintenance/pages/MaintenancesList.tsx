@@ -13,13 +13,56 @@ import {
   Eye,
   Trash2,
   Download,
-  Image,
+  Image as ImageIcon,
   TrendingUp,
   TrendingDown,
+  X,
 } from "lucide-react";
 import { SearchableSelect } from "../../../components/ui/SearchableSelect";
 import type { Maintenance, MaintenanceFilters } from "../types/maintenance";
 import type { TableColumn } from "../../../types";
+
+/* ========== Modal de imagen muy simple ========== */
+const ImagePreviewModal: React.FC<{
+  open: boolean;
+  src?: string;
+  title?: string;
+  onClose: () => void;
+  onError?: () => void;
+}> = ({ open, src, title, onClose, onError }) => {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
+      <div className="relative max-w-5xl max-h-full">
+        <Button
+          className="absolute z-10 text-white top-3 right-3 bg-black/60 hover:bg-black/80"
+          onClick={onClose}
+          icon={X}
+          size="sm"
+        />
+        <img
+          src={src}
+          alt={title || "Imagen"}
+          className="max-w-[90vw] max-h-[85vh] object-contain rounded-lg bg-black/20"
+          onError={onError}
+        />
+      </div>
+    </div>
+  );
+};
+/* ================================================ */
+
+/** Construye la URL de la imagen del mantenimiento
+ *  Prioriza `image_url` (ya lista del backend).
+ *  Si sólo viene `image_r2_key`, la arma con `VITE_R2_PUBLIC_URL`.
+ */
+const getMaintenanceImageUrl = (m: Maintenance): string | undefined => {
+  if ((m as any)?.image_url) return (m as any).image_url as string;
+  const key = (m as any)?.image_r2_key as string | undefined;
+  const base = import.meta.env.VITE_R2_PUBLIC_URL as string | undefined;
+  if (key && base) return `${base}/${key}`;
+  return undefined;
+};
 
 export const MaintenancesList: React.FC = () => {
   const navigate = useNavigate();
@@ -31,24 +74,21 @@ export const MaintenancesList: React.FC = () => {
     record_id: undefined,
   });
 
-  // === Líneas de vida para el buscador (carga inicial + búsqueda remota)
-  const { data: initialRecords } = useApi(
+  // ---- líneas de vida (para el filtro) ----
+  const { data: initialLineas } = useApi(
     () => maintenanceService.searchRecordsForSelect(),
     { immediate: true }
   );
-
-  const { data: searchedRecords, execute: runRemoteSearch } = useApi(
-    (term: string) => maintenanceService.searchRecordsForSelect(term)
+  const { data: searchLineas, execute: execSearch } = useApi((term: string) =>
+    maintenanceService.searchRecordsForSelect(term)
   );
 
-  const allRecords = searchedRecords ?? initialRecords ?? [];
-  const lineaOptions = allRecords.map((r) =>
-    [r.codigo, r.cliente, r.ubicacion].filter(Boolean).join(" · ")
-  );
+  const allLineas = searchLineas ?? initialLineas ?? [];
+  const lineaOptions = allLineas.map((l) => l.codigo);
   const selectedLineaCodigo =
-    allRecords.find((l) => l.id === filters.record_id)?.codigo ?? "";
+    allLineas.find((l) => l.id === filters.record_id)?.codigo ?? "";
 
-  // === Mantenimientos paginados (del record elegido)
+  // ---- datos paginados ----
   const {
     data: maintenances,
     pagination,
@@ -61,32 +101,46 @@ export const MaintenancesList: React.FC = () => {
     { immediate: true }
   );
 
-  // Eliminar
+  // eliminar
   const { mutate: deleteMaintenance, loading: deleting } = useMutation(
     (id: number) => maintenanceService.deleteMaintenance(id),
     {
       onSuccess: () => {
         success("Éxito", "Mantenimiento eliminado correctamente");
-        updateFilters({ ...filters }); // refrescar con filtros actuales
+        updateFilters({}); // refrescar
       },
       onError: (err) => showError("Error", `Error al eliminar: ${err}`),
     }
   );
 
-  const handleLineaChange = (label: string) => {
-    if (!label) {
-      const next = { ...filters, record_id: undefined, page: 1 };
-      setFilters(next);
-      updateFilters(next);
+  const handleLineaChange = (codigo: string) => {
+    const found = allLineas.find((l) => l.codigo === codigo);
+    const record_id = found?.id;
+    const newFilters: MaintenanceFilters = { ...filters, record_id, page: 1 };
+    setFilters(newFilters);
+    updateFilters(newFilters);
+  };
+
+  // ======= estado del modal de imagen =======
+  const [imgOpen, setImgOpen] = useState(false);
+  const [imgSrc, setImgSrc] = useState<string | undefined>(undefined);
+  const [imgTitle, setImgTitle] = useState<string | undefined>(undefined);
+
+  const openMaintenanceImage = (m: Maintenance) => {
+    const url = getMaintenanceImageUrl(m);
+    if (!url) {
+      showError("Sin imagen", "Este mantenimiento no tiene imagen.");
       return;
     }
-    // label = "CODIGO · CLIENTE · UBICACION"
-    const code = label.split(" · ")[0];
-    const found = allRecords.find((r) => r.codigo === code);
-    const next = { ...filters, record_id: found?.id, page: 1 };
-    setFilters(next);
-    updateFilters(next);
+    const code =
+      (m as any)?.record?.codigo ??
+      (m as any)?.record_code ??
+      `Mantenimiento #${m.id}`;
+    setImgTitle(`Imagen · ${code}`);
+    setImgSrc(url);
+    setImgOpen(true);
   };
+  // ==========================================
 
   const columns: TableColumn<Maintenance>[] = [
     {
@@ -118,7 +172,10 @@ export const MaintenancesList: React.FC = () => {
       label: "Descripción",
       render: (value) => (
         <div className="max-w-xs">
-          <div className="text-sm text-gray-900 truncate" title={String(value)}>
+          <div
+            className="text-sm text-gray-900 truncate"
+            title={value as string}
+          >
             {value || "Sin descripción"}
           </div>
         </div>
@@ -150,10 +207,7 @@ export const MaintenancesList: React.FC = () => {
                 ) : (
                   <TrendingDown size={12} />
                 )}
-                <span>
-                  {isIncrease ? "+" : ""}
-                  {change.toFixed(1)}m
-                </span>
+                <span>{`${isIncrease ? "+" : ""}${change.toFixed(1)}m`}</span>
               </div>
               <div className="text-xs text-gray-500">
                 {record.previous_length_meters}m → {record.new_length_meters}m
@@ -171,19 +225,23 @@ export const MaintenancesList: React.FC = () => {
     {
       key: "image_url",
       label: "Imagen",
-      render: (value) =>
-        value ? (
+      render: (_value, m: Maintenance) => {
+        const hasImage = Boolean(
+          (m as any)?.image_url || (m as any)?.image_r2_key
+        );
+        return hasImage ? (
           <Button
             variant="ghost"
             size="sm"
-            icon={Image}
-            onClick={() => window.open(String(value), "_blank")}
+            icon={ImageIcon}
+            onClick={() => openMaintenanceImage(m)}
           >
             Ver
           </Button>
         ) : (
           <span className="text-sm text-gray-400">Sin imagen</span>
-        ),
+        );
+      },
     },
     {
       key: "user",
@@ -271,34 +329,22 @@ export const MaintenancesList: React.FC = () => {
         </div>
       </div>
 
-      {/* Filtro mínimo (solo Línea de Vida con búsqueda remota) */}
+      {/* Filtro mínimo: Línea de Vida */}
       <Card className="p-4">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <SearchableSelect
             label="Línea de Vida *"
-            value={
-              selectedLineaCodigo
-                ? [
-                    selectedLineaCodigo,
-                    allRecords.find((r) => r.codigo === selectedLineaCodigo)
-                      ?.cliente,
-                    allRecords.find((r) => r.codigo === selectedLineaCodigo)
-                      ?.ubicacion,
-                  ]
-                    .filter(Boolean)
-                    .join(" · ")
-                : ""
-            }
+            value={selectedLineaCodigo}
             options={lineaOptions}
             onChange={handleLineaChange}
-            onSearch={(term) => runRemoteSearch(term)}
+            onSearch={(term) => execSearch(term)}
             placeholder="Buscar por código, cliente o ubicación..."
             required
           />
         </div>
       </Card>
 
-      {/* Tabla / vacío */}
+      {/* Tabla o vacío */}
       {!filters.record_id ? (
         <Card className="py-10 text-center text-gray-600">
           Selecciona una <b>Línea de Vida</b> en los filtros para ver sus
@@ -317,6 +363,21 @@ export const MaintenancesList: React.FC = () => {
           maxBodyHeight="60vh"
         />
       )}
+
+      {/* Modal de imagen */}
+      <ImagePreviewModal
+        open={imgOpen}
+        src={imgSrc}
+        title={imgTitle}
+        onClose={() => setImgOpen(false)}
+        onError={() => {
+          setImgOpen(false);
+          showError(
+            "No se pudo mostrar la imagen",
+            "La URL es inválida o el objeto no es público."
+          );
+        }}
+      />
     </div>
   );
 };
