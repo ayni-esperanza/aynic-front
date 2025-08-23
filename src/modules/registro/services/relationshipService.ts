@@ -58,4 +58,12 @@ export const relationshipService = {
   }> {
     return apiClient.get(`/record-relationships/can-be-parent/${recordId}`);
   },
+  
+  async getParentRecord(childRecordId: number): Promise<any> {
+    return apiClient.get(`/record-relationships/parent/${childRecordId}`);
+  },
+
+  async getChildRecords(parentRecordId: number): Promise<any[]> {
+    return apiClient.get(`/record-relationships/children/${parentRecordId}`);
+  },
 };

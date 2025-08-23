@@ -18,6 +18,7 @@ import {
   Wrench,
   Camera,
   Image as ImageIcon,
+  Link,
 } from "lucide-react";
 import { Button } from "../../../components/ui/Button";
 import { Card } from "../../../components/ui/Card";
@@ -26,6 +27,7 @@ import { LoadingSpinner } from "../../../components/ui/LoadingSpinner";
 import { useToast } from "../../../components/ui/Toast";
 import { useApi } from "../../../hooks/useApi";
 import { recordsService } from "../../../services/recordsService";
+import { relationshipService } from "../services/relationshipService";
 import {
   imageService,
   type ImageResponse,
@@ -85,6 +87,11 @@ export const RegistroDetail: React.FC = () => {
   const [currentImage, setCurrentImage] = useState<ImageResponse | null>(null);
   const [showImageUpload, setShowImageUpload] = useState(false);
 
+  // Estados para relaciones
+  const [parentRelation, setParentRelation] = useState<any>(null);
+  const [childRelations, setChildRelations] = useState<any[]>([]);
+  const [loadingRelations, setLoadingRelations] = useState(false);
+
   // Referencias para evitar solicitudes duplicadas
   const isLoadingRef = useRef(false);
   const hasLoadedRef = useRef(false);
@@ -141,6 +148,28 @@ export const RegistroDetail: React.FC = () => {
     [loadRegistro]
   );
 
+  // Función para cargar relaciones
+  const loadRelations = useCallback(async (recordId: string) => {
+    if (!recordId) return;
+
+    setLoadingRelations(true);
+    try {
+      const [parentData, childrenData] = await Promise.all([
+        relationshipService
+          .getParentRecord(parseInt(recordId))
+          .catch(() => null),
+        relationshipService.getChildRecords(parseInt(recordId)).catch(() => []),
+      ]);
+
+      setParentRelation(parentData);
+      setChildRelations(childrenData || []);
+    } catch (error) {
+      console.error("Error loading relations:", error);
+    } finally {
+      setLoadingRelations(false);
+    }
+  }, []);
+
   // Effect principal - Solo se ejecuta cuando cambia el ID
   useEffect(() => {
     mountedRef.current = true;
@@ -152,6 +181,7 @@ export const RegistroDetail: React.FC = () => {
       setCurrentImage(null);
 
       loadData(id);
+      loadRelations(id);
     }
 
     return () => {
@@ -274,6 +304,7 @@ export const RegistroDetail: React.FC = () => {
     { id: "general", label: "General", icon: FileText },
     { id: "tecnico", label: "Técnico", icon: Settings },
     { id: "fechas", label: "Fechas", icon: Calendar },
+    { id: "relaciones", label: "Relaciones", icon: Link },
     { id: "imagen", label: "Imagen", icon: Camera },
     { id: "actividad", label: "Actividad", icon: Activity },
   ];
@@ -723,6 +754,131 @@ export const RegistroDetail: React.FC = () => {
                 </div>
               </div>
             </Card>
+          </div>
+        );
+
+      case "relaciones":
+        return (
+          <div className="space-y-6">
+            {loadingRelations ? (
+              <div className="flex items-center justify-center h-32">
+                <LoadingSpinner />
+              </div>
+            ) : (
+              <>
+                {/* Línea Padre */}
+                {parentRelation && (
+                  <Card className="border-blue-200 bg-blue-50">
+                    <div className="p-6">
+                      <h4 className="flex items-center mb-4 space-x-2 text-lg font-semibold text-blue-900">
+                        <ArrowLeft className="w-5 h-5" />
+                        <span>Línea Original</span>
+                      </h4>
+                      <div className="flex items-center justify-between p-4 bg-white rounded-lg">
+                        <div className="flex items-center space-x-4">
+                          <div className="flex items-center justify-center w-10 h-10 font-bold text-white bg-blue-500 rounded-lg">
+                            {parentRelation.parent_record?.codigo?.slice(-2) ||
+                              "P"}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-gray-900">
+                              {parentRelation.parent_record?.codigo}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {parentRelation.parent_record?.cliente}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className="inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full">
+                            {parentRelation.relationship_type === "DIVISION"
+                              ? "División"
+                              : parentRelation.relationship_type ===
+                                "REPLACEMENT"
+                              ? "Reemplazo"
+                              : "Actualización"}
+                          </span>
+                          <p className="mt-1 text-sm text-gray-500">
+                            Estado:{" "}
+                            {parentRelation.parent_record?.estado_actual}
+                          </p>
+                        </div>
+                      </div>
+                      {parentRelation.notes && (
+                        <div className="p-3 mt-4 bg-blue-100 rounded-lg">
+                          <p className="text-sm text-blue-800">
+                            {parentRelation.notes}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                )}
+
+                {/* Líneas Derivadas */}
+                {childRelations.length > 0 && (
+                  <Card className="border-green-200 bg-green-50">
+                    <div className="p-6">
+                      <h4 className="flex items-center mb-4 space-x-2 text-lg font-semibold text-green-900">
+                        <Link className="w-5 h-5" />
+                        <span>Líneas Derivadas ({childRelations.length})</span>
+                      </h4>
+                      <div className="space-y-3">
+                        {childRelations.map((relation, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between p-4 bg-white rounded-lg"
+                          >
+                            <div className="flex items-center space-x-4">
+                              <div className="flex items-center justify-center w-10 h-10 font-bold text-white bg-green-500 rounded-lg">
+                                {relation.child_record?.codigo?.slice(-2) ||
+                                  index + 1}
+                              </div>
+                              <div>
+                                <p className="font-semibold text-gray-900">
+                                  {relation.child_record?.codigo}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  {relation.child_record?.cliente}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <span className="inline-flex items-center px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full">
+                                {relation.relationship_type === "DIVISION"
+                                  ? "División"
+                                  : relation.relationship_type === "REPLACEMENT"
+                                  ? "Reemplazo"
+                                  : "Actualización"}
+                              </span>
+                              <p className="mt-1 text-sm text-gray-500">
+                                Estado: {relation.child_record?.estado_actual}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </Card>
+                )}
+
+                {/* Sin relaciones */}
+                {!parentRelation && childRelations.length === 0 && (
+                  <div className="py-12 text-center">
+                    <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full">
+                      <Link className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <h3 className="mb-2 text-lg font-semibold text-gray-900">
+                      Sin Relaciones
+                    </h3>
+                    <p className="text-gray-600">
+                      Esta línea no tiene relaciones con otras líneas del
+                      sistema.
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         );
 
