@@ -19,6 +19,7 @@ import {
   RefreshCw,
   Camera,
   Link,
+  FileText,
 } from "lucide-react";
 import { DataTable } from "../../../components/common/DataTable";
 import { Button } from "../../../components/ui/Button";
@@ -39,6 +40,7 @@ import { formatDate } from "../../../utils/formatters";
 import { useAuthStore } from "../../../store/authStore";
 import { DeleteModal } from "../../solicitudes/components/DeleteModal";
 import { apiClient } from "../../../services/apiClient";
+import { ReportsSection } from "../components/ReportsSection";
 import type { DataRecord, TableColumn } from "../../../types";
 
 export const RegistroList: React.FC = () => {
@@ -59,7 +61,10 @@ export const RegistroList: React.FC = () => {
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
   const [showFilters, setShowFilters] = useState(false);
   const [showRelationshipModal, setShowRelationshipModal] = useState(false);
-  const [selectedRecordForRelation, setSelectedRecordForRelation] = useState<DataRecord | null>(null);
+  const [selectedRecordForRelation, setSelectedRecordForRelation] =
+    useState<DataRecord | null>(null);
+
+  const [showReports, setShowReports] = useState(false);
 
   type AppliedFilters = {
     codigo?: string;
@@ -93,10 +98,10 @@ export const RegistroList: React.FC = () => {
   const [recordImages, setRecordImages] = useState<Map<string, ImageResponse>>(
     new Map()
   );
-  
+
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState<DataRecord | null>(null);
-  
+
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -285,8 +290,10 @@ export const RegistroList: React.FC = () => {
             const patch: Partial<AppliedFilters> = {
               codigo:
                 (field === "codigo" ? value : searchTerm).trim() || undefined,
-              codigo_placa: // ← AGREGAR ESTAS 2 LÍNEAS
-                (field === "codigo_placa" ? value : codigoPlacaFilter).trim() || undefined,
+              // ← AGREGAR ESTAS 2 LÍNEAS
+              codigo_placa:
+                (field === "codigo_placa" ? value : codigoPlacaFilter).trim() ||
+                undefined,
               equipo:
                 (field === "equipo" ? value : equipoFilter).trim() || undefined,
               ubicacion:
@@ -919,6 +926,18 @@ export const RegistroList: React.FC = () => {
             Actualizar
           </Button>
           <Button
+            onClick={() => setShowReports(!showReports)}
+            variant="outline"
+            icon={FileText}
+            className={
+              showReports
+                ? "bg-orange-500 text-white border-orange-500"
+                : "border-orange-300 text-orange-600 hover:bg-orange-50"
+            }
+          >
+            Reportes
+          </Button>
+          <Button
             onClick={() => navigate("nuevo")}
             icon={Plus}
             className="bg-gradient-to-r from-[#18D043] to-[#16a34a] hover:from-[#16a34a] hover:to-[#15803d] shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
@@ -1012,6 +1031,9 @@ export const RegistroList: React.FC = () => {
           </div>
         </Card>
       </div>
+      
+      {/* Sección de Reportes */}
+      {showReports && <ReportsSection />}
 
       {/* Controles y filtros */}
       <Card className="border border-gray-200 shadow-sm bg-gradient-to-r from-gray-50 to-white">
