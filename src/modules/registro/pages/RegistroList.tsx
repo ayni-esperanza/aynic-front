@@ -18,6 +18,7 @@ import {
   SlidersHorizontal,
   RefreshCw,
   Camera,
+  Link,
 } from "lucide-react";
 import { DataTable } from "../../../components/common/DataTable";
 import { Button } from "../../../components/ui/Button";
@@ -33,6 +34,7 @@ import {
   imageService,
   type ImageResponse,
 } from "../../../services/imageService";
+import { RelationshipModal } from "../components/RelationshipModal";
 import { formatDate } from "../../../utils/formatters";
 import { useAuthStore } from "../../../store/authStore";
 import { DeleteModal } from "../../solicitudes/components/DeleteModal";
@@ -56,6 +58,8 @@ export const RegistroList: React.FC = () => {
   const [installDateTo, setInstallDateTo] = useState("");
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
   const [showFilters, setShowFilters] = useState(false);
+  const [showRelationshipModal, setShowRelationshipModal] = useState(false);
+  const [selectedRecordForRelation, setSelectedRecordForRelation] = useState<DataRecord | null>(null);
 
   type AppliedFilters = {
     codigo?: string;
@@ -389,6 +393,17 @@ export const RegistroList: React.FC = () => {
     [recordToDelete, success, showError, refreshData]
   );
 
+  const handleCreateDerivadas = useCallback((registro: DataRecord) => {
+    setSelectedRecordForRelation(registro);
+    setShowRelationshipModal(true);
+  }, []);
+
+  const handleRelationshipSuccess = useCallback(() => {
+    setShowRelationshipModal(false);
+    setSelectedRecordForRelation(null);
+    refreshData();
+  }, [refreshData]);
+
   const getEstadoConfig = useCallback((estado: DataRecord["estado_actual"]) => {
     const configs = {
       activo: {
@@ -513,15 +528,14 @@ export const RegistroList: React.FC = () => {
         key: "codigo_placa",
         label: "Código Placa",
         sortable: true,
-        render: (value: any) => (
+        render: (value: any) =>
           value ? (
             <span className="inline-flex items-center px-2 py-1 font-mono text-sm text-purple-800 bg-purple-100 rounded-md">
               {String(value)}
             </span>
           ) : (
             <span className="text-sm text-gray-400">-</span>
-          )
-        ),
+          ),
       },
       {
         key: "cliente",
@@ -687,7 +701,7 @@ export const RegistroList: React.FC = () => {
               icon={Eye}
               className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
               title="Ver detalles"
-            ></Button>
+            />
             <Button
               variant="ghost"
               size="sm"
@@ -695,7 +709,15 @@ export const RegistroList: React.FC = () => {
               icon={Edit}
               className="text-green-600 hover:text-green-700 hover:bg-green-50"
               title="Editar registro"
-            ></Button>
+            />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleCreateDerivadas(registro)}
+              icon={Link}
+              className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+              title="Crear Líneas Derivadas"
+            />
             <Button
               variant="ghost"
               size="sm"
@@ -704,7 +726,7 @@ export const RegistroList: React.FC = () => {
               className="text-red-600 hover:text-red-700 hover:bg-red-50"
               title="Eliminar registro"
               disabled={deleting}
-            ></Button>
+            />
           </div>
         ),
       },
@@ -1465,6 +1487,18 @@ export const RegistroList: React.FC = () => {
         onConfirm={handleConfirmDelete}
         loading={deleting}
       />
+      {/* Modal de relaciones */}
+      {selectedRecordForRelation && (
+        <RelationshipModal
+          isOpen={showRelationshipModal}
+          onClose={() => {
+            setShowRelationshipModal(false);
+            setSelectedRecordForRelation(null);
+          }}
+          onSuccess={handleRelationshipSuccess}
+          parentRecord={selectedRecordForRelation}
+        />
+      )}
     </div>
   );
 };
