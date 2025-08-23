@@ -20,14 +20,15 @@ type RecordLite = {
 class MaintenanceService {
   private readonly baseUrl = API_ENDPOINTS.MAINTENANCE.BASE;
 
-  async searchRecords(searchTerm?: string): Promise<RecordLite[]> {
+  // === Búsqueda de líneas de vida para selects (con o sin término)
+  async searchRecordsForSelect(searchTerm?: string): Promise<RecordLite[]> {
     const qs = searchTerm?.trim()
       ? `?search=${encodeURIComponent(searchTerm.trim())}`
       : "";
-    const records = await apiClient.get<Array<any>>(
+    const rows = await apiClient.get<Array<any>>(
       `/records/search/lineas-vida${qs}`
     );
-    return (records || []).map((r) => ({
+    return (rows || []).map((r) => ({
       id: r.id,
       codigo: r.codigo,
       cliente: r.cliente,
@@ -36,10 +37,15 @@ class MaintenanceService {
     }));
   }
 
+  // Alias de compatibilidad (por si otras pantallas lo usaban)
   async getRecordsForSelect(): Promise<RecordLite[]> {
-    return this.searchRecords();
+    return this.searchRecordsForSelect();
+  }
+  async searchLineasVida(term?: string) {
+    return this.searchRecordsForSelect(term);
   }
 
+  // === Lista de mantenimientos (cliente hace el filtrado básico)
   async getMaintenances(
     filters: MaintenanceFilters = {}
   ): Promise<PaginatedResponse<Maintenance>> {
@@ -177,7 +183,7 @@ class MaintenanceService {
   }
 
   validateFile(file: File): { valid: boolean; error?: string } {
-    const MAX = 5 * 1024 * 1024; // 5MB
+    const MAX = 5 * 1024 * 1024;
     const ALLOWED = ["image/jpeg", "image/png", "image/webp"];
     if (!ALLOWED.includes(file.type))
       return { valid: false, error: "Formato no permitido (JPG, PNG, WebP)" };

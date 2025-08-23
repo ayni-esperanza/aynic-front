@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DataTable } from "../../../components/common/DataTable";
 import { Button } from "../../../components/ui/Button";
@@ -7,8 +7,6 @@ import { Card } from "../../../components/ui/Card";
 import { useToast } from "../../../components/ui/Toast";
 import { usePaginatedApi, useMutation, useApi } from "../../../hooks/useApi";
 import { maintenanceService } from "../services/maintenanceService";
-import { MaintenanceStatsComponent } from "../components/MaintenanceStats";
-import { MaintenanceFiltersComponent } from "../components/MaintenanceFilters";
 import { formatDate, formatDateTime } from "../../../utils/formatters";
 import {
   Plus,
@@ -20,11 +18,7 @@ import {
   TrendingDown,
 } from "lucide-react";
 import { SearchableSelect } from "../../../components/ui/SearchableSelect";
-import type {
-  Maintenance,
-  MaintenanceFilters,
-  MaintenanceStats as StatsType,
-} from "../types/maintenance";
+import type { Maintenance, MaintenanceFilters } from "../types/maintenance";
 import type { TableColumn } from "../../../types";
 
 export const MaintenancesList: React.FC = () => {
@@ -37,21 +31,24 @@ export const MaintenancesList: React.FC = () => {
     record_id: undefined,
   });
 
-  // ---- líneas de vida para el select (carga inicial + búsqueda remota)
-  const { data: initialLineas } = useApi(
+  // === Líneas de vida para el buscador (carga inicial + búsqueda remota)
+  const { data: initialRecords } = useApi(
     () => maintenanceService.searchRecordsForSelect(),
     { immediate: true }
   );
-  const { data: searchLineas, execute: execSearch } = useApi((term: string) =>
-    maintenanceService.searchRecordsForSelect(term)
+
+  const { data: searchedRecords, execute: runRemoteSearch } = useApi(
+    (term: string) => maintenanceService.searchRecordsForSelect(term)
   );
 
-  const allLineas = searchLineas ?? initialLineas ?? [];
-  const lineaOptions = allLineas.map((l) => l.codigo);
+  const allRecords = searchedRecords ?? initialRecords ?? [];
+  const lineaOptions = allRecords.map((r) =>
+    [r.codigo, r.cliente, r.ubicacion].filter(Boolean).join(" · ")
+  );
   const selectedLineaCodigo =
-    allLineas.find((l) => l.id === filters.record_id)?.codigo ?? "";
+    allRecords.find((l) => l.id === filters.record_id)?.codigo ?? "";
 
-  // ---- datos paginados de mantenimientos
+  // === Mantenimientos paginados (del record elegido)
   const {
     data: maintenances,
     pagination,
@@ -64,24 +61,31 @@ export const MaintenancesList: React.FC = () => {
     { immediate: true }
   );
 
-  // eliminar
+  // Eliminar
   const { mutate: deleteMaintenance, loading: deleting } = useMutation(
     (id: number) => maintenanceService.deleteMaintenance(id),
     {
       onSuccess: () => {
         success("Éxito", "Mantenimiento eliminado correctamente");
-        updateFilters({}); // refrescar
+        updateFilters({ ...filters }); // refrescar con filtros actuales
       },
-      onError: (error) => showError("Error", `Error al eliminar: ${error}`),
+      onError: (err) => showError("Error", `Error al eliminar: ${err}`),
     }
   );
 
-  const handleLineaChange = (codigo: string) => {
-    const found = allLineas.find((l) => l.codigo === codigo);
-    const record_id = found?.id;
-    const newFilters: MaintenanceFilters = { ...filters, record_id, page: 1 };
-    setFilters(newFilters);
-    updateFilters(newFilters);
+  const handleLineaChange = (label: string) => {
+    if (!label) {
+      const next = { ...filters, record_id: undefined, page: 1 };
+      setFilters(next);
+      updateFilters(next);
+      return;
+    }
+    // label = "CODIGO · CLIENTE · UBICACION"
+    const code = label.split(" · ")[0];
+    const found = allRecords.find((r) => r.codigo === code);
+    const next = { ...filters, record_id: found?.id, page: 1 };
+    setFilters(next);
+    updateFilters(next);
   };
 
   const columns: TableColumn<Maintenance>[] = [
@@ -114,10 +118,7 @@ export const MaintenancesList: React.FC = () => {
       label: "Descripción",
       render: (value) => (
         <div className="max-w-xs">
-          <div
-            className="text-sm text-gray-900 truncate"
-            title={value as string}
-          >
+          <div className="text-sm text-gray-900 truncate" title={String(value)}>
             {value || "Sin descripción"}
           </div>
         </div>
@@ -176,7 +177,7 @@ export const MaintenancesList: React.FC = () => {
             variant="ghost"
             size="sm"
             icon={Image}
-            onClick={() => window.open(value as string, "_blank")}
+            onClick={() => window.open(String(value), "_blank")}
           >
             Ver
           </Button>
@@ -270,19 +271,30 @@ export const MaintenancesList: React.FC = () => {
         </div>
       </div>
 
-      {/* Filtros mínimos */}
+      {/* Filtro mínimo (solo Línea de Vida con búsqueda remota) */}
       <Card className="p-4">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <SearchableSelect
             label="Línea de Vida *"
-            value={selectedLineaCodigo}
+            value={
+              selectedLineaCodigo
+                ? [
+                    selectedLineaCodigo,
+                    allRecords.find((r) => r.codigo === selectedLineaCodigo)
+                      ?.cliente,
+                    allRecords.find((r) => r.codigo === selectedLineaCodigo)
+                      ?.ubicacion,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")
+                : ""
+            }
             options={lineaOptions}
             onChange={handleLineaChange}
-            onSearch={(term) => execSearch(term)} // búsqueda remota
+            onSearch={(term) => runRemoteSearch(term)}
             placeholder="Buscar por código, cliente o ubicación..."
             required
           />
-          {/* si quieres, deja aquí tu filtro de 'Cambio de longitud' y 'Buscar por descripción' */}
         </div>
       </Card>
 
