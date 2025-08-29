@@ -32,12 +32,12 @@ export const AccidentStats: React.FC<AccidentStatsProps> = ({
   }
 
   const getEstadoCount = (estado: string) => {
-    return statistics.porEstado.find((s) => s.estado === estado)?.count || 0;
+    return statistics.por_estado?.find((s) => s.estado === estado)?.count || 0;
   };
 
   const getCriticosCount = () => {
     return (
-      statistics.porSeveridad.find((s) => s.severidad === "CRITICO")?.count || 0
+      statistics.por_severidad?.find((s) => s.severidad === "CRITICO")?.count || 0
     );
   };
 
@@ -53,10 +53,10 @@ export const AccidentStats: React.FC<AccidentStatsProps> = ({
             <p className="text-3xl font-bold text-gray-900">
               {statistics.total}
             </p>
-            {statistics.ultimoMes > 0 && (
+            {statistics.por_mes && statistics.por_mes.length > 0 && (
               <div className="flex items-center mt-2">
                 <Badge variant="primary" size="sm">
-                  {statistics.ultimoMes} este mes
+                  {statistics.por_mes[statistics.por_mes.length - 1]?.count || 0} este mes
                 </Badge>
               </div>
             )}

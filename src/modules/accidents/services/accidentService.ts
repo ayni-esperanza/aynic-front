@@ -45,17 +45,17 @@ class AccidentService {
    */
   private mapBackendStatsToFrontend(backendStats: BackendAccidentStatistics): AccidentStatistics {
     return {
-      total: backendStats.total,
-      por_estado: backendStats.por_estado.map(item => ({
+      total: backendStats.total || 0,
+      por_estado: (backendStats.por_estado || []).map(item => ({
         estado: this.mapBackendEstadoToFrontend(item.estado),
         count: item.count,
       })),
-      por_severidad: backendStats.por_severidad.map(item => ({
+      por_severidad: (backendStats.por_severidad || []).map(item => ({
         severidad: this.mapBackendSeveridadToFrontend(item.severidad),
         count: item.count,
       })),
-      por_mes: backendStats.por_mes,
-      tendencia: backendStats.tendencia,
+      por_mes: backendStats.por_mes || [],
+      tendencia: backendStats.tendencia || [],
     };
   }
 
@@ -267,7 +267,8 @@ class AccidentService {
    */
   async getLineasVida(): Promise<Array<{ id: string; codigo: string; cliente: string; ubicacion: string }>> {
     try {
-      const response = await apiClient.get<Array<{ id: number; codigo: string; cliente: string; ubicacion: string }>>(`${this.basePath}/lineas-vida`);
+      // Usar el endpoint correcto para líneas de vida
+      const response = await apiClient.get<Array<{ id: number; codigo: string; cliente: string; ubicacion: string }>>(`/records/search/lineas-vida`);
       return response.map(linea => ({
         id: linea.id.toString(),
         codigo: linea.codigo,
@@ -276,7 +277,8 @@ class AccidentService {
       }));
     } catch (error) {
       console.error("Error fetching lineas vida:", error);
-      throw error;
+      // Si falla, retornar array vacío en lugar de lanzar error
+      return [];
     }
   }
 
