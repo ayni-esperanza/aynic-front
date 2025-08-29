@@ -61,6 +61,7 @@ export interface DataRecord {
   anclaje_equipos?: string;
   fecha_caducidad?: string;
   estado_actual?: string;
+  [key: string]: unknown;
 }
 
 export interface RecordFilters {

@@ -43,6 +43,7 @@ import { apiClient } from '../../../shared/services/apiClient';
 import { ReportsSection } from "../components/ReportsSection";
 import type { DataRecord } from "../types/registro";
 import type { TableColumn } from "../../../types";
+import { useRegistroData } from "../hooks/useRegistroData";
 
 export const RegistroList: React.FC = () => {
   const navigate = useNavigate();
@@ -95,20 +96,12 @@ export const RegistroList: React.FC = () => {
   const isInitialLoadRef = useRef(true);
 
   // Estado para datos de registros
-  const [registros, setRegistros] = useState<DataRecord[]>([]);
   const [recordImages, setRecordImages] = useState<Map<string, ImageResponse>>(
     new Map()
   );
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState<DataRecord | null>(null);
-
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
-    totalItems: 0,
-    itemsPerPage: 10,
-  });
 
   const debounceRefs = useRef<Record<string, any>>({
     codigo: null,
@@ -119,28 +112,18 @@ export const RegistroList: React.FC = () => {
     area: null,
   });
 
-  // Hook para cargar registros con función estable
-  const loadRegistrosFunction = useCallback(
-    (params: any) => registroService.getRecords(params),
-    []
-  );
-
+  // Usar el hook useRegistroData
   const {
+    records: registros,
+    pagination,
     loading,
-    error: apiError,
-    execute: loadRegistros,
-  } = useApi(loadRegistrosFunction, {
-    onSuccess: (data) => {
-      setRegistros(data.data);
-      setPagination(data.pagination);
-      // Cargar imágenes para los registros visibles
-      loadImagesForRecords(data.data);
-      // Extraer opciones únicas para filtros
-    },
-    onError: (error) => {
-      showError("Error al cargar registros", error);
-    },
-  });
+    apiError,
+    updateFilters,
+    clearFilters,
+    refreshData,
+    handlePageChange,
+    handleSort,
+  } = useRegistroData();
 
   // Hook para estadísticas con función estable
   const loadStatsFunction = useCallback(
@@ -156,7 +139,10 @@ export const RegistroList: React.FC = () => {
 
   // Hook para eliminar registro con función estable
   const deleteRegistroFunction = useCallback(
-    (id: string) => registroService.deleteRecord(id),
+    async (...args: unknown[]) => {
+      const id = args[0] as string;
+      return registroService.deleteRecord(id);
+    },
     []
   );
 
@@ -200,9 +186,10 @@ export const RegistroList: React.FC = () => {
       setAppliedFilters((prev) => ({ ...prev, ...overrides }));
       const params = buildParams(overrides, page);
       lastQueryRef.current = params;
-      await Promise.all([loadRegistros(params), loadStats()]);
+      updateFilters(params);
+      await loadStats();
     },
-    [buildParams, loadRegistros, loadStats]
+    [buildParams, updateFilters, loadStats]
   );
 
   // Función para cargar imágenes de los registros
@@ -234,22 +221,21 @@ export const RegistroList: React.FC = () => {
       isInitialLoadRef.current = false;
       const loadInitialData = async () => {
         try {
-          await Promise.all([
-            loadRegistros({
-              page: 1,
-              limit: 10,
-              sortBy: DEFAULT_SORT.field,
-              sortOrder: DEFAULT_SORT.order,
-            }),
-            loadStats(),
-          ]);
+          await loadStats();
         } catch (error) {
           console.error("Error loading initial data:", error);
         }
       };
       loadInitialData();
     }
-  }, []);
+  }, [loadStats]);
+
+  // Cargar imágenes cuando cambien los registros
+  useEffect(() => {
+    if (registros.length > 0) {
+      loadImagesForRecords(registros);
+    }
+  }, [registros, loadImagesForRecords]);
 
   // Limpiar timeout al desmontar
   useEffect(() => {
@@ -267,7 +253,7 @@ export const RegistroList: React.FC = () => {
   }, []);
 
   // refreshData con dependencias estables
-  const refreshData = useCallback(async () => {
+  const refreshDataCallback = useCallback(async () => {
     try {
       await fetchWith({}, pagination.currentPage);
     } catch (error) {
@@ -331,40 +317,6 @@ export const RegistroList: React.FC = () => {
         setter(value);
       },
     []
-  );
-
-  const handlePageChange = useCallback(
-    (newPage: number) => {
-      if (lastQueryRef.current) {
-        const params = { ...lastQueryRef.current, page: newPage };
-        Promise.all([loadRegistros(params), loadStats()]).catch(console.error);
-      } else {
-        fetchWith({ ...appliedFilters }, newPage);
-      }
-    },
-    [fetchWith, appliedFilters, loadRegistros, loadStats]
-  );
-
-  const handleSortChange = useCallback(
-    (field: string) => {
-      // Calcula el siguiente estado de orden
-      const next: SortState =
-        sort.field === field
-          ? { field, order: sort.order === "ASC" ? "DESC" : "ASC" }
-          : { field, order: "ASC" };
-
-      setSort(next);
-
-      // Refetch inmediato usando el "next" (mantiene página actual)
-      const params = buildParams({}, pagination.currentPage);
-      (params as any).sortBy = next.field;
-      (params as any).sortOrder = next.order;
-
-      Promise.all([loadRegistros(params), loadStats()]).catch((e) =>
-        console.error("Error sorting:", e)
-      );
-    },
-    [sort, buildParams, pagination.currentPage, loadRegistros, loadStats]
   );
 
   const handleDeleteRegistro = useCallback((registro: DataRecord) => {
@@ -435,7 +387,7 @@ export const RegistroList: React.FC = () => {
         color: "text-red-600",
       },
     };
-    return configs[estado];
+    return configs[estado as keyof typeof configs] || configs.inactivo; // Fallback a inactivo si estado es undefined
   }, []);
 
   const NoResultsMessage = () => {
@@ -485,12 +437,7 @@ export const RegistroList: React.FC = () => {
               setAppliedFilters({});
               // Cargar todos los registros sin filtros
               try {
-                await loadRegistros({
-                  page: 1,
-                  limit: pagination.itemsPerPage,
-                  sortBy: sort.field,
-                  sortOrder: sort.order,
-                });
+                await loadStats();
               } catch (error) {
                 console.error("Error al limpiar filtros:", error);
               }
@@ -709,7 +656,9 @@ export const RegistroList: React.FC = () => {
               icon={Eye}
               className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
               title="Ver detalles"
-            />
+            >
+              Ver
+            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -717,7 +666,9 @@ export const RegistroList: React.FC = () => {
               icon={Edit}
               className="text-green-600 hover:text-green-700 hover:bg-green-50"
               title="Editar registro"
-            />
+            >
+              Editar
+            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -725,7 +676,9 @@ export const RegistroList: React.FC = () => {
               icon={Link}
               className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
               title="Crear Líneas Derivadas"
-            />
+            >
+              Derivadas
+            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -734,7 +687,9 @@ export const RegistroList: React.FC = () => {
               className="text-red-600 hover:text-red-700 hover:bg-red-50"
               title="Eliminar registro"
               disabled={deleting}
-            />
+            >
+              Eliminar
+            </Button>
           </div>
         ),
       },
@@ -888,7 +843,7 @@ export const RegistroList: React.FC = () => {
           <div className="mb-4 text-red-600">Error</div>
           <p className="font-medium text-gray-900">Error al cargar registros</p>
           <p className="mb-4 text-gray-600">{apiError}</p>
-          <Button onClick={refreshData} icon={RefreshCw}>
+          <Button onClick={refreshDataCallback} icon={RefreshCw}>
             Reintentar
           </Button>
         </div>
@@ -918,7 +873,7 @@ export const RegistroList: React.FC = () => {
         </div>
         <div className="flex items-center space-x-3">
           <Button
-            onClick={refreshData}
+            onClick={refreshDataCallback}
             variant="outline"
             icon={RefreshCw}
             loading={loading}
@@ -1388,12 +1343,7 @@ export const RegistroList: React.FC = () => {
                         setAppliedFilters({});
                         // Cargar todos los registros sin filtros
                         try {
-                          await loadRegistros({
-                            page: 1,
-                            limit: pagination.itemsPerPage,
-                            sortBy: sort.field,
-                            sortOrder: sort.order,
-                          });
+                          await loadStats();
                         } catch (error) {
                           console.error("Error al limpiar filtros:", error);
                         }
