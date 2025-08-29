@@ -16,5 +16,35 @@ export const RegistroModule: React.FC = () => {
   );
 };
 
+// Exportar componentes
+export { RegistroStats, RelationshipModal, ReportsSection } from "./components";
+
+// Exportar hooks
+export { useRegistroData, useRegistroForm } from "./hooks";
+
+// Exportar servicios
+export { registroService } from "./services";
+
+// Exportar tipos
+export type {
+  DataRecord,
+  RecordStatistics,
+  RecordFilters,
+  CreateRecordData,
+  UpdateRecordData,
+  RecordStatus,
+  RecordType,
+  RecordValidationErrors,
+  RecordRelationship,
+  CreateRelationshipData,
+  RecordReport,
+  CreateReportData,
+  RegistroListProps,
+  RegistroFormProps,
+  RegistroDetailProps,
+  RegistroFiltersProps,
+  RegistroStatsProps,
+} from "./types";
+
 // Default export para lazy loading
 export default RegistroModule;
