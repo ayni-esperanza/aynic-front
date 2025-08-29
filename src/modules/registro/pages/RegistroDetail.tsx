@@ -20,21 +20,21 @@ import {
   Image as ImageIcon,
   Link,
 } from "lucide-react";
-import { Button } from "../../../components/ui/Button";
-import { Card } from "../../../components/ui/Card";
-import { Badge } from "../../../components/ui/Badge";
-import { LoadingSpinner } from "../../../components/ui/LoadingSpinner";
-import { useToast } from "../../../components/ui/Toast";
-import { useApi } from "../../../hooks/useApi";
-import { recordsService } from "../../../services/recordsService";
+import { Button } from '../../../shared/components/ui/Button';
+import { Card } from '../../../shared/components/ui/Card';
+import { Badge } from '../../../shared/components/ui/Badge';
+import { LoadingSpinner } from '../../../shared/components/ui/LoadingSpinner';
+import { useToast } from '../../../shared/components/ui/Toast';
+import { useApi } from '../../../shared/hooks/useApi';
+import { registroService } from "../services/registroService";
 import { relationshipService } from "../services/relationshipService";
 import {
   imageService,
   type ImageResponse,
-} from "../../../services/imageService";
-import { ImageUpload } from "../../../components/common/ImageUpload";
-import { formatDate, formatDateTime } from "../../../utils/formatters";
-import type { DataRecord } from "../../../types";
+} from '../../../shared/services/imageService';
+import { ImageUpload } from '../../../shared/components/common/ImageUpload';
+import { formatDate, formatDateTime } from '../../../shared/utils/formatters';
+import type { DataRecord } from "../types/registro";
 
 // Función auxiliar para manejar fechas de forma segura
 const safeFormatDate = (dateValue: Date | string | undefined): string => {
@@ -103,7 +103,7 @@ export const RegistroDetail: React.FC = () => {
     loading,
     error,
     execute: loadRegistro,
-  } = useApi(recordsService.getRecordById.bind(recordsService), {
+  } = useApi(registroService.getRecordById.bind(registroService), {
     onError: (error) => {
       showError("Error al cargar registro", error);
       isLoadingRef.current = false;

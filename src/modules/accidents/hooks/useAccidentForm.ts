@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { useApi } from "../../../hooks/useApi";
+import { useApi } from '../../../shared/hooks/useApi';
 import { accidentService } from "../services/accidentService";
 import type { CreateAccidentDto, UpdateAccidentDto, Accident, AccidentValidationErrors } from "../types/accident";
 
@@ -26,14 +26,21 @@ export const useAccidentForm = (initialData?: Partial<CreateAccidentDto>) => {
     loading: creating,
     error: createError,
     execute: createAccident,
-  } = useApi(accidentService.createAccident.bind(accidentService));
+  } = useApi(async (...args: unknown[]) => {
+    const accidentData = args[0] as CreateAccidentDto;
+    return accidentService.createAccident(accidentData);
+  });
 
   // Hook para actualizar accidente
   const {
     loading: updating,
     error: updateError,
     execute: updateAccident,
-  } = useApi(accidentService.updateAccident.bind(accidentService));
+  } = useApi(async (...args: unknown[]) => {
+    const id = args[0] as string;
+    const accidentData = args[1] as UpdateAccidentDto;
+    return accidentService.updateAccident(id, accidentData);
+  });
 
   const updateField = useCallback((field: keyof CreateAccidentDto, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -81,31 +88,31 @@ export const useAccidentForm = (initialData?: Partial<CreateAccidentDto>) => {
     return Object.keys(newErrors).length === 0;
   }, [formData]);
 
-  const handleCreate = useCallback(async (): Promise<Accident | null> => {
+  const handleCreate = useCallback(async (): Promise<boolean> => {
     if (!validateForm()) {
-      return null;
+      return false;
     }
 
     try {
-      const result = await createAccident(formData);
-      return result;
+      await createAccident(formData);
+      return true;
     } catch (error) {
       console.error("Error creating accident:", error);
-      return null;
+      return false;
     }
   }, [formData, validateForm, createAccident]);
 
-  const handleUpdate = useCallback(async (id: string): Promise<Accident | null> => {
+  const handleUpdate = useCallback(async (id: string): Promise<boolean> => {
     if (!validateForm()) {
-      return null;
+      return false;
     }
 
     try {
-      const result = await updateAccident(id, formData);
-      return result;
+      await updateAccident(id, formData);
+      return true;
     } catch (error) {
       console.error("Error updating accident:", error);
-      return null;
+      return false;
     }
   }, [formData, validateForm, updateAccident]);
 

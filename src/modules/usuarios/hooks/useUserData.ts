@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { useApi } from "../../../hooks/useApi";
+import { useApi } from '../../../shared/hooks/useApi';
 import { userService } from "../services/userService";
 import type { User, UserFilters } from "../types";
 

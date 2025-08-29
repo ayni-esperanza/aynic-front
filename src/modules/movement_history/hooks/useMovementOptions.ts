@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { useApi } from "../../../hooks/useApi";
+import { useApi } from '../../../shared/hooks/useApi';
 import { movementHistoryService } from "../services/movementHistoryService";
 import type { ActionOption, MovementStatistics } from "../types";
 

@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "../../../components/ui/Button";
-import { Card } from "../../../components/ui/Card";
-import { Badge } from "../../../components/ui/Badge";
-import { DataTable } from "../../../components/common/DataTable";
-import { useToast } from "../../../components/ui/Toast";
+import { Button } from '../../../shared/components/ui/Button';
+import { Card } from '../../../shared/components/ui/Card';
+import { Badge } from '../../../shared/components/ui/Badge';
+import { DataTable } from '../../../shared/components/common/DataTable';
+import { useToast } from '../../../shared/components/ui/Toast';
 import { AccidentStats } from "../components/AccidentStats";
 import { AccidentFilters } from "../components/AccidentFilters";
 import { AccidentForm } from "./AccidentForm";
 import { AccidentDetails } from "../components/AccidentDetails";
 import { Plus, Eye, Edit, Trash2 } from "lucide-react";
 import { accidentService } from "../services/accidentService";
-import { formatDate } from "../../../utils/formatters";
+import { formatDate } from '../../../shared/utils/formatters';
 import type {
   Accident,
   AccidentFilters as FilterType,

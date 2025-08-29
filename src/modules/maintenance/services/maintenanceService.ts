@@ -2,7 +2,7 @@ import {
   apiClient,
   PaginatedResponse,
   API_ENDPOINTS,
-} from "../../../services/apiClient";
+} from '../../../shared/services/apiClient';
 import type {
   Maintenance,
   CreateMaintenanceDto,

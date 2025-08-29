@@ -1,7 +1,7 @@
 import React from "react";
-import { Card } from "../../../components/ui/Card";
-import { Badge } from "../../../components/ui/Badge";
-import { LoadingSpinner } from "../../../components/ui/LoadingSpinner";
+import { Card } from '../../../shared/components/ui/Card';
+import { Badge } from '../../../shared/components/ui/Badge';
+import { LoadingSpinner } from '../../../shared/components/ui/LoadingSpinner';
 import type { AccidentStatistics } from "../types/accident";
 
 interface AccidentStatsProps {

@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { useApi } from "../../../hooks/useApi";
+import { useApi } from '../../../shared/hooks/useApi';
 import { registroService } from "../services/registroService";
 import type { CreateRecordData, UpdateRecordData, DataRecord, RecordValidationErrors } from "../types";
 

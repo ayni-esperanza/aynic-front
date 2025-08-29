@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ChevronDown, ChevronRight, Eye, EyeOff, Users, Calendar } from "lucide-react";
-import { Badge } from "../../../components/ui/Badge";
-import { Button } from "../../../components/ui/Button";
+import { Badge } from '../../../shared/components/ui/Badge';
+import { Button } from '../../../shared/components/ui/Button';
 import type { MovementHistoryItemProps, MovementAction } from "../types";
 
 // Componente para mostrar datos JSON expandibles

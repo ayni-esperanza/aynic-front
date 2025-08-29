@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { FileText, RefreshCw } from "lucide-react";
-import { Button } from "../../../components/ui/Button";
-import { Card } from "../../../components/ui/Card";
-import { LoadingSpinner } from "../../../components/ui/LoadingSpinner";
-import { useToast } from "../../../components/ui/Toast";
-import { formatDateTime } from "../../../utils/formatters";
+import { Button } from '../../../shared/components/ui/Button';
+import { Card } from '../../../shared/components/ui/Card';
+import { LoadingSpinner } from '../../../shared/components/ui/LoadingSpinner';
+import { useToast } from '../../../shared/components/ui/Toast';
+import { formatDateTime } from "../../../shared/utils/formatters";
 import { useSolicitudData, useSolicitudActions } from "../hooks";
 import { CodeGeneratedModal } from "../components";
 import type { PendingRequest, GeneratedCode } from "../types";

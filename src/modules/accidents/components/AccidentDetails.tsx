@@ -7,8 +7,8 @@ import {
   FileText,
   Camera,
 } from "lucide-react";
-import { Badge } from "../../../components/ui/Badge";
-import { formatDate } from "../../../utils/formatters";
+import { Badge } from '../../../shared/components/ui/Badge';
+import { formatDate } from '../../../shared/utils/formatters';
 import type {
   Accident,
   EstadoAccidente,

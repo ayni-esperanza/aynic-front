@@ -1,9 +1,9 @@
 import React from "react";
 import { Search, Filter, X } from "lucide-react";
-import { Input } from "../../../components/ui/Input";
-import { Select } from "../../../components/ui/Select";
-import { Button } from "../../../components/ui/Button";
-import type { UserFilters } from "../types";
+import { Input } from '../../../shared/components/ui/Input';
+import { Select } from '../../../shared/components/ui/Select';
+import { Button } from '../../../shared/components/ui/Button';
+import type { UserFilters } from "../types/usuarios";
 
 interface UserFiltersProps {
   filters: UserFilters;

@@ -13,34 +13,41 @@ import {
   Users,
   UserCheck,
 } from "lucide-react";
-import { Button } from "../../../components/ui/Button";
-import { Card } from "../../../components/ui/Card";
-import { Badge } from "../../../components/ui/Badge";
-import { LoadingSpinner } from "../../../components/ui/LoadingSpinner";
-import { useToast } from "../../../components/ui/Toast";
-import { useApi } from "../../../hooks/useApi";
-import { userService, type User } from "../../../services/userService";
-import { formatDateTime } from "../../../utils/formatters";
+import { Button } from '../../../shared/components/ui/Button';
+import { Card } from '../../../shared/components/ui/Card';
+import { Badge } from '../../../shared/components/ui/Badge';
+import { LoadingSpinner } from '../../../shared/components/ui/LoadingSpinner';
+import { useToast } from '../../../shared/components/ui/Toast';
+import { useApi } from '../../../shared/hooks/useApi';
+import { userService } from "../services/userService";
+import type { FrontendUser } from "../services/userService";
+import { formatDateTime } from '../../../shared/utils/formatters';
 
 export const UsuariosDetail: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { error: showError } = useToast();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<FrontendUser | null>(null);
 
   // Hook para cargar usuario
   const {
     loading,
     error,
     execute: loadUser,
-  } = useApi(userService.getUserById.bind(userService), {
-    onSuccess: (userData) => {
-      setUser(userData);
+  } = useApi(
+    async (...args: unknown[]) => {
+      const id = args[0] as string;
+      return userService.getUserById(id);
     },
-    onError: (error) => {
-      showError("Error al cargar usuario", error);
-    },
-  });
+    {
+      onSuccess: (userData) => {
+        setUser(userData);
+      },
+      onError: (error) => {
+        showError("Error al cargar usuario", error);
+      },
+    }
+  );
 
   useEffect(() => {
     if (id) {
@@ -48,7 +55,7 @@ export const UsuariosDetail: React.FC = () => {
     }
   }, [id]);
 
-  const getRolConfig = (rol: User["rol"]) => {
+  const getRolConfig = (rol: FrontendUser["rol"]) => {
     const configs = {
       admin: {
         variant: "danger" as const,

@@ -1,6 +1,6 @@
 import React from "react";
 import { FileText, Clock, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
-import { Card } from "../../../components/ui/Card";
+import { Card } from '../../../shared/components/ui/Card';
 import type { SolicitudStats } from "../types";
 
 interface SolicitudStatsProps {

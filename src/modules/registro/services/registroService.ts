@@ -3,7 +3,7 @@ import {
   ApiResponse,
   PaginatedResponse,
   ApiClientError,
-} from "../../../services/apiClient";
+} from '../../../shared/services/apiClient';
 
 export interface RecordFilters {
   codigo?: string;

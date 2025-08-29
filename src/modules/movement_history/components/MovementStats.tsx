@@ -1,6 +1,6 @@
 import React from "react";
 import { History, Activity, Users, Calendar } from "lucide-react";
-import { Card } from "../../../components/ui/Card";
+import { Card } from '../../../shared/components/ui/Card';
 import type { MovementStatsProps } from "../types";
 
 export const MovementStats: React.FC<MovementStatsProps> = ({ statistics, loading = false }) => {

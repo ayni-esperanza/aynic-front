@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { X, Plus, Trash2 } from "lucide-react";
-import { Button } from "../../../components/ui/Button";
-import { Input } from "../../../components/ui/Input";
-import { useToast } from "../../../components/ui/Toast";
+import { Button } from '../../../shared/components/ui/Button';
+import { Input } from '../../../shared/components/ui/Input';
+import { useToast } from '../../../shared/components/ui/Toast';
 import { relationshipService, CreateRelationshipDto } from "../services/relationshipService";
-import type { DataRecord } from "../../../types";
+import type { DataRecord } from "../types/registro";
 
 interface RelationshipModalProps {
   isOpen: boolean;
@@ -162,7 +162,9 @@ export const RelationshipModal: React.FC<RelationshipModalProps> = ({
                         variant="ghost"
                         icon={Trash2}
                         className="text-red-600"
-                      />
+                      >
+                        Eliminar
+                      </Button>
                     )}
                   </div>
                   <div className="grid grid-cols-3 gap-4">

@@ -1,12 +1,12 @@
 import React, { useEffect } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import { AppRoutes } from "./routes";
-import { ErrorBoundary } from "./components/ErrorBoundary";
-import { ToastProvider } from "./components/ui/Toast";
-import { useToast } from "./components/ui/Toast";
+import { ErrorBoundary } from "./shared/components/ErrorBoundary";
+import { ToastProvider } from "./shared/components/ui/Toast";
+import { useToast } from "./shared/components/ui/Toast";
 import { useAuthStore } from "./store/authStore";
-import { setupTokenExpiredHandler } from "./services/apiClient";
-import { LoadingSpinner } from "./components/ui/LoadingSpinner";
+import { setupTokenExpiredHandler } from "./shared/services/apiClient";
+import { LoadingSpinner } from "./shared/components/ui/LoadingSpinner";
 
 // Global error handler setup
 const GlobalErrorHandler: React.FC<{ children: React.ReactNode }> = ({

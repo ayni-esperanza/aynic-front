@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Card } from "../../../components/ui/Card";
-import { Input } from "../../../components/ui/Input";
-import { Button } from "../../../components/ui/Button";
-import { SearchableSelect } from "../../../components/ui/SearchableSelect";
-import { useToast } from "../../../components/ui/Toast";
-import { useMutation, useApi } from "../../../hooks/useApi";
+import { Card } from '../../../shared/components/ui/Card';
+import { Input } from '../../../shared/components/ui/Input';
+import { Button } from '../../../shared/components/ui/Button';
+import { SearchableSelect } from '../../../shared/components/ui/SearchableSelect';
+import { useToast } from '../../../shared/components/ui/Toast';
+import { useMutation, useApi } from '../../../shared/hooks/useApi';
 import { maintenanceService } from "../services/maintenanceService";
 import {
   ChevronLeft,

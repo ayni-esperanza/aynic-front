@@ -1,6 +1,6 @@
 import React from "react";
 import { Database, CheckCircle, AlertTriangle, XCircle, Clock, Wrench } from "lucide-react";
-import { Card } from "../../../components/ui/Card";
+import { Card } from '../../../shared/components/ui/Card';
 import type { RegistroStatsProps } from "../types";
 
 export const RegistroStats: React.FC<RegistroStatsProps> = ({ statistics, loading = false }) => {

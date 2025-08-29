@@ -1,7 +1,7 @@
 import React from "react";
 import { CheckCircle, Copy } from "lucide-react";
-import { Button } from "../../../components/ui/Button";
-import { useToast } from "../../../components/ui/Toast";
+import { Button } from '../../../shared/components/ui/Button';
+import { useToast } from '../../../shared/components/ui/Toast';
 
 interface CodeGeneratedModalProps {
   isOpen: boolean;

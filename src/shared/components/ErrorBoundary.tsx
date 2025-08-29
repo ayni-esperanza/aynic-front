@@ -1,6 +1,6 @@
 import React from "react";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
-import { Button } from "../components/ui/Button";
+import { Button } from "./ui/Button";
 
 interface ErrorBoundaryState {
   hasError: boolean;

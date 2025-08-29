@@ -1,11 +1,11 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card } from "../../../components/ui/Card";
-import { Button } from "../../../components/ui/Button";
-import { Badge } from "../../../components/ui/Badge";
-import { useApi } from "../../../hooks/useApi";
+import { Card } from '../../../shared/components/ui/Card';
+import { Button } from '../../../shared/components/ui/Button';
+import { Badge } from '../../../shared/components/ui/Badge';
+import { useApi } from '../../../shared/hooks/useApi';
 import { maintenanceService } from "../services/maintenanceService";
-import { formatDate, formatDateTime } from "../../../utils/formatters";
+import { formatDate, formatDateTime } from "../../../shared/utils/formatters";
 import {
   ChevronLeft,
   Calendar,

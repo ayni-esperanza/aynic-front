@@ -1,12 +1,12 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { DataTable } from "../../../components/common/DataTable";
-import { Button } from "../../../components/ui/Button";
-import { Card } from "../../../components/ui/Card";
-import { Badge } from "../../../components/ui/Badge";
-import { useApi } from "../../../hooks/useApi";
+import { DataTable } from '../../../shared/components/common/DataTable';
+import { Button } from '../../../shared/components/ui/Button';
+import { Card } from '../../../shared/components/ui/Card';
+import { Badge } from '../../../shared/components/ui/Badge';
+import { useApi } from '../../../shared/hooks/useApi';
 import { maintenanceService } from "../services/maintenanceService";
-import { formatDate, formatDateTime } from "../../../utils/formatters";
+import { formatDate, formatDateTime } from "../../../shared/utils/formatters";
 import {
   ChevronLeft,
   Plus,

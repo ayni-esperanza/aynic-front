@@ -12,18 +12,18 @@ import {
   Check,
   Camera,
 } from "lucide-react";
-import { Button } from "../../../components/ui/Button";
-import { Card } from "../../../components/ui/Card";
-import { Input } from "../../../components/ui/Input";
-import { Select } from "../../../components/ui/Select";
-import { SearchableSelect } from "../../../components/ui/SearchableSelect";
-import { LoadingSpinner } from "../../../components/ui/LoadingSpinner";
-import { useToast } from "../../../components/ui/Toast";
-import { useApi } from "../../../hooks/useApi";
-import { recordsService } from "../../../services/recordsService";
-import { ImageUpload } from "../../../components/common/ImageUpload";
-import type { DataRecord } from "../../../types";
-import type { ImageResponse } from "../../../services/imageService";
+import { Button } from '../../../shared/components/ui/Button';
+import { Card } from '../../../shared/components/ui/Card';
+import { Input } from '../../../shared/components/ui/Input';
+import { Select } from '../../../shared/components/ui/Select';
+import { SearchableSelect } from '../../../shared/components/ui/SearchableSelect';
+import { LoadingSpinner } from '../../../shared/components/ui/LoadingSpinner';
+import { useToast } from '../../../shared/components/ui/Toast';
+import { useApi } from '../../../shared/hooks/useApi';
+import { registroService } from "../services/registroService";
+import { ImageUpload } from '../../../shared/components/common/ImageUpload';
+import type { DataRecord } from "../types/registro";
+import type { ImageResponse } from '../../../shared/services/imageService';
 
 // Componente HierarchicalSelect para tipos de línea
 const HierarchicalLineTypeSelect: React.FC<{
@@ -333,7 +333,7 @@ export const RegistroForm: React.FC = () => {
 
   // Hook para crear registro con función estable
   const createRecordFunction = useCallback(
-    (data: any) => recordsService.createRecord(data),
+    (data: any) => registroService.createRecord(data),
     []
   );
 
@@ -677,7 +677,9 @@ export const RegistroForm: React.FC = () => {
                             disabled={!newClientName.trim()}
                             className="px-3"
                             icon={Check}
-                          />
+                          >
+                            Agregar
+                          </Button>
                           <Button
                             type="button"
                             variant="outline"
@@ -685,7 +687,9 @@ export const RegistroForm: React.FC = () => {
                             onClick={handleCancelNewClient}
                             className="px-3"
                             icon={X}
-                          />
+                          >
+                            Cancelar
+                          </Button>
                         </div>
                       </div>
                     ) : (
@@ -710,7 +714,9 @@ export const RegistroForm: React.FC = () => {
                             className="px-3 border-[#18D043] text-[#18D043] hover:bg-[#18D043] hover:text-white"
                             icon={Plus}
                             title="Agregar nuevo cliente"
-                          />
+                          >
+                            Nuevo
+                          </Button>
                         </div>
                       </div>
                     )}

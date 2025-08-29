@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { useApi } from "../../../hooks/useApi";
+import { useApi } from '../../../shared/hooks/useApi';
 import { solicitudService } from "../services/solicitudService";
 import type { PendingRequest, SolicitudFilters } from "../types";
 
@@ -24,7 +24,10 @@ export const useSolicitudData = (initialFilters?: SolicitudFilters) => {
     loading: loadingAll,
     error: allRequestsError,
     execute: loadAllRequests,
-  } = useApi(solicitudService.getAllRequests.bind(solicitudService), {
+  } = useApi(async (...args: unknown[]) => {
+    const filters = args[0] as any;
+    return solicitudService.getAllRequests(filters);
+  }, {
     onSuccess: (data) => {
       setRequests(data);
     },
@@ -32,7 +35,10 @@ export const useSolicitudData = (initialFilters?: SolicitudFilters) => {
 
   // Hook para eliminar solicitud
   const { loading: deleting, execute: deleteRequest } = useApi(
-    solicitudService.deleteRequest.bind(solicitudService),
+    async (...args: unknown[]) => {
+      const id = args[0] as string;
+      return solicitudService.deleteRequest(id);
+    },
     {
       onSuccess: () => {
         // Recargar datos después de eliminar

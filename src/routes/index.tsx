@@ -3,7 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import { MainLayout } from "../layouts/MainLayout";
 import { Dashboard } from "../pages/Dashboard";
 import { Login } from "../pages/Login";
-import { ProtectedRoute } from "../components/auth/ProtectedRoute";
+import { ProtectedRoute } from "../shared/components/auth/ProtectedRoute";
 
 // Lazy loading de módulos con dynamic imports que transforman named exports a default
 const UsuariosModule = React.lazy(() =>

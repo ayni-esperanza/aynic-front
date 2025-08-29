@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Trash2, AlertTriangle, CheckCircle } from "lucide-react";
-import { Button } from "../../../components/ui/Button";
-import { LoadingSpinner } from "../../../components/ui/LoadingSpinner";
+import { Button } from '../../../shared/components/ui/Button';
+import { LoadingSpinner } from '../../../shared/components/ui/LoadingSpinner';
 import { useAuthStore } from "../../../store/authStore";
-import { apiClient } from "../../../services/apiClient";
-import type { DataRecord } from "../../../types";
+import { apiClient } from '../../../shared/services/apiClient';
+import type { DataRecord } from "../../registro/types/registro";
 
 interface DeleteModalProps {
   isOpen: boolean;

@@ -1,4 +1,4 @@
-import { apiClient } from "../../../services/apiClient";
+import { apiClient } from '../../../shared/services/apiClient';
 
 // Tipos exactos de tu API
 export interface CreateChildRecordDto {

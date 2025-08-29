@@ -26,19 +26,19 @@ import {
   Users,
   Database,
 } from "lucide-react";
-import { Card } from "../components/ui/Card";
-import { Badge } from "../components/ui/Badge";
-import { Button } from "../components/ui/Button";
-import { Select } from "../components/ui/Select";
-import { LoadingSpinner } from "../components/ui/LoadingSpinner";
-import { useToast } from "../components/ui/Toast";
-import { useApi } from "../hooks/useApi";
+import { Card } from "../shared/components/ui/Card";
+import { Badge } from "../shared/components/ui/Badge";
+import { Button } from "../shared/components/ui/Button";
+import { Select } from "../shared/components/ui/Select";
+import { LoadingSpinner } from "../shared/components/ui/LoadingSpinner";
+import { useToast } from "../shared/components/ui/Toast";
+import { useApi } from "../shared/hooks/useApi";
 import {
   alertService,
   type Alert,
   type AlertStats,
-} from "../services/alertService";
-import { formatDateTime } from "../utils/formatters";
+} from "../shared/services/alertService";
+import { formatDateTime } from "../shared/utils/formatters";
 
 // Componente para métricas de alertas
 const AlertMetricCard: React.FC<{

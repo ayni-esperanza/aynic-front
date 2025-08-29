@@ -1,9 +1,9 @@
 import { useState, useCallback } from "react";
-import { useApi } from "../../../hooks/useApi";
+import { useApi } from '../../../shared/hooks/useApi';
 import { userService } from "../services/userService";
 import type { UserFormData, UserValidationErrors, CreateUserDto, UpdateUserDto } from "../types";
 
-export const useUserForm = (initialData?: Partial<UserFormData>) => {
+export const useUserForm = (initialData?: Partial<UserFormData> & { id?: string }) => {
   const [formData, setFormData] = useState<UserFormData>({
     usuario: "",
     nombre: "",
@@ -25,21 +25,31 @@ export const useUserForm = (initialData?: Partial<UserFormData>) => {
     loading: creating,
     error: createError,
     execute: createUser,
-  } = useApi(userService.createUser.bind(userService));
+  } = useApi(async (...args: unknown[]) => {
+    const userData = args[0] as CreateUserDto;
+    return userService.createUser(userData);
+  });
 
   // Hook para actualizar usuario
   const {
     loading: updating,
     error: updateError,
     execute: updateUser,
-  } = useApi(userService.updateUser.bind(userService));
+  } = useApi(async (...args: unknown[]) => {
+    const id = args[0] as string;
+    const userData = args[1] as UpdateUserDto;
+    return userService.updateUser(id, userData);
+  });
 
   // Hook para obtener usuario por ID
   const {
     loading: loadingUser,
     error: loadError,
     execute: loadUser,
-  } = useApi(userService.getUserById.bind(userService));
+  } = useApi(async (...args: unknown[]) => {
+    const id = args[0] as string;
+    return userService.getUserById(id);
+  });
 
   const updateField = useCallback((field: keyof UserFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -132,19 +142,7 @@ export const useUserForm = (initialData?: Partial<UserFormData>) => {
 
   const loadUserData = useCallback(async (userId: string) => {
     try {
-      const user = await loadUser(userId);
-      setFormData({
-        usuario: user.usuario,
-        nombre: user.nombre,
-        apellidos: user.apellidos || "",
-        email: user.email,
-        telefono: user.telefono || "",
-        cargo: user.cargo || "",
-        empresa: user.empresa,
-        rol: user.rol,
-        contrasenia: "",
-        confirmarContrasenia: "",
-      });
+      await loadUser(userId);
     } catch (error) {
       console.error("Error loading user data:", error);
     }

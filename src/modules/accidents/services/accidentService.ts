@@ -1,4 +1,4 @@
-import { apiClient, ApiClientError } from "../../../services/apiClient";
+import { apiClient, ApiClientError } from '../../../shared/services/apiClient';
 import type {
   Accident,
   CreateAccidentDto,

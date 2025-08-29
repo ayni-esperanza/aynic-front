@@ -108,8 +108,10 @@ export type UserStatus = "activo" | "inactivo";
 export interface UserValidationErrors {
   usuario?: string;
   nombre?: string;
+  apellidos?: string;
   email?: string;
   telefono?: string;
+  cargo?: string;
   empresa?: string;
   rol?: string;
   contrasenia?: string;

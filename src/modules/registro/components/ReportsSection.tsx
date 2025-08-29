@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Button } from "../../../components/ui/Button";
-import { Card } from "../../../components/ui/Card";
-import { Input } from "../../../components/ui/Input";
-import { useToast } from "../../../components/ui/Toast";
+import { Button } from '../../../shared/components/ui/Button';
+import { Card } from '../../../shared/components/ui/Card';
+import { Input } from '../../../shared/components/ui/Input';
+import { useToast } from '../../../shared/components/ui/Toast';
 import {
   FileText,
   Download,
@@ -12,7 +12,7 @@ import {
   MapPin,
   Building,
 } from "lucide-react";
-import { apiClient } from "../../../services/apiClient";
+import { apiClient } from '../../../shared/services/apiClient';
 
 interface ReportFilters {
   cliente?: string;

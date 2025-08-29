@@ -14,25 +14,22 @@ import {
   Download,
   Filter,
 } from "lucide-react";
-import { Card } from "../../../components/ui/Card";
-import { Badge } from "../../../components/ui/Badge";
-import { Button } from "../../../components/ui/Button";
-import { Input } from "../../../components/ui/Input";
-import { Select } from "../../../components/ui/Select";
-import { useToast } from "../../../components/ui/Toast";
-import { useApi } from "../../../hooks/useApi";
-import { SearchableSelect } from "../../../components/ui/SearchableSelect";
+import { Card } from '../../../shared/components/ui/Card';
+import { Badge } from '../../../shared/components/ui/Badge';
+import { Button } from '../../../shared/components/ui/Button';
+import { Input } from '../../../shared/components/ui/Input';
+import { Select } from '../../../shared/components/ui/Select';
+import { useToast } from '../../../shared/components/ui/Toast';
+import { useApi } from '../../../shared/hooks/useApi';
+import { SearchableSelect } from '../../../shared/components/ui/SearchableSelect';
 import {
-  getMovements,
-  getStatistics,
-  getAvailableActions,
-  getUniqueUsernames,
+  movementHistoryService,
   type MovementHistory,
   type MovementFilters,
   type MovementStatistics,
   type ActionOption,
   type MovementAction,
-} from "../../../services/movementHistoryService";
+} from "../services/movementHistoryService";
 
 // Componente para mostrar datos JSON expandibles
 const JsonDataView: React.FC<{
@@ -420,7 +417,7 @@ export const HistorialList: React.FC = () => {
 
       try {
         const filtersToUse = customFilters || filters;
-        const result = await getMovements(filtersToUse);
+        const result = await movementHistoryService.getMovements(filtersToUse);
         setMovementsData(result);
       } catch (err) {
         const errorMessage =
@@ -447,15 +444,15 @@ export const HistorialList: React.FC = () => {
 
       try {
         // Cargar estadísticas
-        const stats = await getStatistics();
+        const stats = await movementHistoryService.getStatistics();
         setStatistics(stats);
 
         // Cargar opciones de acciones
-        const actions = await getAvailableActions();
+        const actions = await movementHistoryService.getAvailableActions();
         setActionOptions(actions);
 
         // Cargar usernames únicos
-        const usernames = await getUniqueUsernames();
+        const usernames = await movementHistoryService.getUniqueUsernames();
         setUsernameOptions(usernames);
 
         setIsInitialized(true);
@@ -542,7 +539,7 @@ export const HistorialList: React.FC = () => {
   const handleExport = useCallback(async () => {
     try {
       const exportFilters = { ...filters, page: 1, limit: 100 };
-      const exportData = await getMovements(exportFilters);
+      const exportData = await movementHistoryService.getMovements(exportFilters);
 
       if (exportData.pagination.totalItems > 100) {
         showError(

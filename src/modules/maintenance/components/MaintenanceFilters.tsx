@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { Card } from "../../../components/ui/Card";
-import { Input } from "../../../components/ui/Input";
-import { Button } from "../../../components/ui/Button";
-import { SearchableSelect } from "../../../components/ui/SearchableSelect";
+import { Card } from '../../../shared/components/ui/Card';
+import { Input } from '../../../shared/components/ui/Input';
+import { Button } from '../../../shared/components/ui/Button';
+import { SearchableSelect } from '../../../shared/components/ui/SearchableSelect';
 import { Search, Filter, X, Calendar } from "lucide-react";
 import type { MaintenanceFilters } from "../types/maintenance";
-import { useApi } from "../../../hooks/useApi";
+import { useApi } from '../../../shared/hooks/useApi';
 import { maintenanceService } from "../services/maintenanceService";
 
 type LineaVida = {

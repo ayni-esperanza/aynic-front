@@ -12,18 +12,18 @@ import {
   Check,
   Camera,
 } from "lucide-react";
-import { Button } from "../../../components/ui/Button";
-import { Card } from "../../../components/ui/Card";
-import { Input } from "../../../components/ui/Input";
-import { Select } from "../../../components/ui/Select";
-import { SearchableSelect } from "../../../components/ui/SearchableSelect";
-import { LoadingSpinner } from "../../../components/ui/LoadingSpinner";
-import { useToast } from "../../../components/ui/Toast";
-import { useApi } from "../../../hooks/useApi";
-import { recordsService } from "../../../services/recordsService";
-import { ImageUpload } from "../../../components/common/ImageUpload";
-import type { DataRecord } from "../../../types";
-import type { ImageResponse } from "../../../services/imageService";
+import { Button } from '../../../shared/components/ui/Button';
+import { Card } from '../../../shared/components/ui/Card';
+import { Input } from '../../../shared/components/ui/Input';
+import { Select } from '../../../shared/components/ui/Select';
+import { SearchableSelect } from '../../../shared/components/ui/SearchableSelect';
+import { LoadingSpinner } from '../../../shared/components/ui/LoadingSpinner';
+import { useToast } from '../../../shared/components/ui/Toast';
+import { useApi } from '../../../shared/hooks/useApi';
+import { registroService } from "../services/registroService";
+import { ImageUpload } from '../../../shared/components/common/ImageUpload';
+import type { DataRecord } from "../types/registro";
+import type { ImageResponse } from '../../../shared/services/imageService';
 
 const HierarchicalLineTypeSelect: React.FC<{
   value: string;
@@ -328,11 +328,12 @@ export const EditarRegistroForm: React.FC = () => {
   }, []);
 
   // Hook para cargar registro
-  const loadRegistroFunction = useCallback((id: string) => {
+  const loadRegistroFunction = useCallback(async (...args: unknown[]) => {
+    const id = args[0] as string;
     if (!id || id === "undefined" || id === "null") {
       throw new Error("ID de registro inválido");
     }
-    return recordsService.getRecordById(id);
+    return registroService.getRecordById(id);
   }, []);
 
   const {
@@ -373,7 +374,11 @@ export const EditarRegistroForm: React.FC = () => {
 
   // Hook para actualizar registro y continuar al paso 4
   const updateRecordFunction = useCallback(
-    (id: string, data: any) => recordsService.updateRecord(id, data),
+    async (...args: unknown[]) => {
+      const id = args[0] as string;
+      const data = args[1] as any;
+      return registroService.updateRecord(id, data);
+    },
     []
   );
 
@@ -739,7 +744,9 @@ export const EditarRegistroForm: React.FC = () => {
                             disabled={!newClientName.trim()}
                             className="px-3"
                             icon={Check}
-                          />
+                          >
+                            Agregar
+                          </Button>
                           <Button
                             type="button"
                             variant="outline"
@@ -747,7 +754,9 @@ export const EditarRegistroForm: React.FC = () => {
                             onClick={handleCancelNewClient}
                             className="px-3"
                             icon={X}
-                          />
+                          >
+                            Cancelar
+                          </Button>
                         </div>
                       </div>
                     ) : (
@@ -772,7 +781,9 @@ export const EditarRegistroForm: React.FC = () => {
                             className="px-3 border-[#18D043] text-[#18D043] hover:bg-[#18D043] hover:text-white"
                             icon={Plus}
                             title="Agregar nuevo cliente"
-                          />
+                          >
+                            +
+                          </Button>
                         </div>
                       </div>
                     )}

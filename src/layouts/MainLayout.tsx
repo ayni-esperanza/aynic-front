@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import { Sidebar } from '../components/layout/Sidebar';
-import { Header } from '../components/layout/Header';
+import { Sidebar } from '../shared/components/layout/Sidebar';
+import { Header } from '../shared/components/layout/Header';
 import { useAppStore } from '../store';
 
 export const MainLayout: React.FC = () => {

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, LogIn, User, Lock, AlertCircle } from "lucide-react";
-import { Button } from "../components/ui/Button";
-import { Input } from "../components/ui/Input";
-import { Card } from "../components/ui/Card";
-import { useToast } from "../components/ui/Toast";
+import { Button } from "../shared/components/ui/Button";
+import { Input } from "../shared/components/ui/Input";
+import { Card } from "../shared/components/ui/Card";
+import { useToast } from "../shared/components/ui/Toast";
 import { useAuthStore } from "../store/authStore";
 import logoAyni from "../assets/images/logo_ayni.png";
 

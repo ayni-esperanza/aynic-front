@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useApi } from "../../../hooks/useApi";
+import { useApi } from '../../../shared/hooks/useApi';
 import { solicitudService } from "../services/solicitudService";
 import type { GeneratedCode } from "../types";
 
@@ -9,7 +9,10 @@ export const useSolicitudActions = (onSuccess?: () => void) => {
     loading: generatingCode,
     error: generateError,
     execute: generateCode,
-  } = useApi(solicitudService.generateAuthorizationCode.bind(solicitudService), {
+  } = useApi(async (...args: unknown[]) => {
+    const requestId = args[0] as number;
+    return solicitudService.generateAuthorizationCode(requestId);
+  }, {
     onSuccess: () => {
       onSuccess?.();
     },
@@ -20,7 +23,11 @@ export const useSolicitudActions = (onSuccess?: () => void) => {
     loading: approving,
     error: approveError,
     execute: approveRequest,
-  } = useApi(solicitudService.approveRequest.bind(solicitudService), {
+  } = useApi(async (...args: unknown[]) => {
+    const requestId = args[0] as string;
+    const comments = args[1] as string;
+    return solicitudService.approveRequest(requestId, comments);
+  }, {
     onSuccess: () => {
       onSuccess?.();
     },
@@ -31,7 +38,11 @@ export const useSolicitudActions = (onSuccess?: () => void) => {
     loading: rejecting,
     error: rejectError,
     execute: rejectRequest,
-  } = useApi(solicitudService.rejectRequest.bind(solicitudService), {
+  } = useApi(async (...args: unknown[]) => {
+    const requestId = args[0] as string;
+    const reason = args[1] as string;
+    return solicitudService.rejectRequest(requestId, reason);
+  }, {
     onSuccess: () => {
       onSuccess?.();
     },
@@ -42,7 +53,9 @@ export const useSolicitudActions = (onSuccess?: () => void) => {
     loading: loadingStats,
     error: statsError,
     execute: loadStats,
-  } = useApi(solicitudService.getRequestStats.bind(solicitudService));
+  } = useApi(async (...args: unknown[]) => {
+    return solicitudService.getRequestStats();
+  });
 
   const handleGenerateCode = useCallback(
     async (requestId: number): Promise<GeneratedCode | null> => {

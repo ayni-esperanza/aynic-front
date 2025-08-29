@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { DataTable } from "../../../components/common/DataTable";
-import { Button } from "../../../components/ui/Button";
-import { Badge } from "../../../components/ui/Badge";
-import { Card } from "../../../components/ui/Card";
-import { useToast } from "../../../components/ui/Toast";
-import { usePaginatedApi, useMutation, useApi } from "../../../hooks/useApi";
+import { DataTable } from '../../../shared/components/common/DataTable';
+import { Button } from '../../../shared/components/ui/Button';
+import { Badge } from '../../../shared/components/ui/Badge';
+import { Card } from '../../../shared/components/ui/Card';
+import { useToast } from '../../../shared/components/ui/Toast';
+import { usePaginatedApi, useMutation, useApi } from '../../../shared/hooks/useApi';
 import { maintenanceService } from "../services/maintenanceService";
-import { formatDate, formatDateTime } from "../../../utils/formatters";
+import { formatDate, formatDateTime } from "../../../shared/utils/formatters";
 import {
   Plus,
   Eye,
@@ -18,7 +18,7 @@ import {
   TrendingDown,
   X,
 } from "lucide-react";
-import { SearchableSelect } from "../../../components/ui/SearchableSelect";
+import { SearchableSelect } from '../../../shared/components/ui/SearchableSelect';
 import type { Maintenance, MaintenanceFilters } from "../types/maintenance";
 import type { TableColumn } from "../../../types";
 
@@ -39,7 +39,9 @@ const ImagePreviewModal: React.FC<{
           onClick={onClose}
           icon={X}
           size="sm"
-        />
+        >
+          Cerrar
+        </Button>
         <img
           src={src}
           alt={title || "Imagen"}
@@ -79,9 +81,10 @@ export const MaintenancesList: React.FC = () => {
     () => maintenanceService.searchRecordsForSelect(),
     { immediate: true }
   );
-  const { data: searchLineas, execute: execSearch } = useApi((term: string) =>
-    maintenanceService.searchRecordsForSelect(term)
-  );
+  const { data: searchLineas, execute: execSearch } = useApi(async (...args: unknown[]) => {
+    const term = args[0] as string;
+    return maintenanceService.searchRecordsForSelect(term);
+  });
 
   const allLineas = searchLineas ?? initialLineas ?? [];
   const lineaOptions = allLineas.map((l) => l.codigo);

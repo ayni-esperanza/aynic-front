@@ -21,27 +21,28 @@ import {
   Link,
   FileText,
 } from "lucide-react";
-import { DataTable } from "../../../components/common/DataTable";
-import { Button } from "../../../components/ui/Button";
-import { Badge } from "../../../components/ui/Badge";
-import { Card } from "../../../components/ui/Card";
-import { Input } from "../../../components/ui/Input";
-import { Select } from "../../../components/ui/Select";
-import { LoadingSpinner } from "../../../components/ui/LoadingSpinner";
-import { useToast } from "../../../components/ui/Toast";
-import { useApi } from "../../../hooks/useApi";
-import { recordsService } from "../../../services/recordsService";
+import { DataTable } from '../../../shared/components/common/DataTable';
+import { Button } from '../../../shared/components/ui/Button';
+import { Badge } from '../../../shared/components/ui/Badge';
+import { Card } from '../../../shared/components/ui/Card';
+import { Input } from '../../../shared/components/ui/Input';
+import { Select } from '../../../shared/components/ui/Select';
+import { LoadingSpinner } from '../../../shared/components/ui/LoadingSpinner';
+import { useToast } from '../../../shared/components/ui/Toast';
+import { useApi } from '../../../shared/hooks/useApi';
+import { registroService } from "../services/registroService";
 import {
   imageService,
   type ImageResponse,
-} from "../../../services/imageService";
+} from '../../../shared/services/imageService';
 import { RelationshipModal } from "../components/RelationshipModal";
-import { formatDate } from "../../../utils/formatters";
+import { formatDate } from "../../../shared/utils/formatters";
 import { useAuthStore } from "../../../store/authStore";
 import { DeleteModal } from "../../solicitudes/components/DeleteModal";
-import { apiClient } from "../../../services/apiClient";
+import { apiClient } from '../../../shared/services/apiClient';
 import { ReportsSection } from "../components/ReportsSection";
-import type { DataRecord, TableColumn } from "../../../types";
+import type { DataRecord } from "../types/registro";
+import type { TableColumn } from "../../../types";
 
 export const RegistroList: React.FC = () => {
   const navigate = useNavigate();
@@ -120,7 +121,7 @@ export const RegistroList: React.FC = () => {
 
   // Hook para cargar registros con función estable
   const loadRegistrosFunction = useCallback(
-    (params: any) => recordsService.getRecords(params),
+    (params: any) => registroService.getRecords(params),
     []
   );
 
@@ -143,7 +144,7 @@ export const RegistroList: React.FC = () => {
 
   // Hook para estadísticas con función estable
   const loadStatsFunction = useCallback(
-    () => recordsService.getStatistics(),
+    async () => registroService.getStatistics(),
     []
   );
 
@@ -155,7 +156,7 @@ export const RegistroList: React.FC = () => {
 
   // Hook para eliminar registro con función estable
   const deleteRegistroFunction = useCallback(
-    (id: string) => recordsService.deleteRecord(id),
+    (id: string) => registroService.deleteRecord(id),
     []
   );
 

@@ -11,14 +11,14 @@ import {
   Building,
   UserCheck,
 } from "lucide-react";
-import { Button } from "../../../components/ui/Button";
-import { Card } from "../../../components/ui/Card";
-import { Input } from "../../../components/ui/Input";
-import { Select } from "../../../components/ui/Select";
-import { LoadingSpinner } from "../../../components/ui/LoadingSpinner";
-import { useToast } from "../../../components/ui/Toast";
-import { useApi } from "../../../hooks/useApi";
-import { userService } from "../../../services/userService";
+import { Button } from '../../../shared/components/ui/Button';
+import { Card } from '../../../shared/components/ui/Card';
+import { Input } from '../../../shared/components/ui/Input';
+import { Select } from '../../../shared/components/ui/Select';
+import { LoadingSpinner } from '../../../shared/components/ui/LoadingSpinner';
+import { useToast } from '../../../shared/components/ui/Toast';
+import { useApi } from '../../../shared/hooks/useApi';
+import { CreateUserFrontendDto, UpdateUserFrontendDto, userService } from "../services/userService";
 
 // Definir tipos localmente para evitar problemas de importación
 type UserRole = "admin" | "supervisor" | "usuario";
@@ -73,7 +73,10 @@ export const UsuariosForm: React.FC = () => {
 
   // Hook para cargar usuario (si estamos editando)
   const { loading: loadingUser, execute: loadUser } = useApi(
-    userService.getUserById.bind(userService),
+    async (...args: unknown[]) => {
+      const id = args[0] as string;
+      return userService.getUserById(id);
+    },
     {
       onSuccess: (user) => {
         setFormData({
@@ -98,7 +101,10 @@ export const UsuariosForm: React.FC = () => {
 
   // Hook para crear usuario
   const { execute: createUser, loading: creating } = useApi(
-    userService.createUser.bind(userService),
+    async (...args: unknown[]) => {
+      const userData = args[0] as CreateUserFrontendDto;
+      return userService.createUser(userData);
+    },
     {
       onSuccess: () => {
         success("Usuario creado exitosamente");
@@ -110,7 +116,11 @@ export const UsuariosForm: React.FC = () => {
 
   // Hook para actualizar usuario
   const { execute: updateUser, loading: updating } = useApi(
-    userService.updateUser.bind(userService),
+    async (...args: unknown[]) => {
+      const id = args[0] as string;
+      const userData = args[1] as UpdateUserFrontendDto;
+      return userService.updateUser(id, userData);
+    },
     {
       onSuccess: () => {
         success("Usuario actualizado exitosamente");

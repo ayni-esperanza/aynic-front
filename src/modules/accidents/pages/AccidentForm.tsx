@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "../../../components/ui/Button";
-import { Input } from "../../../components/ui/Input";
-import { SearchableSelect } from "../../../components/ui/SearchableSelect";
+import { Button } from '../../../shared/components/ui/Button';
+import { Input } from '../../../shared/components/ui/Input';
+import { SearchableSelect } from '../../../shared/components/ui/SearchableSelect';
 import { X, Upload } from "lucide-react";
-import { useToast } from "../../../components/ui/Toast";
+import { useToast } from '../../../shared/components/ui/Toast';
 import { accidentService } from "../services/accidentService";
 import type {
   Accident,

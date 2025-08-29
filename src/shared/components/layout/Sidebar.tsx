@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import logoAyni from "../../assets/images/logo_ayni.png";
+import logoAyni from "../../../assets/images/logo_ayni.png";
 import {
   LayoutDashboard,
   Database,

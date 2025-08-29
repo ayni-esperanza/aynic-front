@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Button } from "../../../components/ui/Button";
-import { Input } from "../../../components/ui/Input";
-import { Select } from "../../../components/ui/Select";
-import { SearchableSelect } from "../../../components/ui/SearchableSelect";
+import { Button } from '../../../shared/components/ui/Button';
+import { Input } from '../../../shared/components/ui/Input';
+import { Select } from '../../../shared/components/ui/Select';
+import { SearchableSelect } from '../../../shared/components/ui/SearchableSelect';
 import { Search, X } from "lucide-react";
 import type { AccidentFilters as AccidentFiltersType } from "../types/accident";
 

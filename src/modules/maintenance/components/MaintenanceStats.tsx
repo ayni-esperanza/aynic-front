@@ -1,7 +1,7 @@
 import React from "react";
-import { Card } from "../../../components/ui/Card";
+import { Card } from '../../../shared/components/ui/Card';
 import { Settings, Calendar, TrendingUp, Database } from "lucide-react";
-import { formatNumber } from "../../../utils/formatters";
+import { formatNumber } from "../../../shared/utils/formatters";
 import type { MaintenanceStats as MaintenanceStatsType } from "../types/maintenance";
 
 interface MaintenanceStatsProps {

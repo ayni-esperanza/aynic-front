@@ -14,13 +14,13 @@ import {
   BellRing,
   FileText,
 } from "lucide-react";
-import { useAuthStore } from "../../store/authStore";
-import { useApi } from "../../hooks/useApi";
-import { alertService, type Alert } from "../../services/alertService";
+import { useAuthStore } from "../../../store/authStore";
+import { useApi } from "../../../shared/hooks/useApi";
+import { alertService, type Alert } from "../../../shared/services/alertService";
 import { Badge } from "../ui/Badge";
 import { Button } from "../ui/Button";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
-import { formatDateTime } from "../../utils/formatters";
+import { formatDateTime } from "../../../shared/utils/formatters";
 
 export const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -58,7 +58,10 @@ export const Header: React.FC = () => {
 
   // Hook para marcar alerta como leída
   const { execute: markAsRead } = useApi(
-    alertService.markAsRead.bind(alertService),
+    async (...args: unknown[]) => {
+      const id = args[0] as string;
+      return alertService.markAsRead(id);
+    },
     {
       onSuccess: () => {
         loadAlerts(); // Recargar alertas después de marcar como leída

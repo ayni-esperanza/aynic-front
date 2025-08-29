@@ -1,4 +1,4 @@
-import { apiClient, ApiResponse, ApiClientError } from "../../../services/apiClient";
+import { apiClient, ApiResponse, ApiClientError } from "../../../shared/services/apiClient";
 
 // ===== INTERFACES PARA EL BACKEND =====
 export interface BackendUser {

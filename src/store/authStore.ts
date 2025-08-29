@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
-import { apiClient, handleApiError } from "../services/apiClient";
-import { userService } from "../services/userService";
+import { apiClient, handleApiError } from "../shared/services/apiClient";
+import { userService } from "../modules/usuarios/services/userService";
 import type { User, LoginCredentials, LoginResponse } from "../types/auth";
 import { AuthMappers } from "../types/auth";
 
