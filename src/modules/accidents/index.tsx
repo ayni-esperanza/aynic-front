@@ -10,15 +10,31 @@ export const AccidentsModule: React.FC = () => {
   );
 };
 
-// Exportar tipos para uso en otros módulos
+// Exportar componentes
+export { AccidentStats, AccidentFilters, AccidentDetails } from "./components";
+
+// Exportar hooks
+export { useAccidentData, useAccidentForm } from "./hooks";
+
+// Exportar servicios
+export { accidentService } from "./services";
+
+// Exportar tipos
 export type {
   Accident,
+  AccidentStatistics,
+  AccidentFilters,
   CreateAccidentDto,
   UpdateAccidentDto,
-  AccidentFilters,
   EstadoAccidente,
   SeveridadAccidente,
-} from "./types/accident";
+  AccidentValidationErrors,
+  AccidentListProps,
+  AccidentFormProps,
+  AccidentDetailProps,
+  AccidentFiltersProps,
+  AccidentStatsProps,
+} from "./types";
 
-// Exportar servicio para uso en otros módulos
-export { accidentService } from "./services/accidentService";
+// Default export para lazy loading
+export default AccidentsModule;
