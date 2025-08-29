@@ -1,11 +1,13 @@
 import { useState, useCallback, useEffect } from "react";
 import { useApi } from '../../../shared/hooks/useApi';
 import { userService } from "../services/userService";
-import type { User, UserFilters } from "../types";
+import type { UserFilters } from "../types";
+import type { FrontendUser } from "../services/userService";
 
 export const useUserData = (initialFilters?: UserFilters) => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [deleteSuccess, setDeleteSuccess] = useState(false);
+  const [users, setUsers] = useState<FrontendUser[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<FrontendUser[]>([]);
   const [filters, setFilters] = useState<UserFilters>(initialFilters || {});
 
   // Hook para cargar usuarios
@@ -21,11 +23,17 @@ export const useUserData = (initialFilters?: UserFilters) => {
 
   // Hook para eliminar usuario
   const { loading: deleting, execute: deleteUser } = useApi(
-    userService.deleteUser.bind(userService),
+    async (...args: unknown[]) => {
+      const id = args[0] as string;
+      return userService.deleteUser(id);
+    },
     {
       onSuccess: () => {
         // Recargar datos después de eliminar
         loadUsers();
+        setDeleteSuccess(true);
+        // Resetear el estado después de un tiempo
+        setTimeout(() => setDeleteSuccess(false), 100);
       },
     }
   );
@@ -102,6 +110,7 @@ export const useUserData = (initialFilters?: UserFilters) => {
     loading,
     deleting,
     apiError,
+    deleteSuccess,
     
     // Acciones
     updateFilters,

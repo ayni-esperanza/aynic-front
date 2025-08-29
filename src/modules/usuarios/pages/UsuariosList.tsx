@@ -11,7 +11,7 @@ import { formatDateTime } from "../../../shared/utils/formatters";
 import type { TableColumn } from "../../../types";
 import { useUserData } from "../hooks";
 import { UserFilters, UserStats } from "../components";
-import type { User } from "../types";
+import type { FrontendUser } from "../services/userService";
 
 export const UsuariosList: React.FC = () => {
   const navigate = useNavigate();
@@ -25,6 +25,7 @@ export const UsuariosList: React.FC = () => {
     loading,
     deleting,
     apiError,
+    deleteSuccess,
     updateFilters,
     clearFilters,
     refreshData,
@@ -40,18 +41,18 @@ export const UsuariosList: React.FC = () => {
 
   // Mostrar mensaje de éxito cuando se elimina un usuario
   React.useEffect(() => {
-    if (success) {
+    if (deleteSuccess) {
       success("Usuario eliminado exitosamente");
     }
-  }, [success]);
+  }, [deleteSuccess, success]);
 
-  const columns: TableColumn<User>[] = useMemo(
+  const columns: TableColumn<FrontendUser>[] = useMemo(
     () => [
       {
         key: "usuario",
         label: "Usuario",
         sortable: true,
-        render: (value: any, user: User) => (
+        render: (value: any, user: FrontendUser) => (
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-full flex items-center justify-center shadow-sm">
               <span className="text-sm font-bold text-white">
@@ -123,7 +124,7 @@ export const UsuariosList: React.FC = () => {
             supervisor: "warning" as const,
             usuario: "secondary" as const,
           };
-          const rol = String(value) as User["rol"];
+          const rol = String(value) as FrontendUser["rol"];
           const labels = {
             admin: "Administrador",
             supervisor: "Supervisor",
@@ -154,7 +155,7 @@ export const UsuariosList: React.FC = () => {
       {
         key: "id",
         label: "Acciones",
-        render: (_: any, user: User) => (
+        render: (_: any, user: FrontendUser) => (
           <div className="flex space-x-1">
             <Button
               variant="ghost"

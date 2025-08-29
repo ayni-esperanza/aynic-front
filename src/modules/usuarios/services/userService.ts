@@ -51,6 +51,7 @@ export interface FrontendUser {
   rol: "admin" | "supervisor" | "usuario"; // Mapear roles
   fecha_creacion: Date; // Valor calculado
   activo: boolean; // Valor calculado
+  [key: string]: unknown;
 }
 
 export interface CreateUserFrontendDto {
