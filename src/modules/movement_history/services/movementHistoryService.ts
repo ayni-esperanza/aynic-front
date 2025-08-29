@@ -112,18 +112,16 @@ export interface ActionOption {
 
 export interface PaginatedMovements {
   data: MovementHistory[];
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
+  pagination: {
+    currentPage: number;
     totalPages: number;
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
+    totalItems: number;
+    itemsPerPage: number;
   };
 }
 
 class MovementHistoryService {
-  private readonly basePath = "/movement-history";
+  private readonly basePath = "/record-movement-history";
 
   /**
    * Mapear movimiento del backend al formato del frontend
@@ -190,6 +188,26 @@ class MovementHistoryService {
   }
 
   /**
+   * Mapear acción del frontend al backend
+   */
+  private mapFrontendActionToBackend(frontendAction: MovementAction): string {
+    const actionMap: Record<MovementAction, string> = {
+      create: "CREATE",
+      update: "UPDATE",
+      delete: "DELETE",
+      restore: "RESTORE",
+      status_change: "STATUS_CHANGE",
+      image_upload: "IMAGE_UPLOAD",
+      image_replace: "IMAGE_REPLACE",
+      image_delete: "IMAGE_DELETE",
+      location_change: "LOCATION_CHANGE",
+      company_change: "COMPANY_CHANGE",
+      maintenance: "MAINTENANCE",
+    };
+    return actionMap[frontendAction] || "UPDATE";
+  }
+
+  /**
    * Obtener etiqueta de acción
    */
   private getActionLabel(action: MovementAction): string {
@@ -212,7 +230,15 @@ class MovementHistoryService {
   /**
    * Obtener movimientos con paginación y filtros
    */
-  async getMovements(filters: MovementFilters = {}): Promise<PaginatedMovements> {
+  async getMovements(filters: MovementFilters = {}): Promise<{
+    data: MovementHistory[];
+    pagination: {
+      currentPage: number;
+      totalPages: number;
+      totalItems: number;
+      itemsPerPage: number;
+    };
+  }> {
     try {
       const queryParams = new URLSearchParams();
       
@@ -220,7 +246,7 @@ class MovementHistoryService {
         queryParams.append("record_id", filters.record_id);
       }
       if (filters.action) {
-        queryParams.append("action", filters.action);
+        queryParams.append("action", this.mapFrontendActionToBackend(filters.action));
       }
       if (filters.username) {
         queryParams.append("username", filters.username);
@@ -234,6 +260,12 @@ class MovementHistoryService {
       if (filters.date_to) {
         queryParams.append("date_to", filters.date_to);
       }
+      if (filters.is_record_active !== undefined && filters.is_record_active !== null) {
+        queryParams.append("is_record_active", filters.is_record_active.toString());
+      }
+      if (filters.search) {
+        queryParams.append("search", filters.search);
+      }
       if (filters.page) {
         queryParams.append("page", filters.page.toString());
       }
@@ -246,21 +278,26 @@ class MovementHistoryService {
       if (filters.sortOrder) {
         queryParams.append("sortOrder", filters.sortOrder);
       }
-      if (filters.search) {
-        queryParams.append("search", filters.search);
-      }
 
       const url = `${this.basePath}${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
       const response = await apiClient.get<BackendPaginatedMovements>(url);
       
       return {
         data: response.data.map(movement => this.mapBackendToFrontend(movement)),
-        meta: response.meta,
+        pagination: {
+          currentPage: response.meta.page,
+          totalPages: response.meta.totalPages,
+          totalItems: response.meta.total,
+          itemsPerPage: response.meta.limit,
+        },
       };
     } catch (error) {
       console.error("Error fetching movements:", error);
       if (error instanceof ApiClientError && error.status === 403) {
         throw new Error("No tienes permisos para ver el historial de movimientos");
+      }
+      if (error instanceof ApiClientError && error.status === 400) {
+        throw new Error(`Error de validación: ${error.message}`);
       }
       throw error;
     }
@@ -275,7 +312,15 @@ class MovementHistoryService {
       return this.mapBackendStatsToFrontend(response);
     } catch (error) {
       console.error("Error fetching movement statistics:", error);
-      throw error;
+      // Retornar datos por defecto en caso de error
+      return {
+        total: 0,
+        today: 0,
+        thisWeek: 0,
+        activeUsers: 0,
+        byAction: [],
+        byUser: [],
+      };
     }
   }
 
@@ -291,7 +336,17 @@ class MovementHistoryService {
       }));
     } catch (error) {
       console.error("Error fetching available actions:", error);
-      throw error;
+      // Retornar opciones por defecto
+      const defaultActions: ActionOption[] = [
+        { value: "create", label: "Creación" },
+        { value: "update", label: "Actualización" },
+        { value: "delete", label: "Eliminación" },
+        { value: "status_change", label: "Cambio de Estado" },
+        { value: "image_upload", label: "Subida de Imagen" },
+        { value: "image_replace", label: "Reemplazo de Imagen" },
+        { value: "image_delete", label: "Eliminación de Imagen" },
+      ];
+      return defaultActions;
     }
   }
 
@@ -300,14 +355,11 @@ class MovementHistoryService {
    */
   async getUniqueUsernames(): Promise<Array<{ value: string; label: string }>> {
     try {
-      const response = await apiClient.get<Array<{ username: string; display_name: string }>>(`${this.basePath}/usernames`);
-      return response.map(user => ({
-        value: user.username,
-        label: user.display_name || user.username,
-      }));
+      const response = await apiClient.get<Array<{ value: string; label: string }>>(`${this.basePath}/usernames`);
+      return response;
     } catch (error) {
-      console.error("Error fetching unique usernames:", error);
-      throw error;
+      console.error("Error fetching usernames:", error);
+      return [];
     }
   }
 
@@ -350,7 +402,7 @@ class MovementHistoryService {
       }
 
       const url = `${this.basePath}/export${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
-      const response = await apiClient.get(url, { responseType: 'blob' });
+      const response = await apiClient.get<Blob>(url);
       return response;
     } catch (error) {
       console.error("Error exporting movements:", error);
