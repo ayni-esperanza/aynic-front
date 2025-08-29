@@ -1,106 +1,49 @@
-import React, { useMemo, useState, useCallback, useEffect } from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Edit, Trash2, Eye, Search, RefreshCw } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, RefreshCw } from "lucide-react";
 import { DataTable } from "../../../components/common/DataTable";
 import { Button } from "../../../components/ui/Button";
 import { Badge } from "../../../components/ui/Badge";
 import { Card } from "../../../components/ui/Card";
-import { Input } from "../../../components/ui/Input";
-import { Select } from "../../../components/ui/Select";
 import { LoadingSpinner } from "../../../components/ui/LoadingSpinner";
 import { useToast } from "../../../components/ui/Toast";
-import { useApi } from "../../../hooks/useApi";
-import { userService, type User } from "../../../services/userService";
 import { formatDateTime } from "../../../utils/formatters";
 import type { TableColumn } from "../../../types";
+import { useUserData } from "../hooks";
+import { UserFilters, UserStats } from "../components";
+import type { User } from "../types";
 
 export const UsuariosList: React.FC = () => {
   const navigate = useNavigate();
   const { success, error: showError } = useToast();
 
-  // Estados para filtros
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedRol, setSelectedRol] = useState<User["rol"] | "">("");
-  const [selectedStatus, setSelectedStatus] = useState<boolean | "">("");
-
-  // Estado para datos de usuarios
-  const [usuarios, setUsuarios] = useState<User[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
-
-  // Hook para cargar usuarios
+  // Usar el hook personalizado para datos de usuarios
   const {
+    users: usuarios,
+    filteredUsers,
+    filters,
     loading,
-    error: apiError,
-    execute: loadUsuarios,
-  } = useApi(userService.getUsers.bind(userService), {
-    onSuccess: (data) => {
-      setUsuarios(data);
-    },
-    onError: (error) => {
-      showError("Error al cargar usuarios", error);
-    },
-  });
+    deleting,
+    apiError,
+    updateFilters,
+    clearFilters,
+    refreshData,
+    handleDeleteUser,
+  } = useUserData();
 
-  // Hook para eliminar usuario
-  const { loading: deleting, execute: deleteUsuario } = useApi(
-    userService.deleteUser.bind(userService),
-    {
-      onSuccess: () => {
-        success("Usuario eliminado exitosamente");
-        refreshData();
-      },
-      onError: (error) => {
-        showError("Error al eliminar usuario", error);
-      },
+  // Mostrar errores si los hay
+  React.useEffect(() => {
+    if (apiError) {
+      showError("Error al cargar usuarios", apiError);
     }
-  );
+  }, [apiError, showError]);
 
-  // Cargar datos inicial
-  useEffect(() => {
-    loadUsuarios();
-  }, []);
-
-  // Aplicar filtros cuando cambian los datos o filtros
-  useEffect(() => {
-    let filtered = usuarios;
-
-    if (searchTerm.trim()) {
-      const search = searchTerm.toLowerCase();
-      filtered = filtered.filter(
-        (user) =>
-          user.nombre.toLowerCase().includes(search) ||
-          user.email.toLowerCase().includes(search) ||
-          user.usuario.toLowerCase().includes(search)
-      );
+  // Mostrar mensaje de éxito cuando se elimina un usuario
+  React.useEffect(() => {
+    if (success) {
+      success("Usuario eliminado exitosamente");
     }
-
-    if (selectedRol) {
-      filtered = filtered.filter((user) => user.rol === selectedRol);
-    }
-
-    if (selectedStatus !== "") {
-      filtered = filtered.filter((user) => user.activo === selectedStatus);
-    }
-
-    setFilteredUsers(filtered);
-  }, [usuarios, searchTerm, selectedRol, selectedStatus]);
-
-  const refreshData = useCallback(() => {
-    loadUsuarios();
-  }, [loadUsuarios]);
-
-  const handleDeleteUser = useCallback(
-    async (userId: string, userName: string) => {
-      if (
-        confirm(
-          `¿Estás seguro de que quieres eliminar al usuario "${userName}"?`
-        )
-      ) {
-        await deleteUsuario(userId);
-      }
-    },
-    [deleteUsuario]
-  );
+  }, [success]);
 
   const columns: TableColumn<User>[] = useMemo(
     () => [
@@ -220,7 +163,9 @@ export const UsuariosList: React.FC = () => {
               icon={Eye}
               className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
               title="Ver detalles"
-            />
+            >
+              Ver
+            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -228,7 +173,9 @@ export const UsuariosList: React.FC = () => {
               icon={Edit}
               className="text-green-600 hover:text-green-700 hover:bg-green-50"
               title="Editar usuario"
-            />
+            >
+              Editar
+            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -237,7 +184,9 @@ export const UsuariosList: React.FC = () => {
               className="text-red-600 hover:text-red-700 hover:bg-red-50"
               title="Eliminar usuario"
               disabled={deleting}
-            />
+            >
+              Eliminar
+            </Button>
           </div>
         ),
       },
@@ -329,126 +278,15 @@ export const UsuariosList: React.FC = () => {
         </div>
       </div>
 
-      {/* Estadísticas rápidas */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-        <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
-          <div className="flex items-center justify-between p-4">
-            <div>
-              <p className="text-sm font-medium text-blue-600">Total</p>
-              <div className="text-2xl font-bold text-blue-900">
-                {usuarios.length}
-              </div>
-            </div>
-            <div className="text-2xl">👥</div>
-          </div>
-        </Card>
-        <Card className="border-green-200 bg-gradient-to-br from-green-50 to-green-100">
-          <div className="flex items-center justify-between p-4">
-            <div>
-              <p className="text-sm font-medium text-green-600">Activos</p>
-              <div className="text-2xl font-bold text-green-900">
-                {usuarios.filter((u) => u.activo).length}
-              </div>
-            </div>
-            <div className="text-2xl">🟢</div>
-          </div>
-        </Card>
-        <Card className="border-red-200 bg-gradient-to-br from-red-50 to-red-100">
-          <div className="flex items-center justify-between p-4">
-            <div>
-              <p className="text-sm font-medium text-red-600">
-                Administradores
-              </p>
-              <div className="text-2xl font-bold text-red-900">
-                {usuarios.filter((u) => u.rol === "admin").length}
-              </div>
-            </div>
-            <div className="text-2xl">👑</div>
-          </div>
-        </Card>
-        <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100">
-          <div className="flex items-center justify-between p-4">
-            <div>
-              <p className="text-sm font-medium text-purple-600">
-                Supervisores
-              </p>
-              <div className="text-2xl font-bold text-purple-900">
-                {usuarios.filter((u) => u.rol === "supervisor").length}
-              </div>
-            </div>
-            <div className="text-2xl">👨‍💼</div>
-          </div>
-        </Card>
-      </div>
+      {/* Estadísticas */}
+      <UserStats users={usuarios} loading={loading} />
 
       {/* Filtros */}
-      <Card className="border border-gray-200 shadow-sm bg-gradient-to-r from-gray-50 to-white">
-        <div className="p-6">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-            <div className="relative md:col-span-2">
-              <Input
-                placeholder="Buscar por nombre, email o usuario..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 border-gray-300 focus:border-[#18D043] focus:ring-[#18D043]/20"
-              />
-              <Search
-                className="absolute text-gray-400 transform -translate-y-1/2 left-3 top-1/2"
-                size={16}
-              />
-            </div>
-
-            <Select
-              value={selectedRol}
-              onChange={(e) =>
-                setSelectedRol(e.target.value as User["rol"] | "")
-              }
-              options={[
-                { value: "", label: "Todos los roles" },
-                { value: "admin", label: "Administrador" },
-                { value: "supervisor", label: "Supervisor" },
-                { value: "usuario", label: "Usuario" },
-              ]}
-            />
-
-            <Select
-              value={selectedStatus.toString()}
-              onChange={(e) =>
-                setSelectedStatus(
-                  e.target.value === "" ? "" : e.target.value === "true"
-                )
-              }
-              options={[
-                { value: "", label: "Todos los estados" },
-                { value: "true", label: "Activos" },
-                { value: "false", label: "Inactivos" },
-              ]}
-            />
-          </div>
-
-          {(searchTerm || selectedRol || selectedStatus !== "") && (
-            <div className="flex items-center justify-between mt-4">
-              <div className="text-sm text-gray-600">
-                {filteredUsers.length} resultado
-                {filteredUsers.length !== 1 ? "s" : ""} encontrado
-                {filteredUsers.length !== 1 ? "s" : ""}
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setSearchTerm("");
-                  setSelectedRol("");
-                  setSelectedStatus("");
-                  setCurrentPage(1);
-                }}
-              >
-                Limpiar filtros
-              </Button>
-            </div>
-          )}
-        </div>
-      </Card>
+      <UserFilters
+        filters={filters}
+        onUpdateFilters={updateFilters}
+        onClearFilters={clearFilters}
+      />
 
       {/* Users Table */}
       <Card className="bg-white border-0 shadow-lg">

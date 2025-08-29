@@ -15,5 +15,26 @@ export const UsuariosModule: React.FC = () => {
   );
 };
 
+// Exportar componentes
+export { UserFilters, UserStats } from "./components";
+
+// Exportar hooks
+export { useUserData, useUserForm } from "./hooks";
+
+// Exportar servicios
+export { userService } from "./services";
+
+// Exportar tipos
+export type {
+  User,
+  CreateUserDto,
+  UpdateUserDto,
+  UserFilters,
+  UserFormData,
+  UserValidationErrors,
+  UserRole,
+  UserStatus,
+} from "./types";
+
 // Default export para lazy loading
 export default UsuariosModule;
