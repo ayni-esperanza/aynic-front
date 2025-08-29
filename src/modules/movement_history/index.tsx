@@ -10,5 +10,28 @@ export const MovementHistoryModule: React.FC = () => {
   );
 };
 
+// Exportar componentes
+export { MovementStats, MovementHistoryItem } from "./components";
+
+// Exportar hooks
+export { useMovementData, useMovementOptions } from "./hooks";
+
+// Exportar servicios
+export { movementHistoryService } from "./services";
+
+// Exportar tipos
+export type {
+  MovementHistory,
+  MovementStatistics,
+  MovementFilters,
+  MovementAction,
+  ActionOption,
+  PaginatedMovements,
+  MovementHistoryItemProps,
+  MovementFiltersProps,
+  MovementStatsProps,
+  MovementValidationErrors,
+} from "./types";
+
 // Default export para lazy loading
 export default MovementHistoryModule;
