@@ -414,7 +414,14 @@ export const RegistroList: React.FC = () => {
         color: "text-red-600",
       },
     };
-    return configs[estado as keyof typeof configs] || configs.inactivo; // Fallback a inactivo si estado es undefined
+    // Si no hay estado o es inválido, retornar configuración para "no registrado"
+    if (!estado || estado === "undefined" || estado === "null") {
+      return {
+        variant: "secondary" as const,
+        color: "text-gray-500",
+      };
+    }
+    return configs[estado as keyof typeof configs] || configs.inactivo;
   }, []);
 
   const NoResultsMessage = () => {
@@ -694,6 +701,15 @@ export const RegistroList: React.FC = () => {
         key: "estado_actual",
         label: "Estado",
         render: (value: any) => {
+          // Si no hay estado registrado, mostrar "No registrado"
+          if (!value || value === "undefined" || value === "null") {
+            return (
+              <Badge variant="secondary" className="text-gray-500">
+                No registrado
+              </Badge>
+            );
+          }
+          
           const estado = String(value) as DataRecord["estado_actual"];
           const config = getEstadoConfig(estado);
           return <Badge variant={config.variant}>{estado}</Badge>;
@@ -787,7 +803,9 @@ export const RegistroList: React.FC = () => {
                   </div>
                 </div>
                 <Badge variant={estadoConfig.variant} size="sm">
-                  {registro.estado_actual === "por_vencer"
+                  {!registro.estado_actual || registro.estado_actual === "undefined" || registro.estado_actual === "null"
+                    ? "No registrado"
+                    : registro.estado_actual === "por_vencer"
                     ? "Por Vencer"
                     : registro.estado_actual}
                 </Badge>

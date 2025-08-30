@@ -101,8 +101,13 @@ class RegistroService {
    * Mapear estado del backend al frontend
    */
   private mapBackendStatusToFrontend(
-    backendStatus: string
+    backendStatus: string | null | undefined
   ): DataRecord["estado_actual"] {
+    // Si no hay estado registrado, retornar undefined
+    if (!backendStatus) {
+      return undefined;
+    }
+    
     const statusMap: Record<string, DataRecord["estado_actual"]> = {
       ACTIVO: "activo",
       POR_VENCER: "por_vencer",
@@ -110,7 +115,7 @@ class RegistroService {
       INACTIVO: "inactivo",
       MANTENIMIENTO: "mantenimiento",
     };
-    return statusMap[backendStatus] || "activo";
+    return statusMap[backendStatus] || undefined;
   }
 
   /**
@@ -119,14 +124,19 @@ class RegistroService {
   private mapFrontendStatusToBackend(
     frontendStatus: DataRecord["estado_actual"]
   ): string {
-    const statusMap: Record<DataRecord["estado_actual"], string> = {
+    // Si no hay estado, no enviar nada al backend
+    if (!frontendStatus) {
+      return "";
+    }
+    
+    const statusMap: Record<string, string> = {
       activo: "ACTIVO",
       por_vencer: "POR_VENCER",
       vencido: "VENCIDO",
       inactivo: "INACTIVO",
       mantenimiento: "MANTENIMIENTO",
     };
-    return statusMap[frontendStatus] || "ACTIVO";
+    return statusMap[frontendStatus] || "";
   }
 
   /**
@@ -170,7 +180,7 @@ class RegistroService {
         ? new Date(backendRecord.fecha_caducidad)
         : undefined,
       estado_actual: this.mapBackendStatusToFrontend(
-        backendRecord.estado_actual || "ACTIVO"
+        backendRecord.estado_actual
       ),
     };
   }
@@ -200,9 +210,9 @@ class RegistroService {
       fecha_caducidad: frontendData.fecha_caducidad
         ? new Date(frontendData.fecha_caducidad).toISOString().split("T")[0]
         : undefined,
-      estado_actual: this.mapFrontendStatusToBackend(
+      estado_actual: frontendData.estado_actual ? this.mapFrontendStatusToBackend(
         frontendData.estado_actual
-      ),
+      ) : undefined,
     };
   }
 

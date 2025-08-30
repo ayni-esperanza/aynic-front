@@ -19,6 +19,7 @@ import {
   Camera,
   Image as ImageIcon,
   Link,
+  HelpCircle,
 } from "lucide-react";
 import { Button } from '../../../shared/components/ui/Button';
 import { Card } from '../../../shared/components/ui/Card';
@@ -306,7 +307,20 @@ export const RegistroDetail: React.FC = () => {
       },
     } as const;
 
-    return configs[estado as keyof typeof configs] || configs["activo"];
+    // Si no hay estado o es inválido, retornar configuración para "no registrado"
+    if (!estado || estado === "undefined" || estado === "null") {
+      return {
+        variant: "secondary" as const,
+        icon: HelpCircle,
+        color: "text-gray-500",
+        bgColor: "bg-gray-50",
+        borderColor: "border-gray-200",
+        emoji: "❓",
+        label: "No registrado",
+      };
+    }
+
+    return configs[estado as keyof typeof configs] || configs["inactivo"];
   };
 
   const estadoConfig = getEstadoConfig(registro.estado_actual);
