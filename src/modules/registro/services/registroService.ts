@@ -159,7 +159,7 @@ class RegistroService {
       fv_meses: backendRecord.fv_meses || 0,
       fecha_instalacion: backendRecord.fecha_instalacion
         ? new Date(backendRecord.fecha_instalacion)
-        : new Date(),
+        : undefined,
       longitud: backendRecord.longitud || 0,
       observaciones: backendRecord.observaciones,
       seec: backendRecord.seec || "",
@@ -168,7 +168,7 @@ class RegistroService {
       anclaje_equipos: backendRecord.anclaje_equipos || undefined,
       fecha_caducidad: backendRecord.fecha_caducidad
         ? new Date(backendRecord.fecha_caducidad)
-        : new Date(),
+        : undefined,
       estado_actual: this.mapBackendStatusToFrontend(
         backendRecord.estado_actual || "ACTIVO"
       ),

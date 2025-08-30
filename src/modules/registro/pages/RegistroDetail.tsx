@@ -37,15 +37,10 @@ import { formatDate, formatDateTime } from '../../../shared/utils/formatters';
 import type { DataRecord } from "../types/registro";
 
 // Función auxiliar para manejar fechas de forma segura
-const safeFormatDate = (dateValue: Date | string | undefined): string => {
+const safeFormatDate = (dateValue: Date | undefined): string => {
   if (!dateValue) return "Fecha no disponible";
 
   try {
-    if (typeof dateValue === "string") {
-      const parsed = new Date(dateValue);
-      return isNaN(parsed.getTime()) ? "Fecha inválida" : formatDate(parsed);
-    }
-
     if (dateValue instanceof Date && !isNaN(dateValue.getTime())) {
       return formatDate(dateValue);
     }
@@ -57,17 +52,10 @@ const safeFormatDate = (dateValue: Date | string | undefined): string => {
   }
 };
 
-const safeFormatDateTime = (dateValue: Date | string | undefined): string => {
+const safeFormatDateTime = (dateValue: Date | undefined): string => {
   if (!dateValue) return "Fecha no disponible";
 
   try {
-    if (typeof dateValue === "string") {
-      const parsed = new Date(dateValue);
-      return isNaN(parsed.getTime())
-        ? "Fecha inválida"
-        : formatDateTime(parsed);
-    }
-
     if (dateValue instanceof Date && !isNaN(dateValue.getTime())) {
       return formatDateTime(dateValue);
     }
@@ -617,14 +605,9 @@ export const RegistroDetail: React.FC = () => {
                       Hace{" "}
                       {(() => {
                         try {
-                          const installDate =
-                            typeof registro.fecha_instalacion === "string"
-                              ? new Date(registro.fecha_instalacion)
-                              : registro.fecha_instalacion;
-
-                          if (installDate && !isNaN(installDate.getTime())) {
+                          if (registro.fecha_instalacion && !isNaN(registro.fecha_instalacion.getTime())) {
                             return Math.floor(
-                              (new Date().getTime() - installDate.getTime()) /
+                              (new Date().getTime() - registro.fecha_instalacion.getTime()) /
                                 (1000 * 60 * 60 * 24)
                             );
                           }
@@ -659,15 +642,10 @@ export const RegistroDetail: React.FC = () => {
                     <p className="text-red-600">
                       {(() => {
                         try {
-                          const vencDate =
-                            typeof registro.fecha_caducidad === "string"
-                              ? new Date(registro.fecha_caducidad)
-                              : registro.fecha_caducidad;
-
-                          if (vencDate && !isNaN(vencDate.getTime())) {
+                          if (registro.fecha_caducidad && !isNaN(registro.fecha_caducidad.getTime())) {
                             const today = new Date();
                             const diffDays = Math.floor(
-                              (vencDate.getTime() - today.getTime()) /
+                              (registro.fecha_caducidad.getTime() - today.getTime()) /
                                 (1000 * 60 * 60 * 24)
                             );
 
@@ -705,12 +683,7 @@ export const RegistroDetail: React.FC = () => {
                       <div className="space-y-3">
                         {(() => {
                           try {
-                            const installDate =
-                              typeof registro.fecha_instalacion === "string"
-                                ? new Date(registro.fecha_instalacion)
-                                : registro.fecha_instalacion;
-
-                            if (!installDate || isNaN(installDate.getTime())) {
+                            if (!registro.fecha_instalacion || isNaN(registro.fecha_instalacion.getTime())) {
                               return (
                                 <div className="space-y-3">
                                   <div className="text-red-600">
@@ -721,7 +694,7 @@ export const RegistroDetail: React.FC = () => {
                             }
 
                             const totalDays = Math.floor(
-                              (new Date().getTime() - installDate.getTime()) /
+                              (new Date().getTime() - registro.fecha_instalacion.getTime()) /
                                 (1000 * 60 * 60 * 24)
                             );
                             const years = Math.floor(totalDays / 365);
@@ -1056,14 +1029,9 @@ export const RegistroDetail: React.FC = () => {
                       <span className="font-semibold text-blue-900">
                         {(() => {
                           try {
-                            const installDate =
-                              typeof registro.fecha_instalacion === "string"
-                                ? new Date(registro.fecha_instalacion)
-                                : registro.fecha_instalacion;
-
-                            if (installDate && !isNaN(installDate.getTime())) {
+                            if (registro.fecha_instalacion && !isNaN(registro.fecha_instalacion.getTime())) {
                               return Math.floor(
-                                (new Date().getTime() - installDate.getTime()) /
+                                (new Date().getTime() - registro.fecha_instalacion.getTime()) /
                                   (1000 * 60 * 60 * 24)
                               );
                             }

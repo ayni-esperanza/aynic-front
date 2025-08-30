@@ -560,14 +560,29 @@ export const RegistroList: React.FC = () => {
         key: "fecha_instalacion",
         label: "F. Instalación",
         sortable: true,
-        render: (value: any) => (
-          <div className="text-sm">
-            <div className="font-medium text-gray-900">
-              {formatDate(value as Date)}
+        render: (value: any) => {
+          if (!value) {
+            return (
+              <div className="text-sm">
+                <div className="font-medium text-gray-400">
+                  No registrada
+                </div>
+                <div className="text-xs text-gray-400">
+                  Sin fecha
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <div className="text-sm">
+              <div className="font-medium text-gray-900">
+                {formatDate(value as Date)}
+              </div>
+              <div className="text-xs text-gray-500">Instalado</div>
             </div>
-            <div className="text-xs text-gray-500">Instalado</div>
-          </div>
-        ),
+          );
+        },
       },
       {
         key: "longitud",
@@ -642,6 +657,19 @@ export const RegistroList: React.FC = () => {
         key: "fecha_caducidad",
         label: "F. Caducidad",
         render: (value: any) => {
+          if (!value) {
+            return (
+              <div className="text-sm">
+                <div className="font-medium text-gray-400">
+                  No registrada
+                </div>
+                <div className="text-xs text-gray-400">
+                  Sin fecha
+                </div>
+              </div>
+            );
+          }
+
           const fecha = value as Date;
           const isVencido = fecha < new Date();
           return (

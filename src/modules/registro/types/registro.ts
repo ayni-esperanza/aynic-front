@@ -52,14 +52,14 @@ export interface DataRecord {
   equipo?: string;
   fv_anios?: number;
   fv_meses?: number;
-  fecha_instalacion?: string;
+  fecha_instalacion?: Date;
   longitud?: number;
   observaciones?: string;
   seec?: string;
   tipo_linea?: string;
   ubicacion?: string;
   anclaje_equipos?: string;
-  fecha_caducidad?: string;
+  fecha_caducidad?: Date;
   estado_actual?: string;
   [key: string]: unknown;
 }
