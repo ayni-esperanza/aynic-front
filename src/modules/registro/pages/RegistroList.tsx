@@ -186,15 +186,24 @@ export const RegistroList: React.FC = () => {
       setAppliedFilters((prev) => ({ ...prev, ...overrides }));
       const params = buildParams(overrides, page);
       lastQueryRef.current = params;
+
+      // Solo resetear imágenes si cambia de página, no si se aplican filtros
+      if (page && page !== pagination.currentPage) {
+        currentRecordsRef.current = "";
+        loadedRecordIdsRef.current.clear();
+        setRecordImages(new Map());
+      }
+
       updateFilters(params);
       await loadStats();
     },
-    [buildParams, updateFilters, loadStats]
+    [buildParams, updateFilters, loadStats, pagination.currentPage]
   );
 
   // Referencias para controlar la carga de imágenes
   const loadingImagesRef = useRef(false);
   const loadedRecordIdsRef = useRef<Set<string>>(new Set());
+  const currentRecordsRef = useRef<string>("");
 
   // Función para cargar imágenes de los registros con límite de concurrencia
   const loadImagesForRecords = useCallback(async (records: DataRecord[]) => {
@@ -205,50 +214,39 @@ export const RegistroList: React.FC = () => {
 
     // Filtrar solo registros que no tienen imágenes cargadas
     const recordsToLoad = records.filter(record => !recordImages.has(record.id) && !loadedRecordIdsRef.current.has(record.id));
-    
+
     if (recordsToLoad.length === 0) {
       return;
     }
 
     loadingImagesRef.current = true;
     const newImageMap = new Map<string, ImageResponse>();
-    const batchSize = 1; // Reducir a 1 imagen a la vez para evitar rate limiting
-    
+
     try {
-      for (let i = 0; i < recordsToLoad.length; i += batchSize) {
-        const batch = recordsToLoad.slice(i, i + batchSize);
-        
-        const batchPromises = batch.map(async (record) => {
-          try {
-            // Marcar como intentado inmediatamente
-            loadedRecordIdsRef.current.add(record.id);
-            
-            const image = await imageService.getRecordImage(record.id);
-            return { recordId: record.id, image };
-          } catch (error) {
-            // Solo log si no es un error esperado (como 404 o parsing JSON)
-            if (!(error instanceof SyntaxError) && !(error instanceof Error && error.message.includes('404'))) {
-              console.warn(`Error loading image for record ${record.id}:`, error);
-            }
-            return { recordId: record.id, image: null };
-          }
-        });
+      // Procesar una imagen a la vez con delay entre cada una
+      for (const record of recordsToLoad) {
+        try {
+          // Marcar como intentado inmediatamente
+          loadedRecordIdsRef.current.add(record.id);
 
-        const batchResults = await Promise.all(batchPromises);
-        
-        batchResults.forEach(({ recordId, image }) => {
+          const image = await imageService.getRecordImage(record.id);
           if (image) {
-            newImageMap.set(recordId, image);
+            newImageMap.set(record.id, image);
+            // Actualizar el estado inmediatamente para mostrar la imagen
+            setRecordImages(prev => new Map(prev).set(record.id, image));
           }
-        });
+        } catch (error) {
+          // Solo log si no es un error esperado (como 404 o parsing JSON)
+          if (!(error instanceof SyntaxError) && !(error instanceof Error && error.message.includes('404'))) {
+            console.warn(`Error loading image for record ${record.id}:`, error);
+          }
+        }
 
-        // Pausa más larga entre lotes para evitar rate limiting
-        if (i + batchSize < recordsToLoad.length) {
-          await new Promise(resolve => setTimeout(resolve, 500));
+        // Pausa entre cada imagen para evitar rate limiting
+        if (recordsToLoad.indexOf(record) < recordsToLoad.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 2000)); // 2 segundos entre imágenes
         }
       }
-
-      setRecordImages(prev => new Map([...prev, ...newImageMap]));
     } finally {
       loadingImagesRef.current = false;
     }
@@ -260,6 +258,28 @@ export const RegistroList: React.FC = () => {
       isInitialLoadRef.current = false;
       const loadInitialData = async () => {
         try {
+          // Restaurar filtros guardados
+          const savedFilters = localStorage.getItem('registroFilters');
+          if (savedFilters) {
+            const filters = JSON.parse(savedFilters);
+            setAppliedFilters(filters);
+            setSearchTerm(filters.codigo || "");
+            setCodigoPlacaFilter(filters.codigo_placa || "");
+            setEquipoFilter(filters.equipo || "");
+            setUbicacionFilter(filters.ubicacion || "");
+            setEmpresaFilter(filters.cliente || "");
+            setAreaFilter(filters.seec || "");
+            setStatusFilter(filters.estado_actual || "");
+            setInstallDateFrom(filters.fecha_instalacion_desde || "");
+            setInstallDateTo(filters.fecha_instalacion_hasta || "");
+
+            // Aplicar los filtros restaurados después de un pequeño delay
+            setTimeout(() => {
+              const params = buildParams(filters, 1);
+              updateFilters(params);
+            }, 100);
+          }
+
           await loadStats();
         } catch (error) {
           console.error("Error loading initial data:", error);
@@ -267,18 +287,38 @@ export const RegistroList: React.FC = () => {
       };
       loadInitialData();
     }
-  }, [loadStats]);
+  }, [loadStats, buildParams, updateFilters]);
 
-  // Cargar imágenes cuando cambien los registros
+  // Guardar filtros en localStorage cuando cambien
+  useEffect(() => {
+    if (!isInitialLoadRef.current) {
+      localStorage.setItem('registroFilters', JSON.stringify(appliedFilters));
+    }
+  }, [appliedFilters]);
+
   useEffect(() => {
     if (registros.length > 0 && !loadingImagesRef.current) {
-      // Solo cargar imágenes si no están ya cargadas
-      const recordsWithoutImages = registros.filter(record => !recordImages.has(record.id) && !loadedRecordIdsRef.current.has(record.id));
-      if (recordsWithoutImages.length > 0) {
-        loadImagesForRecords(registros);
+      // Crear un hash de los registros actuales
+      const recordsHash = registros.map(r => r.id).sort().join(',');
+
+      // Solo cargar si los registros han cambiado y no están ya cargadas las imágenes
+      if (currentRecordsRef.current !== recordsHash) {
+        currentRecordsRef.current = recordsHash;
+
+        // Solo cargar imágenes de registros que no tienen imágenes cargadas
+        const recordsWithoutImages = registros.filter(record =>
+          !recordImages.has(record.id) && !loadedRecordIdsRef.current.has(record.id)
+        );
+
+        if (recordsWithoutImages.length > 0) {
+          // Cargar imágenes con delay para evitar rate limiting
+          setTimeout(() => {
+            loadImagesForRecords(recordsWithoutImages);
+          }, 500);
+        }
       }
     }
-  }, [registros, loadImagesForRecords, recordImages]);
+  }, [registros, recordImages, loadImagesForRecords]);
 
   // Limpiar timeout al desmontar
   useEffect(() => {
@@ -377,9 +417,8 @@ export const RegistroList: React.FC = () => {
           params.append("authorization_code", authorizationCode);
         }
 
-        const url = `/records/${recordToDelete.id}${
-          params.toString() ? `?${params.toString()}` : ""
-        }`;
+        const url = `/records/${recordToDelete.id}${params.toString() ? `?${params.toString()}` : ""
+          }`;
 
         await apiClient.delete(url);
 
@@ -478,6 +517,8 @@ export const RegistroList: React.FC = () => {
               setInstallDateFrom("");
               setInstallDateTo("");
               setAppliedFilters({});
+              // Limpiar localStorage
+              localStorage.removeItem('registroFilters');
               // Cargar todos los registros sin filtros
               try {
                 await loadStats();
@@ -661,16 +702,14 @@ export const RegistroList: React.FC = () => {
           return (
             <div className="text-sm">
               <div
-                className={`font-medium ${
-                  isVencido ? "text-red-600" : "text-gray-900"
-                }`}
+                className={`font-medium ${isVencido ? "text-red-600" : "text-gray-900"
+                  }`}
               >
                 {formatDate(fecha)}
               </div>
               <div
-                className={`text-xs ${
-                  isVencido ? "text-red-500" : "text-gray-500"
-                }`}
+                className={`text-xs ${isVencido ? "text-red-500" : "text-gray-500"
+                  }`}
               >
                 {isVencido ? "Vencido" : "Programado"}
               </div>
@@ -1030,7 +1069,7 @@ export const RegistroList: React.FC = () => {
           </div>
         </Card>
       </div>
-      
+
       {/* Sección de Reportes */}
       {showReports && <ReportsSection />}
 
@@ -1166,11 +1205,10 @@ export const RegistroList: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setViewMode("table")}
-                  className={`p-2 rounded ${
-                    viewMode === "table"
-                      ? "bg-[#18D043] text-white"
-                      : "text-gray-600 hover:bg-gray-100"
-                  }`}
+                  className={`p-2 rounded ${viewMode === "table"
+                    ? "bg-[#18D043] text-white"
+                    : "text-gray-600 hover:bg-gray-100"
+                    }`}
                   aria-pressed={viewMode === "table"}
                   aria-label="Vista tabla"
                 >
@@ -1179,11 +1217,10 @@ export const RegistroList: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setViewMode("grid")}
-                  className={`p-2 rounded ${
-                    viewMode === "grid"
-                      ? "bg-[#18D043] text-white"
-                      : "text-gray-600 hover:bg-gray-100"
-                  }`}
+                  className={`p-2 rounded ${viewMode === "grid"
+                    ? "bg-[#18D043] text-white"
+                    : "text-gray-600 hover:bg-gray-100"
+                    }`}
                   aria-pressed={viewMode === "grid"}
                   aria-label="Vista tarjetas"
                 >
@@ -1369,32 +1406,34 @@ export const RegistroList: React.FC = () => {
                     statusFilter ||
                     installDateFrom ||
                     installDateTo) && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="h-10 text-gray-600 hover:text-gray-800"
-                      onClick={async () => {
-                        setSearchTerm("");
-                        setCodigoPlacaFilter("");
-                        setEquipoFilter("");
-                        setUbicacionFilter("");
-                        setEmpresaFilter("");
-                        setAreaFilter("");
-                        setStatusFilter("");
-                        setInstallDateFrom("");
-                        setInstallDateTo("");
-                        setAppliedFilters({});
-                        // Cargar todos los registros sin filtros
-                        try {
-                          await loadStats();
-                        } catch (error) {
-                          console.error("Error al limpiar filtros:", error);
-                        }
-                      }}
-                    >
-                      Limpiar
-                    </Button>
-                  )}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="h-10 text-gray-600 hover:text-gray-800"
+                        onClick={async () => {
+                          setSearchTerm("");
+                          setCodigoPlacaFilter("");
+                          setEquipoFilter("");
+                          setUbicacionFilter("");
+                          setEmpresaFilter("");
+                          setAreaFilter("");
+                          setStatusFilter("");
+                          setInstallDateFrom("");
+                          setInstallDateTo("");
+                          setAppliedFilters({});
+                          // Limpiar localStorage
+                          localStorage.removeItem('registroFilters');
+                          // Cargar todos los registros sin filtros
+                          try {
+                            await loadStats();
+                          } catch (error) {
+                            console.error("Error al limpiar filtros:", error);
+                          }
+                        }}
+                      >
+                        Limpiar
+                      </Button>
+                    )}
                 </div>
               </form>
             </div>
@@ -1457,7 +1496,7 @@ export const RegistroList: React.FC = () => {
                       Mostrando{" "}
                       {Math.min(
                         (pagination.currentPage - 1) * pagination.itemsPerPage +
-                          1,
+                        1,
                         pagination.totalItems
                       )}{" "}
                       a{" "}
@@ -1475,11 +1514,10 @@ export const RegistroList: React.FC = () => {
                         <button
                           key={page}
                           onClick={() => handlePageChange(page)}
-                          className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                            page === pagination.currentPage
-                              ? "bg-[#18D043] text-white"
-                              : "text-gray-700 hover:bg-gray-100"
-                          }`}
+                          className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${page === pagination.currentPage
+                            ? "bg-[#18D043] text-white"
+                            : "text-gray-700 hover:bg-gray-100"
+                            }`}
                         >
                           {page}
                         </button>
