@@ -64,25 +64,20 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   const [description, setDescription] = useState("");
   const [showImageModal, setShowImageModal] = useState(false);
 
-  // Hook para cargar imagen existente - Función estable
-  const loadImageFunction = useCallback(
-    (recordId: string) => imageService.getRecordImage(recordId),
-    []
-  );
-
+  // Hook para cargar imagen existente
   const { loading: loadingImage, execute: loadImage } = useApi(
-    loadImageFunction,
+    (...args: unknown[]) => imageService.getRecordImage(args[0] as string),
     {
       onSuccess: (image) => {
         setCurrentImage(image);
         hasLoadedImageRef.current = true;
         isLoadingImageRef.current = false;
       },
-      onError: (error) => {
+      onError: (error: any) => {
         // Silenciar errores 404 para imágenes (es normal que no existan)
         if (
-          !error.message?.includes("404") &&
-          !error.message?.includes("Not Found")
+          !error?.message?.includes("404") &&
+          !error?.message?.includes("Not Found")
         ) {
           console.warn("Error loading image:", error);
         }
@@ -93,37 +88,22 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   );
 
   // Hook para subir imagen
-  const uploadImageFunction = useCallback(
-    ({
-      file,
-      recordId,
-      description,
-    }: {
-      file: File;
-      recordId: string;
-      description?: string;
-    }) => imageService.uploadImage(recordId, file, { description }),
-    []
-  );
-
   const { loading: uploading, execute: uploadImage } = useApi(
-    uploadImageFunction,
+    (...args: unknown[]) => {
+      const { file, recordId, description } = args[0] as {
+        file: File;
+        recordId: string;
+        description?: string;
+      };
+      return imageService.uploadImage(recordId, file, { description });
+    },
     {
       onSuccess: (image) => {
         setCurrentImage(image);
         setPreviewFile(null);
         setPreviewUrl("");
         setDescription("");
-        success(
-          "Imagen subida exitosamente",
-          image.compression_info
-            ? `Comprimida de ${imageService.formatFileSize(
-                image.compression_info.original_size
-              )} a ${imageService.formatFileSize(
-                image.compression_info.compressed_size
-              )}`
-            : undefined
-        );
+        success("Imagen subida exitosamente");
         onImageUploaded?.(image);
       },
       onError: (error) => {
@@ -133,21 +113,15 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   );
 
   // Hook para reemplazar imagen
-  const replaceImageFunction = useCallback(
-    ({
-      file,
-      recordId,
-      description,
-    }: {
-      file: File;
-      recordId: string;
-      description?: string;
-    }) => imageService.replaceImage(recordId, file, { description }),
-    []
-  );
-
   const { loading: replacing, execute: replaceImage } = useApi(
-    replaceImageFunction,
+    (...args: unknown[]) => {
+      const { file, recordId, description } = args[0] as {
+        file: File;
+        recordId: string;
+        description?: string;
+      };
+      return imageService.replaceImage(recordId, file, { description });
+    },
     {
       onSuccess: (image) => {
         setCurrentImage(image);
@@ -164,13 +138,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   );
 
   // Hook para eliminar imagen
-  const deleteImageFunction = useCallback(
-    (recordId: string) => imageService.deleteRecordImage(recordId),
-    []
-  );
-
   const { loading: deleting, execute: deleteImage } = useApi(
-    deleteImageFunction,
+    (...args: unknown[]) => imageService.deleteRecordImage(args[0] as string),
     {
       onSuccess: () => {
         setCurrentImage(null);
@@ -184,14 +153,14 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   );
 
   // Hook para actualizar metadatos
-  const updateMetadataFunction = useCallback(
-    ({ recordId, description }: { recordId: string; description: string }) =>
-      imageService.updateImageMetadata(recordId, { description }),
-    []
-  );
-
   const { loading: updatingMetadata, execute: updateMetadata } = useApi(
-    updateMetadataFunction,
+    (...args: unknown[]) => {
+      const { recordId, description } = args[0] as {
+        recordId: string;
+        description: string;
+      };
+      return imageService.updateImageMetadata(recordId, { description });
+    },
     {
       onSuccess: (image) => {
         setCurrentImage(image);
@@ -361,49 +330,55 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             />
             <div className="absolute flex space-x-1 top-2 right-2">
               <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                className="text-gray-700 border-gray-300 bg-white/90 hover:bg-white"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setShowImageModal(true);
-                }}
-                icon={Eye}
-                title="Ver imagen completa"
-              />
+                 type="button"
+                 size="sm"
+                 variant="outline"
+                 className="text-gray-700 border-gray-300 bg-white/90 hover:bg-white"
+                 onClick={(e) => {
+                   e.preventDefault();
+                   e.stopPropagation();
+                   setShowImageModal(true);
+                 }}
+                 icon={Eye}
+                 title="Ver imagen completa"
+               >
+                 Ver
+              </Button>
               {!readOnly && (
                 <>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    className="text-blue-700 border-blue-300 bg-white/90 hover:bg-white"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      fileInputRef.current?.click();
-                    }}
-                    icon={Upload}
-                    title="Reemplazar imagen"
-                    disabled={isProcessing}
-                  />
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    className="text-red-700 border-red-300 bg-white/90 hover:bg-white"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      deleteImage(recordId);
-                    }}
-                    icon={X}
-                    title="Eliminar imagen"
-                    disabled={isProcessing}
-                    loading={deleting}
-                  />
+                   <Button
+                     type="button"
+                     size="sm"
+                     variant="outline"
+                     className="text-blue-700 border-blue-300 bg-white/90 hover:bg-white"
+                     onClick={(e) => {
+                       e.preventDefault();
+                       e.stopPropagation();
+                       fileInputRef.current?.click();
+                     }}
+                     icon={Upload}
+                     title="Reemplazar imagen"
+                     disabled={isProcessing}
+                   >
+                     Reemplazar
+                   </Button>
+                   <Button
+                     type="button"
+                     size="sm"
+                     variant="outline"
+                     className="text-red-700 border-red-300 bg-white/90 hover:bg-white"
+                     onClick={(e) => {
+                       e.preventDefault();
+                       e.stopPropagation();
+                       deleteImage(recordId);
+                     }}
+                     icon={X}
+                     title="Eliminar imagen"
+                     disabled={isProcessing}
+                     loading={deleting}
+                   >
+                     Eliminar
+                   </Button>
                 </>
               )}
             </div>
@@ -644,11 +619,13 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
           <div className="relative max-w-4xl max-h-full">
             <Button
-              className="absolute z-10 text-white top-4 right-4 bg-black/50 hover:bg-black/70"
-              onClick={() => setShowImageModal(false)}
-              icon={X}
-              size="sm"
-            />
+               className="absolute z-10 text-white top-4 right-4 bg-black/50 hover:bg-black/70"
+               onClick={() => setShowImageModal(false)}
+               icon={X}
+               size="sm"
+             >
+               Cerrar
+            </Button>
             <img
               src={currentImage.image_url}
               alt={
