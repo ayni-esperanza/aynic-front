@@ -66,6 +66,7 @@ class ApiClient {
   private responseInterceptors: ResponseInterceptor[] = [];
   private errorInterceptors: ErrorInterceptor[] = [];
   private tokenExpiredCallback: TokenExpiredCallback | null = null;
+  private tokenExpiredHandler: (() => void) | null = null;
 
   constructor() {
     this.baseURL = API_CONFIG.baseURL;
@@ -144,6 +145,10 @@ class ApiClient {
     this.tokenExpiredCallback = callback;
   }
 
+  setTokenExpiredHandler(handler: () => void) {
+    this.tokenExpiredHandler = handler;
+  }
+
   addRequestInterceptor(interceptor: RequestInterceptor) {
     this.requestInterceptors.push(interceptor);
   }
@@ -182,6 +187,14 @@ class ApiClient {
       });
 
       clearTimeout(timeoutId);
+
+      // Si la respuesta es 401 (Unauthorized), manejar token expirado
+      if (response.status === 401) {
+        if (this.tokenExpiredHandler) {
+          this.tokenExpiredHandler();
+        }
+        throw new Error("Sesión expirada o inválida");
+      }
 
       // Aplicar interceptores de respuesta
       let processedResponse = response;
@@ -297,8 +310,19 @@ class ApiClient {
     return data;
   }
 
-  logout() {
-    localStorage.removeItem("authToken");
+  async logout() {
+    try {
+      // Intentar hacer logout en el servidor
+      await this.executeRequest("/auth/logout", {
+        method: "POST",
+      });
+    } catch (error) {
+      // Si falla, continuar con el logout local
+      console.warn("Error en logout del servidor:", error);
+    } finally {
+      // Siempre limpiar el token local
+      localStorage.removeItem("authToken");
+    }
   }
 
   isAuthenticated(): boolean {
@@ -322,6 +346,17 @@ class ApiClient {
       return true;
     } catch (error) {
       console.warn("Token verification failed:", error);
+      return false;
+    }
+  }
+
+  async verifySession(): Promise<boolean> {
+    try {
+      const response = await this.executeRequest("/auth/verify-session", {
+        method: "GET",
+      });
+      return response.ok;
+    } catch (error) {
       return false;
     }
   }

@@ -22,6 +22,8 @@ interface AuthState {
   initializeAuth: () => Promise<void>;
   handleTokenExpired: () => void;
   loadCurrentUser: () => Promise<void>; // Nueva función para cargar datos del usuario actual
+  startSessionVerification: () => void;
+  stopSessionVerification: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -78,6 +80,9 @@ export const useAuthStore = create<AuthState>()(
                 userError
               );
             }
+
+            // Iniciar verificación periódica de sesión
+            get().startSessionVerification();
           } catch (error) {
             const errorMessage = handleApiError(error);
             set({
@@ -92,9 +97,12 @@ export const useAuthStore = create<AuthState>()(
           }
         },
 
-        logout: () => {
-          // Limpiar token del localStorage
-          apiClient.logout();
+        logout: async () => {
+          // Detener verificación periódica
+          get().stopSessionVerification();
+          
+          // Limpiar token del localStorage y hacer logout en servidor
+          await apiClient.logout();
 
           set({
             user: null,
@@ -122,6 +130,9 @@ export const useAuthStore = create<AuthState>()(
         // manejo de token expirado
         handleTokenExpired: () => {
           console.warn("Token expirado o inválido, cerrando sesión...");
+
+          // Detener verificación periódica
+          get().stopSessionVerification();
 
           // Limpiar token del localStorage
           apiClient.logout();
@@ -179,6 +190,9 @@ export const useAuthStore = create<AuthState>()(
               isInitialized: true,
               error: null,
             });
+
+            // Iniciar verificación periódica de sesión
+            get().startSessionVerification();
           } catch (error) {
             // Si falla, el token es inválido - NO mostrar error de servidor
             console.warn("Token validacion fallo:", error);
@@ -208,6 +222,30 @@ export const useAuthStore = create<AuthState>()(
             await get().checkAuthStatus();
           } catch (error) {
             console.error("Error in auth initialization:", error);
+          }
+        },
+
+        // Verificación periódica de sesión
+        startSessionVerification: () => {
+          const intervalId = setInterval(async () => {
+            const { isAuthenticated } = get();
+            if (isAuthenticated) {
+              const isValid = await apiClient.verifySession();
+              if (!isValid) {
+                get().handleTokenExpired();
+              }
+            }
+          }, 5 * 60 * 1000); // Verificar cada 5 minutos
+
+          // Guardar el interval ID para poder detenerlo
+          (window as any).sessionVerificationInterval = intervalId;
+        },
+
+        stopSessionVerification: () => {
+          const intervalId = (window as any).sessionVerificationInterval;
+          if (intervalId) {
+            clearInterval(intervalId);
+            (window as any).sessionVerificationInterval = null;
           }
         },
       }),
