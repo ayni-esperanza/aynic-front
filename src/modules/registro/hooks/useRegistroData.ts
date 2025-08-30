@@ -1,7 +1,18 @@
 import { useState, useCallback, useEffect } from "react";
 import { useApi } from '../../../shared/hooks/useApi';
 import { registroService } from "../services/registroService";
-import type { DataRecord, RecordFilters, PaginatedRecords } from "../types";
+import type { DataRecord, RecordFilters } from "../types";
+
+// Tipo que coincide con lo que retorna registroService.getRecords
+interface RegistroServiceResponse {
+  data: DataRecord[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
+  };
+}
 
 export const useRegistroData = (initialFilters?: RecordFilters) => {
   const [records, setRecords] = useState<DataRecord[]>([]);
@@ -23,14 +34,17 @@ export const useRegistroData = (initialFilters?: RecordFilters) => {
     loading,
     error: apiError,
     execute: loadRecords,
-  } = useApi(registroService.getRecords.bind(registroService), {
-    onSuccess: (data: PaginatedRecords) => {
+  } = useApi(async (...args: unknown[]) => {
+    const filters = args[0] as RecordFilters;
+    return registroService.getRecords(filters);
+  }, {
+    onSuccess: (data: RegistroServiceResponse) => {
       setRecords(data.data);
       setPagination({
-        currentPage: data.meta.page,
-        totalPages: data.meta.totalPages,
-        totalItems: data.meta.total,
-        itemsPerPage: data.meta.limit,
+        currentPage: data.pagination.currentPage,
+        totalPages: data.pagination.totalPages,
+        totalItems: data.pagination.totalItems,
+        itemsPerPage: data.pagination.itemsPerPage,
       });
     },
   });
@@ -75,13 +89,15 @@ export const useRegistroData = (initialFilters?: RecordFilters) => {
 
   const searchRecords = useCallback(async (searchTerm: string) => {
     try {
-      const results = await registroService.searchRecords(searchTerm);
-      return results;
+      // Implementar búsqueda usando filtros
+      const searchFilters = { ...filters, codigo: searchTerm, page: 1 };
+      const results = await registroService.getRecords(searchFilters);
+      return results.data;
     } catch (error) {
       console.error("Error searching records:", error);
       return [];
     }
-  }, []);
+  }, [filters]);
 
   return {
     // Datos

@@ -4,6 +4,7 @@ import {
   PaginatedResponse,
   ApiClientError,
 } from '../../../shared/services/apiClient';
+import type { DataRecord } from '../types';
 
 export interface RecordFilters {
   codigo?: string;
@@ -97,108 +98,182 @@ class RegistroService {
   private readonly basePath = "/records";
 
   /**
+   * Mapear estado del backend al frontend
+   */
+  private mapBackendStatusToFrontend(
+    backendStatus: string
+  ): DataRecord["estado_actual"] {
+    const statusMap: Record<string, DataRecord["estado_actual"]> = {
+      ACTIVO: "activo",
+      POR_VENCER: "por_vencer",
+      VENCIDO: "vencido",
+      INACTIVO: "inactivo",
+      MANTENIMIENTO: "mantenimiento",
+    };
+    return statusMap[backendStatus] || "activo";
+  }
+
+  /**
+   * Mapear estado del frontend al backend
+   */
+  private mapFrontendStatusToBackend(
+    frontendStatus: DataRecord["estado_actual"]
+  ): string {
+    const statusMap: Record<DataRecord["estado_actual"], string> = {
+      activo: "ACTIVO",
+      por_vencer: "POR_VENCER",
+      vencido: "VENCIDO",
+      inactivo: "INACTIVO",
+      mantenimiento: "MANTENIMIENTO",
+    };
+    return statusMap[frontendStatus] || "ACTIVO";
+  }
+
+  /**
+   * Mapear estadísticas del backend al frontend
+   */
+  private mapBackendStatisticsToFrontend(
+    backendStats: BackendStatistics
+  ): FrontendStatistics {
+    return {
+      total: backendStats.total || 0,
+      activos: backendStats.activos || 0,
+      por_vencer: backendStats.por_vencer || 0,
+      vencidos: backendStats.vencidos || 0,
+      inactivos: backendStats.inactivos || 0,
+      mantenimiento: backendStats.mantenimiento || 0,
+    };
+  }
+
+  /**
    * Mapear registro del backend al formato del frontend
    */
-  private mapBackendToFrontend(backendRecord: BackendRecord): any {
+  private mapBackendToFrontend(backendRecord: BackendRecord): DataRecord {
     return {
       id: backendRecord.id.toString(),
       codigo: backendRecord.codigo,
       codigo_placa: backendRecord.codigo_placa,
-      cliente: backendRecord.cliente,
-      equipo: backendRecord.equipo,
-      fv_anios: backendRecord.fv_anios,
-      fv_meses: backendRecord.fv_meses,
-      fecha_instalacion: backendRecord.fecha_instalacion,
-      longitud: backendRecord.longitud,
+      cliente: backendRecord.cliente || "",
+      equipo: backendRecord.equipo || "",
+      fv_anios: backendRecord.fv_anios || 0,
+      fv_meses: backendRecord.fv_meses || 0,
+      fecha_instalacion: backendRecord.fecha_instalacion
+        ? new Date(backendRecord.fecha_instalacion)
+        : new Date(),
+      longitud: backendRecord.longitud || 0,
       observaciones: backendRecord.observaciones,
-      seec: backendRecord.seec,
-      tipo_linea: backendRecord.tipo_linea,
-      ubicacion: backendRecord.ubicacion,
-      anclaje_equipos: backendRecord.anclaje_equipos,
-      fecha_caducidad: backendRecord.fecha_caducidad,
-      estado_actual: backendRecord.estado_actual,
+      seec: backendRecord.seec || "",
+      tipo_linea: backendRecord.tipo_linea || "",
+      ubicacion: backendRecord.ubicacion || "",
+      anclaje_equipos: backendRecord.anclaje_equipos || undefined,
+      fecha_caducidad: backendRecord.fecha_caducidad
+        ? new Date(backendRecord.fecha_caducidad)
+        : new Date(),
+      estado_actual: this.mapBackendStatusToFrontend(
+        backendRecord.estado_actual || "ACTIVO"
+      ),
     };
   }
 
   /**
-   * Mapear estadísticas del backend al formato del frontend
+   * Mapear datos del frontend al formato del backend
    */
-  private mapBackendStatsToFrontend(backendStats: BackendStatistics): FrontendStatistics {
+  private mapFrontendToBackend(
+    frontendData: Omit<DataRecord, "id">
+  ): CreateRecordData {
     return {
-      total: backendStats.total,
-      activos: backendStats.activos,
-      por_vencer: backendStats.por_vencer,
-      vencidos: backendStats.vencidos,
-      inactivos: backendStats.inactivos,
-      mantenimiento: backendStats.mantenimiento,
+      codigo: frontendData.codigo,
+      codigo_placa: frontendData.codigo_placa || undefined,
+      cliente: frontendData.cliente || undefined,
+      equipo: frontendData.equipo || undefined,
+      fv_anios: frontendData.fv_anios || undefined,
+      fv_meses: frontendData.fv_meses || undefined,
+      fecha_instalacion: frontendData.fecha_instalacion
+        ? new Date(frontendData.fecha_instalacion).toISOString().split("T")[0]
+        : undefined,
+      longitud: frontendData.longitud || undefined,
+      observaciones: frontendData.observaciones || undefined,
+      seec: frontendData.seec || undefined,
+      tipo_linea: frontendData.tipo_linea || undefined,
+      ubicacion: frontendData.ubicacion || undefined,
+      anclaje_equipos: frontendData.anclaje_equipos || undefined,
+      fecha_caducidad: frontendData.fecha_caducidad
+        ? new Date(frontendData.fecha_caducidad).toISOString().split("T")[0]
+        : undefined,
+      estado_actual: this.mapFrontendStatusToBackend(
+        frontendData.estado_actual
+      ),
     };
   }
 
   /**
-   * Obtener registros con paginación y filtros
+   * Obtener registros con filtros y paginación
    */
-  async getRecords(filters: RecordFilters = {}): Promise<PaginatedResponse<any>> {
+  async getRecords(filters?: RecordFilters): Promise<{
+    data: DataRecord[];
+    pagination: {
+      currentPage: number;
+      totalPages: number;
+      totalItems: number;
+      itemsPerPage: number;
+    };
+  }> {
     try {
-      const queryParams = new URLSearchParams();
-      
-      if (filters.codigo) {
-        queryParams.append("codigo", filters.codigo);
-      }
-      if (filters.codigo_placa) {
-        queryParams.append("codigo_placa", filters.codigo_placa);
-      }
-      if (filters.cliente) {
-        queryParams.append("cliente", filters.cliente);
-      }
-      if (filters.equipo) {
-        queryParams.append("equipo", filters.equipo);
-      }
-      if (filters.estado_actual) {
-        queryParams.append("estado_actual", filters.estado_actual);
-      }
-      if (filters.tipo_linea) {
-        queryParams.append("tipo_linea", filters.tipo_linea);
-      }
-      if (filters.ubicacion) {
-        queryParams.append("ubicacion", filters.ubicacion);
-      }
-      if (filters.anclaje_equipos) {
-        queryParams.append("anclaje_equipos", filters.anclaje_equipos);
-      }
-      if (filters.seec) {
-        queryParams.append("seec", filters.seec);
-      }
-      if (filters.fecha_instalacion_desde) {
-        queryParams.append("fecha_instalacion_desde", filters.fecha_instalacion_desde);
-      }
-      if (filters.fecha_instalacion_hasta) {
-        queryParams.append("fecha_instalacion_hasta", filters.fecha_instalacion_hasta);
-      }
-      if (filters.page) {
-        queryParams.append("page", filters.page.toString());
-      }
-      if (filters.limit) {
-        queryParams.append("limit", filters.limit.toString());
-      }
-      if (filters.sortBy) {
-        queryParams.append("sortBy", filters.sortBy);
-      }
-      if (filters.sortOrder) {
-        queryParams.append("sortOrder", filters.sortOrder);
-      }
+      const params = new URLSearchParams();
 
-      const url = `${this.basePath}${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
+      if (filters?.codigo) params.append("codigo", filters.codigo);
+      if (filters?.codigo_placa)
+        params.append("codigo_placa", filters.codigo_placa);
+      if (filters?.cliente) params.append("cliente", filters.cliente);
+      if (filters?.equipo) params.append("equipo", filters.equipo);
+      if (filters?.anclaje_equipos)
+        params.append("anclaje_equipos", filters.anclaje_equipos);
+      if (filters?.seec) params.append("seec", filters.seec);
+      if (filters?.estado_actual) {
+        // Mapear estado del frontend al backend
+        const backendStatus = this.mapFrontendStatusToBackend(
+          filters.estado_actual as DataRecord["estado_actual"]
+        );
+        params.append("estado_actual", backendStatus);
+      }
+      if (filters?.tipo_linea) params.append("tipo_linea", filters.tipo_linea);
+      if (filters?.ubicacion) params.append("ubicacion", filters.ubicacion);
+      if (filters?.fecha_instalacion_desde)
+        params.append(
+          "fecha_instalacion_desde",
+          filters.fecha_instalacion_desde
+        );
+      if (filters?.fecha_instalacion_hasta)
+        params.append(
+          "fecha_instalacion_hasta",
+          filters.fecha_instalacion_hasta
+        );
+      if (filters?.page) params.append("page", filters.page.toString());
+      if (filters?.limit) params.append("limit", filters.limit.toString());
+      if (filters?.sortBy) params.append("sortBy", filters.sortBy);
+      if (filters?.sortOrder) params.append("sortOrder", filters.sortOrder);
+
+      const queryString = params.toString();
+      const url = `${this.basePath}${queryString ? `?${queryString}` : ""}`;
+
       const response = await apiClient.get<BackendPaginatedRecords>(url);
-      
+
+      // Mapear respuesta del backend al formato del frontend
+      const mappedData = response.data.map((record) =>
+        this.mapBackendToFrontend(record)
+      );
+
       return {
-        data: response.data.map(record => this.mapBackendToFrontend(record)),
-        meta: response.meta,
+        data: mappedData,
+        pagination: {
+          currentPage: response.meta.page,
+          totalPages: response.meta.totalPages,
+          totalItems: response.meta.total,
+          itemsPerPage: response.meta.limit,
+        },
       };
     } catch (error) {
       console.error("Error fetching records:", error);
-      if (error instanceof ApiClientError && error.status === 403) {
-        throw new Error("No tienes permisos para ver los registros");
-      }
       throw error;
     }
   }
@@ -206,9 +281,11 @@ class RegistroService {
   /**
    * Obtener registro por ID
    */
-  async getRecordById(id: string): Promise<any> {
+  async getRecordById(id: string): Promise<DataRecord> {
     try {
-      const response = await apiClient.get<BackendRecord>(`${this.basePath}/${id}`);
+      const response = await apiClient.get<BackendRecord>(
+        `${this.basePath}/${id}`
+      );
       return this.mapBackendToFrontend(response);
     } catch (error) {
       if (error instanceof ApiClientError && error.status === 404) {
@@ -221,16 +298,17 @@ class RegistroService {
   /**
    * Crear nuevo registro
    */
-  async createRecord(data: CreateRecordData): Promise<any> {
+  async createRecord(recordData: Omit<DataRecord, "id">): Promise<DataRecord> {
     try {
-      const response = await apiClient.post<BackendRecord>(this.basePath, data);
+      const backendData = this.mapFrontendToBackend(recordData);
+      const response = await apiClient.post<BackendRecord>(
+        this.basePath,
+        backendData
+      );
       return this.mapBackendToFrontend(response);
     } catch (error) {
-      if (error instanceof ApiClientError && error.status === 400) {
-        throw new Error("Datos de registro inválidos");
-      }
       if (error instanceof ApiClientError && error.status === 409) {
-        throw new Error("Ya existe un registro con ese código");
+        throw new Error("El código ya existe");
       }
       throw error;
     }
@@ -239,16 +317,64 @@ class RegistroService {
   /**
    * Actualizar registro
    */
-  async updateRecord(id: string, data: Partial<CreateRecordData>): Promise<any> {
+  async updateRecord(
+    id: string,
+    recordData: Partial<Omit<DataRecord, "id">>
+  ): Promise<DataRecord> {
     try {
-      const response = await apiClient.put<BackendRecord>(`${this.basePath}/${id}`, data);
+      // Solo enviar campos que realmente se están actualizando
+      const backendData: Partial<CreateRecordData> = {};
+
+      if (recordData.codigo !== undefined)
+        backendData.codigo = recordData.codigo;
+      if (recordData.codigo_placa !== undefined)
+        backendData.codigo_placa = recordData.codigo_placa;
+      if (recordData.cliente !== undefined)
+        backendData.cliente = recordData.cliente;
+      if (recordData.equipo !== undefined)
+        backendData.equipo = recordData.equipo;
+      if (recordData.anclaje_equipos !== undefined)
+        backendData.anclaje_equipos = recordData.anclaje_equipos;
+      if (recordData.fv_anios !== undefined)
+        backendData.fv_anios = recordData.fv_anios;
+      if (recordData.fv_meses !== undefined)
+        backendData.fv_meses = recordData.fv_meses;
+      if (recordData.fecha_instalacion !== undefined) {
+        backendData.fecha_instalacion = new Date(recordData.fecha_instalacion)
+          .toISOString()
+          .split("T")[0];
+      }
+      if (recordData.longitud !== undefined)
+        backendData.longitud = recordData.longitud;
+      if (recordData.observaciones !== undefined)
+        backendData.observaciones = recordData.observaciones;
+      if (recordData.seec !== undefined) backendData.seec = recordData.seec;
+      if (recordData.tipo_linea !== undefined)
+        backendData.tipo_linea = recordData.tipo_linea;
+      if (recordData.ubicacion !== undefined)
+        backendData.ubicacion = recordData.ubicacion;
+      if (recordData.fecha_caducidad !== undefined) {
+        backendData.fecha_caducidad = new Date(recordData.fecha_caducidad)
+          .toISOString()
+          .split("T")[0];
+      }
+      if (recordData.estado_actual !== undefined) {
+        backendData.estado_actual = this.mapFrontendStatusToBackend(
+          recordData.estado_actual
+        );
+      }
+
+      const response = await apiClient.patch<BackendRecord>(
+        `${this.basePath}/${id}`,
+        backendData
+      );
       return this.mapBackendToFrontend(response);
     } catch (error) {
       if (error instanceof ApiClientError && error.status === 404) {
         throw new Error("Registro no encontrado");
       }
-      if (error instanceof ApiClientError && error.status === 400) {
-        throw new Error("Datos de registro inválidos");
+      if (error instanceof ApiClientError && error.status === 409) {
+        throw new Error("El código ya existe");
       }
       throw error;
     }
@@ -259,13 +385,10 @@ class RegistroService {
    */
   async deleteRecord(id: string): Promise<void> {
     try {
-      await apiClient.delete(`${this.basePath}/${id}`);
+      await apiClient.delete<void>(`${this.basePath}/${id}`);
     } catch (error) {
       if (error instanceof ApiClientError && error.status === 404) {
         throw new Error("Registro no encontrado");
-      }
-      if (error instanceof ApiClientError && error.status === 403) {
-        throw new Error("No tienes permisos para eliminar registros");
       }
       throw error;
     }
@@ -273,107 +396,29 @@ class RegistroService {
 
   /**
    * Obtener estadísticas de registros
+   * Mapea directamente la respuesta del backend al formato del frontend
    */
   async getStatistics(): Promise<FrontendStatistics> {
     try {
-      const response = await apiClient.get<BackendStatistics>(`${this.basePath}/statistics`);
-      return this.mapBackendStatsToFrontend(response);
+      const response = await apiClient.get<BackendStatistics>(
+        `${this.basePath}/statistics`
+      );
+
+      // Mapear directamente la respuesta del backend
+      return this.mapBackendStatisticsToFrontend(response);
     } catch (error) {
-      console.error("Error fetching record statistics:", error);
-      throw error;
+      console.error("Error fetching statistics:", error);
+
+      // En caso de error, retornar valores por defecto
+      return {
+        total: 0,
+        activos: 0,
+        vencidos: 0,
+        por_vencer: 0,
+        inactivos: 0,
+        mantenimiento: 0,
+      };
     }
-  }
-
-  /**
-   * Buscar registros por término
-   */
-  async searchRecords(searchTerm: string): Promise<any[]> {
-    try {
-      const response = await apiClient.get<BackendRecord[]>(`${this.basePath}/search?q=${encodeURIComponent(searchTerm)}`);
-      return response.map(record => this.mapBackendToFrontend(record));
-    } catch (error) {
-      console.error("Error searching records:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Obtener opciones para filtros
-   */
-  async getFilterOptions(): Promise<{
-    equipos: string[];
-    ubicaciones: string[];
-    clientes: string[];
-    areas: string[];
-    estados: string[];
-  }> {
-    try {
-      const response = await apiClient.get(`${this.basePath}/filter-options`);
-      return response;
-    } catch (error) {
-      console.error("Error fetching filter options:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Exportar registros
-   */
-  async exportRecords(filters: RecordFilters = {}): Promise<Blob> {
-    try {
-      const queryParams = new URLSearchParams();
-      
-      if (filters.codigo) {
-        queryParams.append("codigo", filters.codigo);
-      }
-      if (filters.cliente) {
-        queryParams.append("cliente", filters.cliente);
-      }
-      if (filters.equipo) {
-        queryParams.append("equipo", filters.equipo);
-      }
-      if (filters.estado_actual) {
-        queryParams.append("estado_actual", filters.estado_actual);
-      }
-      if (filters.fecha_instalacion_desde) {
-        queryParams.append("fecha_instalacion_desde", filters.fecha_instalacion_desde);
-      }
-      if (filters.fecha_instalacion_hasta) {
-        queryParams.append("fecha_instalacion_hasta", filters.fecha_instalacion_hasta);
-      }
-
-      const url = `${this.basePath}/export${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
-      const response = await apiClient.get(url, { responseType: 'blob' });
-      return response;
-    } catch (error) {
-      console.error("Error exporting records:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Validar datos de registro
-   */
-  validateRecordData(data: CreateRecordData): string[] {
-    const errors: string[] = [];
-
-    if (!data.codigo?.trim()) {
-      errors.push("El código es requerido");
-    }
-
-    if (data.longitud && data.longitud <= 0) {
-      errors.push("La longitud debe ser mayor a 0");
-    }
-
-    if (data.fv_anios && data.fv_anios <= 0) {
-      errors.push("Los años de vida útil deben ser mayor a 0");
-    }
-
-    if (data.fv_meses && (data.fv_meses < 0 || data.fv_meses > 11)) {
-      errors.push("Los meses de vida útil deben estar entre 0 y 11");
-    }
-
-    return errors;
   }
 }
 

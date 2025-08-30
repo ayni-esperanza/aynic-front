@@ -243,10 +243,18 @@ class ImageService {
       );
       return this.mapBackendToFrontend(response);
     } catch (error) {
+      // Si es 404, no hay imagen para este record
       if (error instanceof ApiClientError && error.status === 404) {
-        return null; // No hay imagen para este record
+        return null;
       }
-      throw error;
+      
+      // Si es un error de parsing JSON, probablemente no hay imagen
+      if (error instanceof SyntaxError && error.message.includes('JSON')) {
+        return null;
+      }
+      
+      // Para otros errores, solo retornar null en lugar de throw
+      return null;
     }
   }
 
@@ -371,6 +379,3 @@ class ImageService {
 
 // Exportar instancia singleton
 export const imageService = new ImageService();
-
-// Tipos para exportar
-export type { ImageResponse, ImageStatistics, UploadImageDto, UpdateImageDto };

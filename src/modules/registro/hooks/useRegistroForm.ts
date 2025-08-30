@@ -30,14 +30,21 @@ export const useRegistroForm = (initialData?: Partial<CreateRecordData>) => {
     loading: creating,
     error: createError,
     execute: createRecord,
-  } = useApi(registroService.createRecord.bind(registroService));
+  } = useApi(async (...args: unknown[]) => {
+    const recordData = args[0] as Omit<DataRecord, "id">;
+    return registroService.createRecord(recordData);
+  });
 
   // Hook para actualizar registro
   const {
     loading: updating,
     error: updateError,
     execute: updateRecord,
-  } = useApi(registroService.updateRecord.bind(registroService));
+  } = useApi(async (...args: unknown[]) => {
+    const id = args[0] as string;
+    const recordData = args[1] as Partial<Omit<DataRecord, "id">>;
+    return registroService.updateRecord(id, recordData);
+  });
 
   const updateField = useCallback((field: keyof CreateRecordData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -91,8 +98,27 @@ export const useRegistroForm = (initialData?: Partial<CreateRecordData>) => {
     }
 
     try {
-      const result = await createRecord(formData);
-      return result;
+      // Convertir formData al formato que espera el servicio
+      const recordData: Omit<DataRecord, "id"> = {
+        codigo: formData.codigo,
+        codigo_placa: formData.codigo_placa || "",
+        cliente: formData.cliente || "",
+        equipo: formData.equipo || "",
+        fv_anios: formData.fv_anios || 0,
+        fv_meses: formData.fv_meses || 0,
+        fecha_instalacion: formData.fecha_instalacion ? new Date(formData.fecha_instalacion) : new Date(),
+        longitud: formData.longitud || 0,
+        observaciones: formData.observaciones || "",
+        seec: formData.seec || "",
+        tipo_linea: formData.tipo_linea || "",
+        ubicacion: formData.ubicacion || "",
+        anclaje_equipos: formData.anclaje_equipos || undefined,
+        fecha_caducidad: formData.fecha_caducidad ? new Date(formData.fecha_caducidad) : new Date(),
+        estado_actual: (formData.estado_actual as DataRecord["estado_actual"]) || "activo",
+      };
+      
+      await createRecord(recordData);
+      return null; // El resultado se maneja a través del estado del hook
     } catch (error) {
       console.error("Error creating record:", error);
       return null;
@@ -105,9 +131,27 @@ export const useRegistroForm = (initialData?: Partial<CreateRecordData>) => {
     }
 
     try {
-      const updateData: UpdateRecordData = { id, ...formData };
-      const result = await updateRecord(id, formData);
-      return result;
+      // Convertir formData al formato que espera el servicio
+      const recordData: Partial<Omit<DataRecord, "id">> = {
+        codigo: formData.codigo,
+        codigo_placa: formData.codigo_placa,
+        cliente: formData.cliente,
+        equipo: formData.equipo,
+        fv_anios: formData.fv_anios,
+        fv_meses: formData.fv_meses,
+        fecha_instalacion: formData.fecha_instalacion ? new Date(formData.fecha_instalacion) : undefined,
+        longitud: formData.longitud,
+        observaciones: formData.observaciones,
+        seec: formData.seec,
+        tipo_linea: formData.tipo_linea,
+        ubicacion: formData.ubicacion,
+        anclaje_equipos: formData.anclaje_equipos,
+        fecha_caducidad: formData.fecha_caducidad ? new Date(formData.fecha_caducidad) : undefined,
+        estado_actual: formData.estado_actual as DataRecord["estado_actual"],
+      };
+      
+      await updateRecord(id, recordData);
+      return null; // El resultado se maneja a través del estado del hook
     } catch (error) {
       console.error("Error updating record:", error);
       return null;
