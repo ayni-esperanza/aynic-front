@@ -85,6 +85,7 @@ export const RegistroDetail: React.FC = () => {
   const { error: showError, success } = useToast();
   const [activeTab, setActiveTab] = useState("general");
   const [currentImage, setCurrentImage] = useState<ImageResponse | null>(null);
+  const [hasImage, setHasImage] = useState<boolean | null>(null); // null = loading, true = has image, false = no image
   const [showImageUpload, setShowImageUpload] = useState(false);
 
   // Estados para relaciones
@@ -103,7 +104,7 @@ export const RegistroDetail: React.FC = () => {
     loading,
     error,
     execute: loadRegistro,
-  } = useApi(registroService.getRecordById.bind(registroService), {
+  } = useApi((...args: unknown[]) => registroService.getRecordById(args[0] as string), {
     onError: (error) => {
       showError("Error al cargar registro", error);
       isLoadingRef.current = false;
@@ -121,6 +122,27 @@ export const RegistroDetail: React.FC = () => {
   );
 
   const [loadingImage] = useState(false);
+
+  // Hook para verificar si el registro tiene imagen
+  const {
+    loading: checkingImage,
+    execute: checkImage,
+  } = useApi((...args: unknown[]) => imageService.getRecordImage(args[0] as string), {
+    onSuccess: (image) => {
+      setHasImage(true);
+      setCurrentImage(image);
+    },
+    onError: (error: any) => {
+      // Si es 404, significa que no hay imagen
+      if (error?.message?.includes("404") || error?.message?.includes("Not Found")) {
+        setHasImage(false);
+        setCurrentImage(null);
+      } else {
+        console.warn("Error checking image:", error);
+        setHasImage(false);
+      }
+    },
+  });
 
   const mountedRef = useRef(true);
 
@@ -140,12 +162,14 @@ export const RegistroDetail: React.FC = () => {
 
       try {
         await loadRegistro(recordId);
+        // Verificar si el registro tiene imagen
+        await checkImage(recordId);
       } catch (error) {
         console.error("Error loading data:", error);
         isLoadingRef.current = false;
       }
     },
-    [loadRegistro]
+    [loadRegistro, checkImage]
   );
 
   // Función para cargar relaciones
@@ -472,7 +496,7 @@ export const RegistroDetail: React.FC = () => {
                     Longitud
                   </h4>
                   <p className="text-xl font-medium text-green-700">
-                    {registro.longitud}m
+                    {registro.longitud || 0}m
                   </p>
                 </div>
               </Card>
@@ -531,7 +555,7 @@ export const RegistroDetail: React.FC = () => {
                     <div className="flex items-center justify-between py-2">
                       <span className="text-gray-600">Extensión:</span>
                       <span className="font-medium">
-                        {registro.longitud.toLocaleString()} metros
+                        {(registro.longitud || 0).toLocaleString()} metros
                       </span>
                     </div>
                   </div>
@@ -899,24 +923,45 @@ export const RegistroDetail: React.FC = () => {
               </p>
             </div>
 
-            {loadingImage ? (
+            {checkingImage ? (
               <div className="flex items-center justify-center h-64">
                 <div className="text-center">
                   <LoadingSpinner size="lg" />
-                  <p className="mt-4 text-gray-600">Cargando imagen...</p>
+                  <p className="mt-4 text-gray-600">Verificando imagen...</p>
                 </div>
               </div>
-            ) : (
+            ) : hasImage === false ? (
+              <div className="max-w-4xl mx-auto">
+                <Card className="border-2 border-gray-300 border-dashed">
+                  <div className="p-16 text-center">
+                    <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full">
+                      <ImageIcon className="w-10 h-10 text-gray-400" />
+                    </div>
+                    <h4 className="mb-3 text-xl font-medium text-gray-900">
+                      Sin imagen disponible
+                    </h4>
+                    <p className="max-w-sm mx-auto text-gray-500">
+                      No se ha asociado ninguna imagen a este registro.
+                      <br />
+                      <span className="text-sm text-gray-400">
+                        Las imágenes solo se pueden subir durante la creación del registro.
+                      </span>
+                    </p>
+                  </div>
+                </Card>
+              </div>
+            ) : hasImage === true ? (
               <div className="max-w-4xl mx-auto">
                 <ImageUpload
                   recordId={registro.id}
                   recordCode={registro.codigo}
                   skipInitialLoad={false}
+                  readOnly={true}
                   onImageUploaded={handleImageUploaded}
                   onImageDeleted={handleImageDeleted}
                 />
               </div>
-            )}
+            ) : null}
           </div>
         );
 
