@@ -25,6 +25,8 @@ import {
   Calendar,
   Users,
   Database,
+  ChevronLeft,
+  ChevronRight as ChevronRightIcon,
 } from "lucide-react";
 import { Card } from "../shared/components/ui/Card";
 import { Badge } from "../shared/components/ui/Badge";
@@ -342,6 +344,10 @@ export const Dashboard: React.FC = () => {
     leida: "" as boolean | "",
   });
   const [refreshing, setRefreshing] = useState(false);
+  
+  // Estados de paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Hooks de API
   const { loading: loadingAlertStats, execute: loadAlertStats } = useApi(
@@ -499,6 +505,20 @@ export const Dashboard: React.FC = () => {
 
     return alerts;
   }, [alertStats, alertFilters]);
+
+  // Calcular paginación
+  const paginatedAlerts = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredAlerts.slice(startIndex, endIndex);
+  }, [filteredAlerts, currentPage]);
+
+  const totalPages = Math.ceil(filteredAlerts.length / itemsPerPage);
+
+  // Resetear página cuando cambian los filtros
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [alertFilters]);
 
   // Calcular métricas de tendencia (simuladas por ahora)
   const alertTrends = useMemo(() => {
@@ -1048,9 +1068,9 @@ export const Dashboard: React.FC = () => {
                 </div>
               </div>
 
-              {/* Lista de alertas con scroll */}
-              <div className="space-y-4 overflow-y-auto max-h-96">
-                {filteredAlerts.map((alert) => (
+              {/* Lista de alertas paginada */}
+              <div className="space-y-4">
+                {paginatedAlerts.map((alert) => (
                   <AlertItem
                     key={alert.id}
                     alert={alert}
@@ -1059,6 +1079,53 @@ export const Dashboard: React.FC = () => {
                   />
                 ))}
               </div>
+
+              {/* Paginación */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between pt-6 mt-6 border-t border-gray-200">
+                  <div className="text-sm text-gray-600">
+                    Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, filteredAlerts.length)} de {filteredAlerts.length} alertas
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="px-3 py-1"
+                    >
+                      <ChevronLeft size={16} className="mr-1" />
+                      Anterior
+                    </Button>
+                    
+                    <div className="flex items-center space-x-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <Button
+                          key={page}
+                          size="sm"
+                          variant={page === currentPage ? "primary" : "outline"}
+                          onClick={() => setCurrentPage(page)}
+                          className="w-8 h-8 p-0"
+                        >
+                          {page}
+                        </Button>
+                      ))}
+                    </div>
+                    
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-1"
+                    >
+                      Siguiente
+                      <ChevronRightIcon size={16} className="ml-1" />
+                    </Button>
+                  </div>
+                </div>
+              )}
 
               {/* Acciones masivas */}
               {filteredAlerts.some((alert) => !alert.leida) && (
