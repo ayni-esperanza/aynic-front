@@ -909,7 +909,6 @@ export const RegistroDetail: React.FC = () => {
             ) : (
               <div className="max-w-4xl mx-auto">
                 <ImageUpload
-                  key={`image-upload-${registro.id}`}
                   recordId={registro.id}
                   recordCode={registro.codigo}
                   skipInitialLoad={false}

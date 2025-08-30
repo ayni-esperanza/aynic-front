@@ -192,43 +192,67 @@ export const RegistroList: React.FC = () => {
     [buildParams, updateFilters, loadStats]
   );
 
+  // Referencias para controlar la carga de imágenes
+  const loadingImagesRef = useRef(false);
+  const loadedRecordIdsRef = useRef<Set<string>>(new Set());
+
   // Función para cargar imágenes de los registros con límite de concurrencia
   const loadImagesForRecords = useCallback(async (records: DataRecord[]) => {
-    const newImageMap = new Map<string, ImageResponse>();
-    const batchSize = 2; // Reducir a 2 imágenes a la vez para evitar rate limiting
-    
-    for (let i = 0; i < records.length; i += batchSize) {
-      const batch = records.slice(i, i + batchSize);
-      
-             const batchPromises = batch.map(async (record) => {
-         try {
-           const image = await imageService.getRecordImage(record.id);
-           return { recordId: record.id, image };
-         } catch (error) {
-           // Solo log si no es un error esperado (como 404 o parsing JSON)
-           if (!(error instanceof SyntaxError) && !(error instanceof Error && error.message.includes('404'))) {
-             console.warn(`Error loading image for record ${record.id}:`, error);
-           }
-           return { recordId: record.id, image: null };
-         }
-       });
-
-      const batchResults = await Promise.all(batchPromises);
-      
-      batchResults.forEach(({ recordId, image }) => {
-        if (image) {
-          newImageMap.set(recordId, image);
-        }
-      });
-
-      // Pausa más larga entre lotes para evitar rate limiting
-      if (i + batchSize < records.length) {
-        await new Promise(resolve => setTimeout(resolve, 200));
-      }
+    // Evitar cargas duplicadas
+    if (loadingImagesRef.current) {
+      return;
     }
 
-    setRecordImages(prev => new Map([...prev, ...newImageMap]));
-  }, []);
+    // Filtrar solo registros que no tienen imágenes cargadas
+    const recordsToLoad = records.filter(record => !recordImages.has(record.id) && !loadedRecordIdsRef.current.has(record.id));
+    
+    if (recordsToLoad.length === 0) {
+      return;
+    }
+
+    loadingImagesRef.current = true;
+    const newImageMap = new Map<string, ImageResponse>();
+    const batchSize = 1; // Reducir a 1 imagen a la vez para evitar rate limiting
+    
+    try {
+      for (let i = 0; i < recordsToLoad.length; i += batchSize) {
+        const batch = recordsToLoad.slice(i, i + batchSize);
+        
+        const batchPromises = batch.map(async (record) => {
+          try {
+            // Marcar como intentado inmediatamente
+            loadedRecordIdsRef.current.add(record.id);
+            
+            const image = await imageService.getRecordImage(record.id);
+            return { recordId: record.id, image };
+          } catch (error) {
+            // Solo log si no es un error esperado (como 404 o parsing JSON)
+            if (!(error instanceof SyntaxError) && !(error instanceof Error && error.message.includes('404'))) {
+              console.warn(`Error loading image for record ${record.id}:`, error);
+            }
+            return { recordId: record.id, image: null };
+          }
+        });
+
+        const batchResults = await Promise.all(batchPromises);
+        
+        batchResults.forEach(({ recordId, image }) => {
+          if (image) {
+            newImageMap.set(recordId, image);
+          }
+        });
+
+        // Pausa más larga entre lotes para evitar rate limiting
+        if (i + batchSize < recordsToLoad.length) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
+
+      setRecordImages(prev => new Map([...prev, ...newImageMap]));
+    } finally {
+      loadingImagesRef.current = false;
+    }
+  }, [recordImages]);
 
   // Cargar datos inicial solo una vez
   useEffect(() => {
@@ -247,14 +271,14 @@ export const RegistroList: React.FC = () => {
 
   // Cargar imágenes cuando cambien los registros
   useEffect(() => {
-    if (registros.length > 0) {
+    if (registros.length > 0 && !loadingImagesRef.current) {
       // Solo cargar imágenes si no están ya cargadas
-      const recordsWithoutImages = registros.filter(record => !recordImages.has(record.id));
+      const recordsWithoutImages = registros.filter(record => !recordImages.has(record.id) && !loadedRecordIdsRef.current.has(record.id));
       if (recordsWithoutImages.length > 0) {
-        loadImagesForRecords(recordsWithoutImages);
+        loadImagesForRecords(registros);
       }
     }
-  }, [registros, loadImagesForRecords]);
+  }, [registros, loadImagesForRecords, recordImages]);
 
   // Limpiar timeout al desmontar
   useEffect(() => {

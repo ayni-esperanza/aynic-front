@@ -52,6 +52,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   const isLoadingImageRef = useRef(false);
   const hasLoadedImageRef = useRef(false);
   const loadedRecordIdRef = useRef<string | null>(null);
+  const attemptedLoadsRef = useRef<Set<string>>(new Set());
 
   // Estados locales
   const [currentImage, setCurrentImage] = useState<ImageResponse | null>(
@@ -218,25 +219,22 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
   // Cargar imagen al montar el componente (con control anti-duplicados)
   useEffect(() => {
+    // Solo cargar una vez por recordId y evitar intentos duplicados
     if (
       recordId &&
       !skipInitialLoad &&
       !externalCurrentImage &&
       !initialImage &&
-      !currentImage &&
       !isLoadingImageRef.current &&
-      !hasLoadedImageRef.current
+      !hasLoadedImageRef.current &&
+      !attemptedLoadsRef.current.has(recordId)
     ) {
       isLoadingImageRef.current = true;
+      hasLoadedImageRef.current = true; // Marcar como intentado inmediatamente
+      attemptedLoadsRef.current.add(recordId); // Marcar como intentado
       loadImage(recordId);
     }
-  }, [
-    recordId,
-    skipInitialLoad,
-    externalCurrentImage,
-    initialImage,
-    currentImage,
-  ]);
+  }, [recordId, skipInitialLoad, externalCurrentImage, initialImage]);
 
   // Sincronizar con imagen externa
   useEffect(() => {

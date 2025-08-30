@@ -717,77 +717,75 @@ export const EditarRegistroForm: React.FC = () => {
                   />
 
                   {/* Cliente con SearchableSelect y funcionalidad de agregar */}
-                  <div>
-                    {showNewClientForm ? (
-                      <div>
-                        <label className="block mb-2 text-sm font-semibold text-gray-700">
-                          Nuevo Cliente
-                          <span className="ml-1 text-red-500">*</span>
-                        </label>
-                        <div className="flex items-center space-x-2">
-                          <Input
-                            value={newClientName}
-                            onChange={(e) => setNewClientName(e.target.value)}
-                            placeholder="Nombre del nuevo cliente"
-                            className="flex-1"
-                            onKeyPress={(e) => {
-                              if (e.key === "Enter") {
-                                e.preventDefault();
-                                handleAddNewClient();
-                              }
-                            }}
-                          />
-                          <Button
-                            type="button"
-                            size="sm"
-                            onClick={handleAddNewClient}
-                            disabled={!newClientName.trim()}
-                            className="px-3"
-                            icon={Check}
-                          >
-                            Agregar
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={handleCancelNewClient}
-                            className="px-3"
-                            icon={X}
-                          >
-                            Cancelar
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-start space-x-2">
-                        <div className="flex-1">
-                          <SearchableSelect
-                            options={clientesList}
-                            value={formData.cliente}
-                            onChange={(value) => handleChange("cliente", value)}
-                            placeholder="Buscar cliente..."
-                            label="Cliente"
-                            error={errors.cliente}
-                            required
-                          />
-                        </div>
-                        <div className="pt-8">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setShowNewClientForm(true)}
-                            className="px-3 border-[#18D043] text-[#18D043] hover:bg-[#18D043] hover:text-white"
-                            icon={Plus}
-                            title="Agregar nuevo cliente"
-                          >
-                            +
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                   <div>
+                     {showNewClientForm ? (
+                       <div className="space-y-3">
+                         <label className="block mb-2 text-sm font-semibold text-gray-700">
+                           Nuevo Cliente
+                           <span className="ml-1 text-red-500">*</span>
+                         </label>
+                         <div className="flex items-center space-x-2">
+                           <Input
+                             value={newClientName}
+                             onChange={(e) => setNewClientName(e.target.value)}
+                             placeholder="Nombre del nuevo cliente"
+                             className="flex-1"
+                             onKeyPress={(e) => {
+                               if (e.key === "Enter") {
+                                 e.preventDefault();
+                                 handleAddNewClient();
+                               }
+                             }}
+                           />
+                           <Button
+                             type="button"
+                             size="sm"
+                             onClick={handleAddNewClient}
+                             disabled={!newClientName.trim()}
+                             className="px-3"
+                             icon={Check}
+                           >
+                             Agregar
+                           </Button>
+                           <Button
+                             type="button"
+                             variant="outline"
+                             size="sm"
+                             onClick={handleCancelNewClient}
+                             className="px-3"
+                             icon={X}
+                           >
+                             Cancelar
+                           </Button>
+                         </div>
+                       </div>
+                     ) : (
+                       <div className="space-y-2">
+                         <SearchableSelect
+                           options={clientesList}
+                           value={formData.cliente}
+                           onChange={(value) => handleChange("cliente", value)}
+                           placeholder="Buscar cliente..."
+                           label="Cliente"
+                           error={errors.cliente}
+                           required
+                         />
+                         <div className="flex-shrink-0 mb-2">
+                           <Button
+                             type="button"
+                             variant="outline"
+                             size="sm"
+                             onClick={() => setShowNewClientForm(true)}
+                             className="px-3 border-[#18D043] text-[#18D043] hover:bg-[#18D043] hover:text-white"
+                             icon={Plus}
+                             title="Agregar nuevo cliente"
+                           >
+                             Nuevo
+                           </Button>
+                         </div>
+                       </div>
+                     )}
+                   </div>
 
                   <Input
                     label="Equipo"
@@ -973,66 +971,70 @@ export const EditarRegistroForm: React.FC = () => {
             )}
 
             {/* BOTONES */}
-            <div className="flex justify-between pt-8 mt-8 border-t border-gray-200">
-              <div>
-                {currentStep > 1 && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handlePrev}
-                    icon={ArrowLeft}
-                    disabled={updating}
-                  >
-                    Anterior
-                  </Button>
-                )}
-              </div>
+             <div className="flex justify-between pt-8 mt-8 border-t border-gray-200">
+               <div>
+                 {/* Solo mostrar "Anterior" si no estamos en el paso 4 con imagen subida */}
+                 {currentStep > 1 && !(currentStep === 4 && hasImage) && (
+                   <Button
+                     type="button"
+                     variant="outline"
+                     onClick={handlePrev}
+                     icon={ArrowLeft}
+                     disabled={updating}
+                   >
+                     Anterior
+                   </Button>
+                 )}
+               </div>
 
-              <div className="flex space-x-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => navigate("/registro")}
-                  icon={X}
-                  disabled={updating}
-                >
-                  Cancelar
-                </Button>
+               <div className="flex space-x-3">
+                 {/* Solo mostrar "Cancelar" si no estamos en el paso 4 con imagen subida */}
+                 {!(currentStep === 4 && hasImage) && (
+                   <Button
+                     type="button"
+                     variant="outline"
+                     onClick={() => navigate("/registro")}
+                     icon={X}
+                     disabled={updating}
+                   >
+                     Cancelar
+                   </Button>
+                 )}
 
-                {currentStep === 4 ? (
-                  <Button
-                    type="button"
-                    onClick={() => navigate("/registro")}
-                    icon={Check}
-                    disabled={updating}
-                    className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
-                  >
-                    Finalizar Edición
-                  </Button>
-                ) : (
-                  <Button
-                    type="button"
-                    onClick={async () => {
-                      if (!validateStep(currentStep)) return;
+                 {currentStep === 4 ? (
+                   <Button
+                     type="button"
+                     onClick={() => navigate("/registro")}
+                     icon={Check}
+                     disabled={updating}
+                     className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
+                   >
+                     Finalizar Edición
+                   </Button>
+                 ) : (
+                   <Button
+                     type="button"
+                     onClick={async () => {
+                       if (!validateStep(currentStep)) return;
 
-                      // Si estamos en el paso 3, guardar cambios antes de avanzar al paso 4
-                      if (currentStep === 3) {
-                        await handleSaveToAdvanceToStep4();
-                      } else {
-                        handleNext();
-                      }
-                    }}
-                    disabled={updating}
-                    loading={currentStep === 3 && updating}
-                    className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
-                  >
-                    {currentStep === 3 && updating
-                      ? "Guardando..."
-                      : "Siguiente"}
-                  </Button>
-                )}
-              </div>
-            </div>
+                       // Si estamos en el paso 3, guardar cambios antes de avanzar al paso 4
+                       if (currentStep === 3) {
+                         await handleSaveToAdvanceToStep4();
+                       } else {
+                         handleNext();
+                       }
+                     }}
+                     disabled={updating}
+                     loading={currentStep === 3 && updating}
+                     className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
+                   >
+                     {currentStep === 3 && updating
+                       ? "Guardando..."
+                       : "Siguiente"}
+                   </Button>
+                 )}
+               </div>
+             </div>
           </form>
         </Card>
       </div>
