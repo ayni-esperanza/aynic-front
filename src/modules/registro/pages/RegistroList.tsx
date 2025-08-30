@@ -189,8 +189,6 @@ export const RegistroList: React.FC = () => {
 
       // Solo resetear imágenes si cambia de página, no si se aplican filtros
       if (page && page !== pagination.currentPage) {
-        currentRecordsRef.current = "";
-        loadedRecordIdsRef.current.clear();
         setRecordImages(new Map());
       }
 
@@ -200,57 +198,28 @@ export const RegistroList: React.FC = () => {
     [buildParams, updateFilters, loadStats, pagination.currentPage]
   );
 
-  // Referencias para controlar la carga de imágenes
-  const loadingImagesRef = useRef(false);
-  const loadedRecordIdsRef = useRef<Set<string>>(new Set());
-  const currentRecordsRef = useRef<string>("");
-
-  // Función para cargar imágenes de los registros con límite de concurrencia
+  // Función para cargar imágenes de los registros
   const loadImagesForRecords = useCallback(async (records: DataRecord[]) => {
-    // Evitar cargas duplicadas
-    if (loadingImagesRef.current) {
-      return;
-    }
+    const imagePromises = records.map(async (record) => {
+      try {
+        const image = await imageService.getRecordImage(record.id);
+        return { recordId: record.id, image };
+      } catch (error) {
+        return { recordId: record.id, image: null };
+      }
+    });
 
-    // Filtrar solo registros que no tienen imágenes cargadas
-    const recordsToLoad = records.filter(record => !recordImages.has(record.id) && !loadedRecordIdsRef.current.has(record.id));
-
-    if (recordsToLoad.length === 0) {
-      return;
-    }
-
-    loadingImagesRef.current = true;
+    const imageResults = await Promise.all(imagePromises);
     const newImageMap = new Map<string, ImageResponse>();
 
-    try {
-      // Procesar una imagen a la vez con delay entre cada una
-      for (const record of recordsToLoad) {
-        try {
-          // Marcar como intentado inmediatamente
-          loadedRecordIdsRef.current.add(record.id);
-
-          const image = await imageService.getRecordImage(record.id);
-          if (image) {
-            newImageMap.set(record.id, image);
-            // Actualizar el estado inmediatamente para mostrar la imagen
-            setRecordImages(prev => new Map(prev).set(record.id, image));
-          }
-        } catch (error) {
-          // Solo log si no es un error esperado (como 404 o parsing JSON)
-          if (!(error instanceof SyntaxError) && !(error instanceof Error && error.message.includes('404'))) {
-            console.warn(`Error loading image for record ${record.id}:`, error);
-          }
-        }
-
-        // Pausa entre cada imagen para evitar rate limiting
-        if (recordsToLoad.indexOf(record) < recordsToLoad.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 2000)); // 2 segundos entre imágenes
-        }
+    imageResults.forEach(({ recordId, image }) => {
+      if (image) {
+        newImageMap.set(recordId, image);
       }
-    } finally {
-      loadingImagesRef.current = false;
-    }
-  }, [recordImages]);
+    });
+
+    setRecordImages(newImageMap);
+  }, []);
 
   // Cargar datos inicial solo una vez
   useEffect(() => {
@@ -273,7 +242,7 @@ export const RegistroList: React.FC = () => {
             setInstallDateFrom(filters.fecha_instalacion_desde || "");
             setInstallDateTo(filters.fecha_instalacion_hasta || "");
 
-            // Aplicar los filtros restaurados después de un pequeño delay
+            // Aplicar los filtros restaurados después de un delay
             setTimeout(() => {
               const params = buildParams(filters, 1);
               updateFilters(params);
@@ -287,7 +256,7 @@ export const RegistroList: React.FC = () => {
       };
       loadInitialData();
     }
-  }, [loadStats, buildParams, updateFilters]);
+  }, [buildParams, updateFilters, loadStats]); // Agregar dependencias necesarias
 
   // Guardar filtros en localStorage cuando cambien
   useEffect(() => {
@@ -295,30 +264,6 @@ export const RegistroList: React.FC = () => {
       localStorage.setItem('registroFilters', JSON.stringify(appliedFilters));
     }
   }, [appliedFilters]);
-
-  useEffect(() => {
-    if (registros.length > 0 && !loadingImagesRef.current) {
-      // Crear un hash de los registros actuales
-      const recordsHash = registros.map(r => r.id).sort().join(',');
-
-      // Solo cargar si los registros han cambiado y no están ya cargadas las imágenes
-      if (currentRecordsRef.current !== recordsHash) {
-        currentRecordsRef.current = recordsHash;
-
-        // Solo cargar imágenes de registros que no tienen imágenes cargadas
-        const recordsWithoutImages = registros.filter(record =>
-          !recordImages.has(record.id) && !loadedRecordIdsRef.current.has(record.id)
-        );
-
-        if (recordsWithoutImages.length > 0) {
-          // Cargar imágenes con delay para evitar rate limiting
-          setTimeout(() => {
-            loadImagesForRecords(recordsWithoutImages);
-          }, 500);
-        }
-      }
-    }
-  }, [registros, recordImages, loadImagesForRecords]);
 
   // Limpiar timeout al desmontar
   useEffect(() => {
