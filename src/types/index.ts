@@ -19,7 +19,9 @@ export interface DataRecord extends Record<string, unknown> {
   fecha_instalacion: Date;
   longitud: number;
   observaciones?: string;
-  seec: string;
+  seccion: string;
+  area: string;
+  planta: string;
   tipo_linea: string;
   ubicacion: string;
   anclaje_equipos?: string;

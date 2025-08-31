@@ -11,11 +11,13 @@ export interface RecordFilters {
   codigo_placa?: string;
   cliente?: string;
   equipo?: string;
-  estado_actual?: string;
-  tipo_linea?: string;
   ubicacion?: string;
   anclaje_equipos?: string;
-  seec?: string;
+  estado_actual?: string;
+  tipo_linea?: string;
+  seccion?: string;
+  area?: string;
+  planta?: string;
   fecha_instalacion_desde?: string;
   fecha_instalacion_hasta?: string;
   page?: number;
@@ -34,7 +36,9 @@ export interface CreateRecordData {
   fecha_instalacion?: string;
   longitud?: number;
   observaciones?: string;
-  seec?: string;
+  seccion?: string;
+  area?: string;
+  planta?: string;
   tipo_linea?: string;
   ubicacion?: string;
   anclaje_equipos?: string;
@@ -53,7 +57,9 @@ export interface BackendRecord {
   fecha_instalacion?: string;
   longitud?: number;
   observaciones?: string;
-  seec?: string;
+  seccion?: string;
+  area?: string;
+  planta?: string;
   tipo_linea?: string;
   ubicacion?: string;
   anclaje_equipos?: string;
@@ -107,7 +113,7 @@ class RegistroService {
     if (!backendStatus) {
       return undefined;
     }
-    
+
     const statusMap: Record<string, DataRecord["estado_actual"]> = {
       ACTIVO: "activo",
       POR_VENCER: "por_vencer",
@@ -128,7 +134,7 @@ class RegistroService {
     if (!frontendStatus) {
       return "";
     }
-    
+
     const statusMap: Record<string, string> = {
       activo: "ACTIVO",
       por_vencer: "POR_VENCER",
@@ -172,7 +178,9 @@ class RegistroService {
         : undefined,
       longitud: backendRecord.longitud || 0,
       observaciones: backendRecord.observaciones,
-      seec: backendRecord.seec || "",
+      seccion: backendRecord.seccion || "",
+      area: backendRecord.area || "",
+      planta: backendRecord.planta || "",
       tipo_linea: backendRecord.tipo_linea || "",
       ubicacion: backendRecord.ubicacion || "",
       anclaje_equipos: backendRecord.anclaje_equipos || undefined,
@@ -203,7 +211,9 @@ class RegistroService {
         : undefined,
       longitud: frontendData.longitud || undefined,
       observaciones: frontendData.observaciones || undefined,
-      seec: frontendData.seec || undefined,
+      seccion: frontendData.seccion || undefined,
+      area: frontendData.area || undefined,
+      planta: frontendData.planta || undefined,
       tipo_linea: frontendData.tipo_linea || undefined,
       ubicacion: frontendData.ubicacion || undefined,
       anclaje_equipos: frontendData.anclaje_equipos || undefined,
@@ -238,7 +248,9 @@ class RegistroService {
       if (filters?.equipo) params.append("equipo", filters.equipo);
       if (filters?.anclaje_equipos)
         params.append("anclaje_equipos", filters.anclaje_equipos);
-      if (filters?.seec) params.append("seec", filters.seec);
+      if (filters?.seccion) params.append("seccion", filters.seccion);
+      if (filters?.area) params.append("area", filters.area);
+      if (filters?.planta) params.append("planta", filters.planta);
       if (filters?.estado_actual) {
         // Mapear estado del frontend al backend
         const backendStatus = this.mapFrontendStatusToBackend(
@@ -358,7 +370,9 @@ class RegistroService {
         backendData.longitud = recordData.longitud;
       if (recordData.observaciones !== undefined)
         backendData.observaciones = recordData.observaciones;
-      if (recordData.seec !== undefined) backendData.seec = recordData.seec;
+      if (recordData.seccion !== undefined) backendData.seccion = recordData.seccion;
+      if (recordData.area !== undefined) backendData.area = recordData.area;
+      if (recordData.planta !== undefined) backendData.planta = recordData.planta;
       if (recordData.tipo_linea !== undefined)
         backendData.tipo_linea = recordData.tipo_linea;
       if (recordData.ubicacion !== undefined)

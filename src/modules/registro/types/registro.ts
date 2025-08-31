@@ -12,7 +12,9 @@ export interface BackendRecord {
   fecha_instalacion?: string;
   longitud?: number;
   observaciones?: string;
-  seec?: string;
+  seccion?: string;
+  area?: string;
+  planta?: string;
   tipo_linea?: string;
   ubicacion?: string;
   anclaje_equipos?: string;
@@ -55,7 +57,9 @@ export interface DataRecord {
   fecha_instalacion?: Date;
   longitud?: number;
   observaciones?: string;
-  seec?: string;
+  seccion?: string;
+  area?: string;
+  planta?: string;
   tipo_linea?: string;
   ubicacion?: string;
   anclaje_equipos?: string;
@@ -73,7 +77,11 @@ export interface RecordFilters {
   tipo_linea?: string;
   ubicacion?: string;
   anclaje_equipos?: string;
-  seec?: string;
+  seccion?: string;
+  area?: string;
+  planta?: string;
+  fecha_caducidad_desde?: string;
+  fecha_caducidad_hasta?: string;
   fecha_instalacion_desde?: string;
   fecha_instalacion_hasta?: string;
   page?: number;
@@ -92,7 +100,9 @@ export interface CreateRecordData {
   fecha_instalacion?: string;
   longitud?: number;
   observaciones?: string;
-  seec?: string;
+  seccion?: string;
+  area?: string;
+  planta?: string;
   tipo_linea?: string;
   ubicacion?: string;
   anclaje_equipos?: string;

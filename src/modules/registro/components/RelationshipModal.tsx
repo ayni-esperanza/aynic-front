@@ -9,8 +9,11 @@ import type { DataRecord } from "../types/registro";
 interface RelationshipModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
   parentRecord: DataRecord;
+  onSuccess?: () => void;
+  seccion?: string;
+  area?: string;
+  planta?: string;
 }
 
 interface ChildRecordForm {
@@ -53,14 +56,14 @@ export const RelationshipModal: React.FC<RelationshipModalProps> = ({
   };
 
   const updateChildRecord = (index: number, field: string, value: any) => {
-    setChildRecords(prev => prev.map((record, i) => 
+    setChildRecords(prev => prev.map((record, i) =>
       i === index ? { ...record, [field]: value } : record
     ));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validaciones básicas
     const hasEmptyCode = childRecords.some(record => !record.codigo.trim());
     if (hasEmptyCode) {
@@ -80,7 +83,9 @@ export const RelationshipModal: React.FC<RelationshipModalProps> = ({
           ubicacion: record.ubicacion || parentRecord.ubicacion,
           cliente: parentRecord.cliente,
           equipo: parentRecord.equipo,
-          seec: parentRecord.seec,
+          seccion: parentRecord.seccion,
+          area: parentRecord.area,
+          planta: parentRecord.planta,
           tipo_linea: parentRecord.tipo_linea,
         }))
       };
@@ -148,7 +153,7 @@ export const RelationshipModal: React.FC<RelationshipModalProps> = ({
                 Agregar Línea
               </Button>
             </div>
-            
+
             <div className="space-y-4">
               {childRecords.map((record, index) => (
                 <div key={index} className="p-4 border border-gray-200 rounded-lg">

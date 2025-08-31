@@ -40,6 +40,16 @@ export interface CreateRelationshipResponseDto {
   message: string;
 }
 
+export interface RecordRelationshipData {
+  parent_record_id: string;
+  child_record_id: string;
+  relationship_type: "REPLACEMENT" | "DIVISION" | "UPGRADE";
+  notes?: string;
+  seccion?: string;
+  area?: string;
+  planta?: string;
+}
+
 export const relationshipService = {
   async createRelationship(
     data: CreateRelationshipDto

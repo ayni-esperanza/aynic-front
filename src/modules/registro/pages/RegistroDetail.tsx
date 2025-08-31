@@ -404,10 +404,26 @@ export const RegistroDetail: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-orange-600">
-                      Sección/Área/Planta
+                      Sección
                     </p>
                     <p className="font-mono text-lg font-bold text-orange-900">
-                      {registro.seec}
+                      {registro.seccion}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-orange-600">
+                      Área
+                    </p>
+                    <p className="font-mono text-lg font-bold text-orange-900">
+                      {registro.area}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-orange-600">
+                      Planta
+                    </p>
+                    <p className="font-mono text-lg font-bold text-orange-900">
+                      {registro.planta}
                     </p>
                   </div>
                 </div>
@@ -543,11 +559,21 @@ export const RegistroDetail: React.FC = () => {
                       </div>
                     )}
                     <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                      <span className="text-gray-600">
-                        Sección/Área/Planta:
-                      </span>
+                      <span className="text-gray-600">Sección:</span>
                       <span className="px-2 py-1 font-mono font-medium bg-gray-100 rounded">
-                        {registro.seec}
+                        {registro.seccion}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">Área:</span>
+                      <span className="px-2 py-1 font-mono font-medium bg-gray-100 rounded">
+                        {registro.area}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">Planta:</span>
+                      <span className="px-2 py-1 font-mono font-medium bg-gray-100 rounded">
+                        {registro.planta}
                       </span>
                     </div>
                     <div className="flex items-center justify-between py-2 border-b border-gray-100">
@@ -622,7 +648,7 @@ export const RegistroDetail: React.FC = () => {
                           if (registro.fecha_instalacion && !isNaN(registro.fecha_instalacion.getTime())) {
                             return Math.floor(
                               (new Date().getTime() - registro.fecha_instalacion.getTime()) /
-                                (1000 * 60 * 60 * 24)
+                              (1000 * 60 * 60 * 24)
                             );
                           }
                           return 0;
@@ -660,7 +686,7 @@ export const RegistroDetail: React.FC = () => {
                             const today = new Date();
                             const diffDays = Math.floor(
                               (registro.fecha_caducidad.getTime() - today.getTime()) /
-                                (1000 * 60 * 60 * 24)
+                              (1000 * 60 * 60 * 24)
                             );
 
                             if (diffDays > 0) {
@@ -709,7 +735,7 @@ export const RegistroDetail: React.FC = () => {
 
                             const totalDays = Math.floor(
                               (new Date().getTime() - registro.fecha_instalacion.getTime()) /
-                                (1000 * 60 * 60 * 24)
+                              (1000 * 60 * 60 * 24)
                             );
                             const years = Math.floor(totalDays / 365);
                             const months = Math.floor((totalDays % 365) / 30);
@@ -806,8 +832,8 @@ export const RegistroDetail: React.FC = () => {
                               ? "División"
                               : parentRelation.relationship_type ===
                                 "REPLACEMENT"
-                              ? "Reemplazo"
-                              : "Actualización"}
+                                ? "Reemplazo"
+                                : "Actualización"}
                           </span>
                           <p className="mt-1 text-sm text-gray-500">
                             Estado:{" "}
@@ -859,8 +885,8 @@ export const RegistroDetail: React.FC = () => {
                                 {relation.relationship_type === "DIVISION"
                                   ? "División"
                                   : relation.relationship_type === "REPLACEMENT"
-                                  ? "Reemplazo"
-                                  : "Actualización"}
+                                    ? "Reemplazo"
+                                    : "Actualización"}
                               </span>
                               <p className="mt-1 text-sm text-gray-500">
                                 Estado: {relation.child_record?.estado_actual}
@@ -992,15 +1018,14 @@ export const RegistroDetail: React.FC = () => {
                         className="flex items-start p-4 space-x-4 rounded-lg bg-gray-50"
                       >
                         <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                            activity!.type === "create"
+                          className={`w-10 h-10 rounded-full flex items-center justify-center ${activity!.type === "create"
                               ? "bg-green-100"
                               : activity!.type === "update"
-                              ? "bg-blue-100"
-                              : activity!.type === "image"
-                              ? "bg-orange-100"
-                              : "bg-purple-100"
-                          }`}
+                                ? "bg-blue-100"
+                                : activity!.type === "image"
+                                  ? "bg-orange-100"
+                                  : "bg-purple-100"
+                            }`}
                         >
                           {activity!.type === "create" && (
                             <CheckCircle className="w-5 h-5 text-green-600" />
@@ -1046,7 +1071,7 @@ export const RegistroDetail: React.FC = () => {
                             if (registro.fecha_instalacion && !isNaN(registro.fecha_instalacion.getTime())) {
                               return Math.floor(
                                 (new Date().getTime() - registro.fecha_instalacion.getTime()) /
-                                  (1000 * 60 * 60 * 24)
+                                (1000 * 60 * 60 * 24)
                               );
                             }
                             return 0;
@@ -1270,11 +1295,10 @@ export const RegistroDetail: React.FC = () => {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 transition-colors duration-200 ${
-                      activeTab === tab.id
+                    className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 transition-colors duration-200 ${activeTab === tab.id
                         ? "border-[#18D043] text-[#16a34a]"
                         : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                    }`}
+                      }`}
                   >
                     <TabIcon size={16} />
                     <span>{tab.label}</span>

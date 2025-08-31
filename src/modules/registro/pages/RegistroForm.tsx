@@ -296,7 +296,9 @@ export const RegistroForm: React.FC = () => {
     fecha_instalacion: "",
     longitud: "" as string | number,
     observaciones: "",
-    seec: "",
+    seccion: "",
+    area: "",
+    planta: "",
     tipo_linea: "",
     ubicacion: "",
     anclaje_equipos: "",
@@ -357,7 +359,9 @@ export const RegistroForm: React.FC = () => {
       if (!formData.codigo.trim()) e.codigo = "Requerido";
       if (!formData.cliente.trim()) e.cliente = "Requerido";
       if (!formData.equipo.trim()) e.equipo = "Requerido";
-      if (!formData.seec.trim()) e.seec = "Requerido";
+      if (!formData.seccion.trim()) e.seccion = "Requerido";
+      if (!formData.area.trim()) e.area = "Requerido";
+      if (!formData.planta.trim()) e.planta = "Requerido";
       if (formData.codigo_placa && formData.codigo_placa.length > 50) {
         e.codigo_placa = "No puede exceder 50 caracteres";
       }
@@ -431,7 +435,9 @@ export const RegistroForm: React.FC = () => {
       fecha_caducidad: formData.fecha_caducidad,
       longitud: Number(formData.longitud),
       observaciones: formData.observaciones || undefined,
-      seec: formData.seec,
+      seccion: formData.seccion,
+      area: formData.area,
+      planta: formData.planta,
       tipo_linea: formData.tipo_linea,
       ubicacion: formData.ubicacion,
       anclaje_equipos: formData.anclaje_equipos || undefined,
@@ -729,11 +735,27 @@ export const RegistroForm: React.FC = () => {
                     required
                   />
                   <Input
-                    label="Sección/Área/Planta"
-                    value={formData.seec}
-                    onChange={(e) => handleChange("seec", e.target.value)}
-                    error={errors.seec}
-                    placeholder="SEEC-001"
+                    label="Sección"
+                    value={formData.seccion}
+                    onChange={(e) => handleChange("seccion", e.target.value)}
+                    error={errors.seccion}
+                    placeholder="Sección A"
+                    required
+                  />
+                  <Input
+                    label="Área"
+                    value={formData.area}
+                    onChange={(e) => handleChange("area", e.target.value)}
+                    error={errors.area}
+                    placeholder="Área 1"
+                    required
+                  />
+                  <Input
+                    label="Planta"
+                    value={formData.planta}
+                    onChange={(e) => handleChange("planta", e.target.value)}
+                    error={errors.planta}
+                    placeholder="Planta 1"
                     required
                   />
                 </div>

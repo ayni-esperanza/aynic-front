@@ -74,7 +74,9 @@ export const RegistroList: React.FC = () => {
     equipo?: string;
     ubicacion?: string;
     cliente?: string; // empresa
-    seec?: string; // área
+    seccion?: string; // sección
+    area?: string; // área
+    planta?: string; // planta
     estado_actual?: string;
     fecha_instalacion_desde?: string;
     fecha_instalacion_hasta?: string;
@@ -170,7 +172,9 @@ export const RegistroList: React.FC = () => {
         equipo: f.equipo || undefined,
         ubicacion: f.ubicacion || undefined,
         cliente: f.cliente || undefined,
-        seec: f.seec || undefined,
+        seccion: f.seccion || undefined,
+        area: f.area || undefined,
+        planta: f.planta || undefined,
         estado_actual: f.estado_actual || undefined,
         fecha_instalacion_desde: f.fecha_instalacion_desde || undefined,
         fecha_instalacion_hasta: f.fecha_instalacion_hasta || undefined,
@@ -237,7 +241,7 @@ export const RegistroList: React.FC = () => {
             setEquipoFilter(filters.equipo || "");
             setUbicacionFilter(filters.ubicacion || "");
             setEmpresaFilter(filters.cliente || "");
-            setAreaFilter(filters.seec || "");
+            setAreaFilter(filters.area || "");
             setStatusFilter(filters.estado_actual || "");
             setInstallDateFrom(filters.fecha_instalacion_desde || "");
             setInstallDateTo(filters.fecha_instalacion_hasta || "");
@@ -317,7 +321,7 @@ export const RegistroList: React.FC = () => {
               cliente:
                 (field === "empresa" ? value : empresaFilter).trim() ||
                 undefined,
-              seec: (field === "area" ? value : areaFilter).trim() || undefined,
+              area: (field === "area" ? value : areaFilter).trim() || undefined,
             };
             // Aplica filtros y resetea a página 1
             fetchWith(patch, 1);
@@ -544,8 +548,8 @@ export const RegistroList: React.FC = () => {
         ),
       },
       {
-        key: "seec",
-        label: "Área",
+        key: "seccion",
+        label: "Sección",
         render: (value: any) => (
           <span className="inline-flex items-center px-2 py-1 font-mono text-sm text-indigo-800 bg-indigo-100 rounded-md">
             {String(value)}
@@ -829,7 +833,7 @@ export const RegistroList: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-500">Área:</span>
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                    {registro.seec}
+                    {registro.area}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
@@ -1256,7 +1260,7 @@ export const RegistroList: React.FC = () => {
                       if (key === "codigo") setSearchTerm("");
                       if (key === "codigo_placa") setCodigoPlacaFilter("");
                       if (key === "cliente") setEmpresaFilter("");
-                      if (key === "seec") setAreaFilter("");
+                      if (key === "area") setAreaFilter("");
                       if (key === "equipo") setEquipoFilter("");
                       if (key === "ubicacion") setUbicacionFilter("");
                       if (key === "estado_actual") setStatusFilter("");
@@ -1293,7 +1297,7 @@ export const RegistroList: React.FC = () => {
                     equipo: equipoFilter.trim() || undefined,
                     ubicacion: ubicacionFilter.trim() || undefined,
                     cliente: empresaFilter.trim() || undefined,
-                    seec: areaFilter.trim() || undefined,
+                    area: areaFilter.trim() || undefined,
                     estado_actual: statusFilter || undefined,
                     fecha_instalacion_desde: installDateFrom || undefined,
                     fecha_instalacion_hasta: installDateTo || undefined,
