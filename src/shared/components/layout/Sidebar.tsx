@@ -10,6 +10,7 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  ShoppingCart,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -77,6 +78,16 @@ const menuItems = [
     bgColor: "bg-orange-50",
     hoverColor: "hover:bg-orange-100",
     activeColor: "bg-gradient-to-r from-orange-500 to-orange-600",
+  },
+  {
+    path: "/ordenes-compra",
+    icon: ShoppingCart,
+    label: "Órdenes de Compra",
+    description: "Gestión de compras",
+    color: "text-teal-600",
+    bgColor: "bg-teal-50",
+    hoverColor: "hover:bg-teal-100",
+    activeColor: "bg-gradient-to-r from-teal-500 to-teal-600",
   },
 ];
 

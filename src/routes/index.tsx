@@ -36,6 +36,11 @@ const SolicitudesModule = React.lazy(() =>
     default: module.SolicitudesModule,
   }))
 );
+const PurchaseOrdersModule = React.lazy(() =>
+  import("../modules/purchase-orders").then((module) => ({
+    default: module.PurchaseOrdersModule,
+  }))
+);
 
 // Componente de loading para Suspense
 const PageLoadingFallback = () => (
@@ -189,6 +194,18 @@ export const AppRoutes: React.FC = () => {
                 </Suspense>
               </ModuleErrorBoundary>
             </ProtectedRoute>
+          }
+        />
+
+        {/* Módulo de Órdenes de Compra */}
+        <Route
+          path="ordenes-compra/*"
+          element={
+            <ModuleErrorBoundary>
+              <Suspense fallback={<PageLoadingFallback />}>
+                <PurchaseOrdersModule />
+              </Suspense>
+            </ModuleErrorBoundary>
           }
         />
       </Route>
