@@ -121,11 +121,10 @@ const HierarchicalLineTypeSelect: React.FC<{
         {categories.map((category) => (
           <div
             key={category.value}
-            className={`p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 ${
-              selectedCategory === category.value
-                ? "border-[#18D043] bg-[#18D043]/10 text-[#16a34a] shadow-md"
-                : "border-gray-200 hover:border-gray-300 text-gray-700 hover:shadow-sm"
-            }`}
+            className={`p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 ${selectedCategory === category.value
+              ? "border-[#18D043] bg-[#18D043]/10 text-[#16a34a] shadow-md"
+              : "border-gray-200 hover:border-gray-300 text-gray-700 hover:shadow-sm"
+              }`}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -164,11 +163,10 @@ const HierarchicalLineTypeSelect: React.FC<{
             {availableOrientations.map((orientation) => (
               <div
                 key={orientation.value}
-                className={`p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 ${
-                  selectedOrientation === orientation.value
-                    ? "border-[#18D043] bg-[#18D043]/10 text-[#16a34a] shadow-md"
-                    : "border-gray-200 hover:border-gray-300 text-gray-700 hover:shadow-sm"
-                }`}
+                className={`p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 ${selectedOrientation === orientation.value
+                  ? "border-[#18D043] bg-[#18D043]/10 text-[#16a34a] shadow-md"
+                  : "border-gray-200 hover:border-gray-300 text-gray-700 hover:shadow-sm"
+                  }`}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -376,7 +374,21 @@ export const RegistroForm: React.FC = () => {
       }
     }
     if (step === 3) {
-      if (!formData.fecha_instalacion) e.fecha_instalacion = "Requerido";
+      if (!formData.fecha_instalacion) {
+        e.fecha_instalacion = "Requerido";
+      } else {
+        const fechaInstalacion = new Date(formData.fecha_instalacion);
+        const fechaActual = new Date();
+        fechaActual.setHours(23, 59, 59, 999); // Fin del día actual
+
+        // Validación más estricta: no puede ser mayor al día actual
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0); // Inicio del día actual
+
+        if (fechaInstalacion > hoy) {
+          e.fecha_instalacion = "La fecha de instalación no puede ser futura";
+        }
+      }
       if (!formData.fecha_caducidad) e.fecha_caducidad = "Requerido";
 
       // Validación corregida para años
@@ -386,8 +398,8 @@ export const RegistroForm: React.FC = () => {
       const meses = Number(formData.fv_meses);
       if (isNaN(meses)) {
         e.fv_meses = "Debe ser un número válido";
-      } else if (meses < 1 || meses > 120) {
-        e.fv_meses = "Debe estar entre 1 y 120 meses";
+      } else if (meses < 0 || meses > 11) {
+        e.fv_meses = "Debe estar entre 0 y 11 meses";
       } else if (!Number.isInteger(meses)) {
         e.fv_meses = "Debe ser un número entero";
       }
@@ -588,21 +600,19 @@ export const RegistroForm: React.FC = () => {
                 <div key={step.number} className="flex items-center flex-1">
                   <div className="flex items-center">
                     <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${
-                        isCompleted
-                          ? "bg-[#18D043] text-white border-[#18D043]"
-                          : isActive
+                      className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${isCompleted
+                        ? "bg-[#18D043] text-white border-[#18D043]"
+                        : isActive
                           ? `${step.bgColor} ${step.color} border-current`
                           : "bg-gray-100 border-gray-300 text-gray-400"
-                      }`}
+                        }`}
                     >
                       {isCompleted ? "✓" : <Icon size={20} />}
                     </div>
                     <div className="ml-4">
                       <p
-                        className={`text-sm font-medium ${
-                          isActive ? "text-gray-900" : "text-gray-500"
-                        }`}
+                        className={`text-sm font-medium ${isActive ? "text-gray-900" : "text-gray-500"
+                          }`}
                       >
                         {step.title}
                       </p>
@@ -614,9 +624,8 @@ export const RegistroForm: React.FC = () => {
                   {idx < steps.length - 1 && (
                     <div className="flex-1 mx-6">
                       <div
-                        className={`h-0.5 transition-all ${
-                          isCompleted ? "bg-[#18D043]" : "bg-gray-300"
-                        }`}
+                        className={`h-0.5 transition-all ${isCompleted ? "bg-[#18D043]" : "bg-gray-300"
+                          }`}
                       />
                     </div>
                   )}
@@ -656,75 +665,75 @@ export const RegistroForm: React.FC = () => {
                   />
 
                   {/* Cliente con SearchableSelect y funcionalidad de agregar */}
-                    <div>
-                      {showNewClientForm ? (
-                        <div className="space-y-3">
-                          <label className="block text-sm font-semibold text-gray-700">
-                            Nuevo Cliente
-                            <span className="ml-1 text-red-500">*</span>
-                          </label>
-                          <div className="flex items-center space-x-2">
-                            <Input
-                              value={newClientName}
-                              onChange={(e) => setNewClientName(e.target.value)}
-                              placeholder="Nombre del nuevo cliente"
-                              className="flex-1"
-                              onKeyPress={(e) => {
-                                if (e.key === "Enter") {
-                                  e.preventDefault();
-                                  handleAddNewClient();
-                                }
-                              }}
-                            />
-                            <Button
-                              type="button"
-                              size="sm"
-                              onClick={handleAddNewClient}
-                              disabled={!newClientName.trim()}
-                              className="px-3"
-                              icon={Check}
-                            >
-                              Agregar
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={handleCancelNewClient}
-                              className="px-3"
-                              icon={X}
-                            >
-                              Cancelar
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          <SearchableSelect
-                            options={clientesList}
-                            value={formData.cliente}
-                            onChange={(value) => handleChange("cliente", value)}
-                            placeholder="Buscar cliente..."
-                            label="Cliente"
-                            error={errors.cliente}
-                            required
+                  <div>
+                    {showNewClientForm ? (
+                      <div className="space-y-3">
+                        <label className="block text-sm font-semibold text-gray-700">
+                          Nuevo Cliente
+                          <span className="ml-1 text-red-500">*</span>
+                        </label>
+                        <div className="flex items-center space-x-2">
+                          <Input
+                            value={newClientName}
+                            onChange={(e) => setNewClientName(e.target.value)}
+                            placeholder="Nombre del nuevo cliente"
+                            className="flex-1"
+                            onKeyPress={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleAddNewClient();
+                              }
+                            }}
                           />
-                          <div className="flex-shrink-0 mb-2">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setShowNewClientForm(true)}
-                              className="px-3 border-[#18D043] text-[#18D043] hover:bg-[#18D043] hover:text-white"
-                              icon={Plus}
-                              title="Agregar nuevo cliente"
-                            >
-                              Nuevo
-                            </Button>
-                          </div>
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={handleAddNewClient}
+                            disabled={!newClientName.trim()}
+                            className="px-3"
+                            icon={Check}
+                          >
+                            Agregar
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleCancelNewClient}
+                            className="px-3"
+                            icon={X}
+                          >
+                            Cancelar
+                          </Button>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <SearchableSelect
+                          options={clientesList}
+                          value={formData.cliente}
+                          onChange={(value) => handleChange("cliente", value)}
+                          placeholder="Buscar cliente..."
+                          label="Cliente"
+                          error={errors.cliente}
+                          required
+                        />
+                        <div className="flex-shrink-0 mb-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowNewClientForm(true)}
+                            className="px-3 border-[#18D043] text-[#18D043] hover:bg-[#18D043] hover:text-white"
+                            icon={Plus}
+                            title="Agregar nuevo cliente"
+                          >
+                            Nuevo
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
                   <Input
                     label="Equipo"
@@ -841,6 +850,11 @@ export const RegistroForm: React.FC = () => {
                       handleChange("fecha_instalacion", e.target.value)
                     }
                     error={errors.fecha_instalacion}
+                    max={(() => {
+                      const hoy = new Date();
+                      hoy.setDate(hoy.getDate() - 1); // Ayer como máximo
+                      return hoy.toISOString().split('T')[0];
+                    })()}
                     required
                   />
                   <Input
@@ -869,12 +883,17 @@ export const RegistroForm: React.FC = () => {
                     label="Vida útil meses"
                     type="number"
                     value={formData.fv_meses}
-                    onChange={(e) =>
-                      handleChange("fv_meses", Number(e.target.value) || 0)
-                    }
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Solo permitir hasta 2 dígitos y máximo 11
+                      if (value.length <= 2 && Number(value) <= 11) {
+                        handleChange("fv_meses", Number(value) || 0);
+                      }
+                    }}
                     error={errors.fv_meses}
                     min={0}
                     max={11}
+                    maxLength={2}
                     required
                   />
                   <Select
@@ -940,76 +959,76 @@ export const RegistroForm: React.FC = () => {
               </div>
             )}
 
-                         {/* ------- BOTONES ------- */}
-             <div className="flex justify-between pt-8 mt-8 border-t border-gray-200">
-               <div>
-                 {/* Solo mostrar "Anterior" si no estamos en el paso 4 con imagen subida */}
-                 {currentStep > 1 && !(currentStep === 4 && hasImage) && (
-                   <Button
-                     type="button"
-                     variant="outline"
-                     onClick={handlePrev}
-                     icon={ArrowLeft}
-                     disabled={creating}
-                   >
-                     Anterior
-                   </Button>
-                 )}
-               </div>
+            {/* ------- BOTONES ------- */}
+            <div className="flex justify-between pt-8 mt-8 border-t border-gray-200">
+              <div>
+                {/* Solo mostrar "Anterior" si no estamos en el paso 4 con imagen subida */}
+                {currentStep > 1 && !(currentStep === 4 && hasImage) && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handlePrev}
+                    icon={ArrowLeft}
+                    disabled={creating}
+                  >
+                    Anterior
+                  </Button>
+                )}
+              </div>
 
-               <div className="flex space-x-3">
-                 {/* Solo mostrar "Cancelar" si no estamos en el paso 4 con imagen subida */}
-                 {!(currentStep === 4 && hasImage) && (
-                   <Button
-                     type="button"
-                     variant="outline"
-                     onClick={() => navigate("/registro")}
-                     icon={X}
-                     disabled={creating}
-                   >
-                     Cancelar
-                   </Button>
-                 )}
+              <div className="flex space-x-3">
+                {/* Solo mostrar "Cancelar" si no estamos en el paso 4 con imagen subida */}
+                {!(currentStep === 4 && hasImage) && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => navigate("/registro")}
+                    icon={X}
+                    disabled={creating}
+                  >
+                    Cancelar
+                  </Button>
+                )}
 
-                 {currentStep === 4 ? (
-                   <div className="flex space-x-3">
-                     {/* Para nuevos registros sin guardar */}
-                     {!savedRecordId && (
-                       <Button
-                         type="submit"
-                         icon={Save}
-                         loading={creating}
-                         className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
-                       >
-                         {creating ? "Creando..." : "Crear Registro"}
-                       </Button>
-                     )}
+                {currentStep === 4 ? (
+                  <div className="flex space-x-3">
+                    {/* Para nuevos registros sin guardar */}
+                    {!savedRecordId && (
+                      <Button
+                        type="submit"
+                        icon={Save}
+                        loading={creating}
+                        className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
+                      >
+                        {creating ? "Creando..." : "Crear Registro"}
+                      </Button>
+                    )}
 
-                     {/* Para registros ya creados */}
-                     {savedRecordId && (
-                       <Button
-                         type="button"
-                         onClick={handleFinishWithoutImage}
-                         className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
-                       >
-                         Finalizar
-                       </Button>
-                     )}
-                   </div>
-                 ) : (
-                   <Button
-                     type="button"
-                     onClick={() => {
-                       if (validateStep(currentStep)) handleNext();
-                     }}
-                     disabled={creating}
-                     className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
-                   >
-                     Siguiente
-                   </Button>
-                 )}
-               </div>
-             </div>
+                    {/* Para registros ya creados */}
+                    {savedRecordId && (
+                      <Button
+                        type="button"
+                        onClick={handleFinishWithoutImage}
+                        className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
+                      >
+                        Finalizar
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      if (validateStep(currentStep)) handleNext();
+                    }}
+                    disabled={creating}
+                    className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
+                  >
+                    Siguiente
+                  </Button>
+                )}
+              </div>
+            </div>
           </form>
         </Card>
       </div>
