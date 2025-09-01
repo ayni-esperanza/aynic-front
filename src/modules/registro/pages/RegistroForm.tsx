@@ -311,21 +311,50 @@ export const RegistroForm: React.FC = () => {
     if (fecha_instalacion && (Number(fv_anios) > 0 || Number(fv_meses) > 0)) {
       const inst = new Date(fecha_instalacion);
       if (!isNaN(inst.getTime())) {
-        const venc = new Date(inst);
-        venc.setFullYear(venc.getFullYear() + Number(fv_anios));
-        venc.setMonth(venc.getMonth() + Number(fv_meses));
+        try {
+          const venc = new Date(inst);
+          const anios = Math.floor(Number(fv_anios) || 0);
+          const meses = Number(fv_meses) || 0;
 
-        if (inst.getDate() !== venc.getDate()) {
-          venc.setDate(0);
-        }
+          // Validar que los años estén en un rango razonable (0-50)
+          if (anios >= 0 && anios <= 50) {
+            // Primero agregar años
+            venc.setFullYear(venc.getFullYear() + anios);
 
-        const fechaVenc = venc.toISOString().split("T")[0];
+            // Luego agregar meses
+            venc.setMonth(venc.getMonth() + meses);
 
-        if (formData.fecha_caducidad !== fechaVenc) {
-          setFormData((f) => ({
-            ...f,
-            fecha_caducidad: fechaVenc,
-          }));
+            // Corregir el día 
+            const diaOriginal = inst.getDate();
+
+            // Calcular el mes resultante y último día del mes
+            const mesResultante = (inst.getMonth() + meses) % 12;
+            const anioResultante = venc.getFullYear();
+            const ultimoDiaMes = new Date(anioResultante, mesResultante + 1, 0).getDate();
+
+            // Si el día original no existe en el mes resultante, usar el último día del mes
+            if (diaOriginal > ultimoDiaMes) {
+              const fechaCorregida = new Date(anioResultante, mesResultante, ultimoDiaMes);
+              venc.setTime(fechaCorregida.getTime());
+            } else {
+              const fechaCorregida = new Date(anioResultante, mesResultante, diaOriginal);
+              venc.setTime(fechaCorregida.getTime());
+            }
+
+            // Validar que la fecha resultante sea válida
+            if (!isNaN(venc.getTime()) && venc.getFullYear() <= 9999) {
+              const fechaVenc = venc.toISOString().split("T")[0];
+
+              if (formData.fecha_caducidad !== fechaVenc) {
+                setFormData((f) => ({
+                  ...f,
+                  fecha_caducidad: fechaVenc,
+                }));
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error calculando fecha de caducidad:', error);
         }
       }
     }
@@ -473,6 +502,15 @@ export const RegistroForm: React.FC = () => {
               : numericValue;
 
           setFormData((p) => ({ ...p, [field]: sanitizedValue }));
+        } else if (field === "fv_anios") {
+          // Asegurar que siempre sea un entero
+          const intValue = Math.floor(Number(value) || 0);
+          setFormData((p) => ({ ...p, [field]: intValue }));
+        } else if (field === "fv_meses") {
+          // Asegurar que siempre sea un entero entre 0 y 11
+          const intValue = Math.floor(Number(value) || 0);
+          const clampedValue = Math.max(0, Math.min(11, intValue));
+          setFormData((p) => ({ ...p, [field]: clampedValue }));
         } else {
           setFormData((p) => ({ ...p, [field]: value }));
         }
@@ -871,12 +909,24 @@ export const RegistroForm: React.FC = () => {
                     label="Vida útil años"
                     type="number"
                     value={formData.fv_anios}
-                    onChange={(e) =>
-                      handleChange("fv_anios", Number(e.target.value) || 0)
-                    }
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Permitir números enteros, bloquear punto decimal
+                      if (value === '' || /^\d+$/.test(value)) {
+                        const intValue = Math.floor(Number(value) || 0);
+                        handleChange("fv_anios", intValue);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      // Bloquear teclas que no sean números, backspace, delete, arrow keys
+                      if (!/[\d\b\Delete\ArrowLeft\ArrowRight\ArrowUp\ArrowDown\Tab]/.test(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
                     error={errors.fv_anios}
                     min={0}
                     max={50}
+                    step={1}
                     required
                   />
                   <Input
@@ -885,9 +935,12 @@ export const RegistroForm: React.FC = () => {
                     value={formData.fv_meses}
                     onChange={(e) => {
                       const value = e.target.value;
-                      // Solo permitir hasta 2 dígitos y máximo 11
-                      if (value.length <= 2 && Number(value) <= 11) {
-                        handleChange("fv_meses", Number(value) || 0);
+                      // Solo permitir números enteros entre 0 y 11
+                      if (value === '' || /^\d{1,2}$/.test(value)) {
+                        const numValue = Number(value) || 0;
+                        if (numValue >= 0 && numValue <= 11) {
+                          handleChange("fv_meses", numValue);
+                        }
                       }
                     }}
                     error={errors.fv_meses}
