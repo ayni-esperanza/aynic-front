@@ -60,6 +60,7 @@ export const RegistroList: React.FC = () => {
   const [codigoPlacaFilter, setCodigoPlacaFilter] = useState("");
   const [installDateFrom, setInstallDateFrom] = useState("");
   const [installDateTo, setInstallDateTo] = useState("");
+  const [anclajeTipoFilter, setAnclajeTipoFilter] = useState("");
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
   const [showFilters, setShowFilters] = useState(false);
   const [showRelationshipModal, setShowRelationshipModal] = useState(false);
@@ -80,6 +81,7 @@ export const RegistroList: React.FC = () => {
     estado_actual?: string;
     fecha_instalacion_desde?: string;
     fecha_instalacion_hasta?: string;
+    anclaje_tipo?: string;
   };
 
   type SortOrder = "ASC" | "DESC";
@@ -176,6 +178,7 @@ export const RegistroList: React.FC = () => {
         area: f.area || undefined,
         planta: f.planta || undefined,
         estado_actual: f.estado_actual || undefined,
+        anclaje_tipo: f.anclaje_tipo || undefined,
         fecha_instalacion_desde: f.fecha_instalacion_desde || undefined,
         fecha_instalacion_hasta: f.fecha_instalacion_hasta || undefined,
         sortBy: sort.field,
@@ -243,6 +246,7 @@ export const RegistroList: React.FC = () => {
             setEmpresaFilter(filters.cliente || "");
             setAreaFilter(filters.area || "");
             setStatusFilter(filters.estado_actual || "");
+            setAnclajeTipoFilter(filters.anclaje_tipo || "");
             setInstallDateFrom(filters.fecha_instalacion_desde || "");
             setInstallDateTo(filters.fecha_instalacion_hasta || "");
 
@@ -428,6 +432,35 @@ export const RegistroList: React.FC = () => {
     return configs[estado as keyof typeof configs] || configs.inactivo;
   }, []);
 
+  const getAnclajeConfig = useCallback((value: string) => {
+    const configs = {
+      "anclaje_equipos": {
+        variant: "success" as const,
+        color: "text-green-600",
+      },
+      "anclaje_equipos_fijo": {
+        variant: "secondary" as const,
+        color: "text-gray-600",
+      },
+      "anclaje_equipos_movil": {
+        variant: "warning" as const,
+        color: "text-orange-600",
+      },
+      "anclaje_equipos_fijo_movil": {
+        variant: "info" as const,
+        color: "text-blue-600",
+      },
+    };
+    // Si no hay anclaje o es inválido, retornar configuración para "no registrado"
+    if (!value || value === "undefined" || value === "null") {
+      return {
+        variant: "secondary" as const,
+        color: "text-gray-500",
+      };
+    }
+    return configs[value as keyof typeof configs] || configs.anclaje_equipos;
+  }, []);
+
   const NoResultsMessage = () => {
     const hasActiveFilters = Object.values(appliedFilters).some(Boolean);
 
@@ -470,6 +503,7 @@ export const RegistroList: React.FC = () => {
               setEmpresaFilter("");
               setAreaFilter("");
               setStatusFilter("");
+              setAnclajeTipoFilter("");
               setInstallDateFrom("");
               setInstallDateTo("");
               setAppliedFilters({});
@@ -620,6 +654,44 @@ export const RegistroList: React.FC = () => {
             </span>
           ) : (
             <span className="text-xs italic text-gray-400">No registrado</span>
+          );
+        },
+      },
+      {
+        key: "anclaje_tipo",
+        label: "Tipo de Anclaje",
+        sortable: true,
+        render: (value: any) => {
+          if (!value) {
+            return (
+              <span className="text-xs italic text-gray-400">No seleccionado</span>
+            );
+          }
+          
+          const getAnclajeConfig = (tipo: string) => {
+            const configs: Record<string, { color: string; bgColor: string; icon: string }> = {
+              anclaje_terminal: { color: "text-blue-700", bgColor: "bg-blue-100", icon: "🔗" },
+              anclaje_intermedio: { color: "text-green-700", bgColor: "bg-green-100", icon: "🔗" },
+              anclaje_intermedio_basculante: { color: "text-purple-700", bgColor: "bg-purple-100", icon: "🔗" },
+              absorvedor_impacto: { color: "text-orange-700", bgColor: "bg-orange-100", icon: "🛡️" },
+              anclaje_superior: { color: "text-indigo-700", bgColor: "bg-indigo-100", icon: "⬆️" },
+              anclaje_inferior: { color: "text-teal-700", bgColor: "bg-teal-100", icon: "⬇️" },
+              anclaje_impacto: { color: "text-red-700", bgColor: "bg-red-100", icon: "🛡️" },
+            };
+            return configs[tipo] || { color: "text-gray-700", bgColor: "bg-gray-100", icon: "🔗" };
+          };
+
+          const config = getAnclajeConfig(value);
+          const label = value.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase());
+          
+          return (
+            <span
+              className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${config.bgColor} ${config.color}`}
+              title={label}
+            >
+              <span className="mr-1">{config.icon}</span>
+              {label}
+            </span>
           );
         },
       },
@@ -854,6 +926,14 @@ export const RegistroList: React.FC = () => {
                     {registro.tipo_linea}
                   </span>
                 </div>
+                {registro.anclaje_tipo && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-500">Anclaje:</span>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      {registro.anclaje_tipo.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                    </span>
+                  </div>
+                )}
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-500">Longitud:</span>
                   <span className="text-sm font-mono bg-gray-100 px-2 py-0.5 rounded">
@@ -1306,6 +1386,7 @@ export const RegistroList: React.FC = () => {
                     cliente: empresaFilter.trim() || undefined,
                     area: areaFilter.trim() || undefined,
                     estado_actual: statusFilter || undefined,
+                    anclaje_tipo: anclajeTipoFilter || undefined,
                     fecha_instalacion_desde: installDateFrom || undefined,
                     fecha_instalacion_hasta: installDateTo || undefined,
                   };
@@ -1361,6 +1442,27 @@ export const RegistroList: React.FC = () => {
                       setUbicacionFilter
                     )}
                     className="h-10 border-gray-300"
+                  />
+                </div>
+
+                {/* Tipo de Anclaje */}
+                <div className="md:col-span-4">
+                  <label className="block mb-1 text-xs font-semibold text-gray-700">
+                    Tipo de Anclaje
+                  </label>
+                  <Select
+                    value={anclajeTipoFilter}
+                    onChange={(e) => setAnclajeTipoFilter(e.target.value)}
+                    options={[
+                      { value: "", label: "Todos los tipos" },
+                      { value: "anclaje_terminal", label: "Anclaje Terminal" },
+                      { value: "anclaje_intermedio", label: "Anclaje Intermedio" },
+                      { value: "anclaje_intermedio_basculante", label: "Anclaje Intermedio Basculante" },
+                      { value: "absorvedor_impacto", label: "Absorbedor Impacto" },
+                      { value: "anclaje_superior", label: "Anclaje Superior" },
+                      { value: "anclaje_inferior", label: "Anclaje Inferior" },
+                      { value: "anclaje_impacto", label: "Anclaje Impacto" },
+                    ]}
                   />
                 </div>
 
@@ -1420,6 +1522,7 @@ export const RegistroList: React.FC = () => {
                           setEmpresaFilter("");
                           setAreaFilter("");
                           setStatusFilter("");
+                          setAnclajeTipoFilter("");
                           setInstallDateFrom("");
                           setInstallDateTo("");
                           setAppliedFilters({});

@@ -302,6 +302,7 @@ export const RegistroForm: React.FC = () => {
     anclaje_equipos: "",
     fecha_caducidad: "",
     estado_actual: "activo" as DataRecord["estado_actual"],
+    anclaje_tipo: "", // Nuevo campo para el tipo de anclaje
   });
 
   // Lógica automática de fecha de caducidad
@@ -401,6 +402,7 @@ export const RegistroForm: React.FC = () => {
       if (formData.anclaje_equipos && formData.anclaje_equipos.length > 100) {
         e.anclaje_equipos = "No puede exceder 100 caracteres";
       }
+      if (!formData.anclaje_tipo) e.anclaje_tipo = "Requerido"; // Validar anclaje_tipo
     }
     if (step === 3) {
       if (!formData.fecha_instalacion) {
@@ -482,6 +484,7 @@ export const RegistroForm: React.FC = () => {
       tipo_linea: formData.tipo_linea,
       ubicacion: formData.ubicacion,
       anclaje_equipos: formData.anclaje_equipos || undefined,
+      anclaje_tipo: formData.anclaje_tipo || undefined, // Incluir anclaje_tipo
       estado_actual: formData.estado_actual,
     };
 
@@ -511,6 +514,9 @@ export const RegistroForm: React.FC = () => {
           const intValue = Math.floor(Number(value) || 0);
           const clampedValue = Math.max(0, Math.min(11, intValue));
           setFormData((p) => ({ ...p, [field]: clampedValue }));
+        } else if (field === "tipo_linea") {
+          // Reset anclaje_tipo cuando cambia tipo_linea
+          setFormData((p) => ({ ...p, [field]: value, anclaje_tipo: "" }));
         } else {
           setFormData((p) => ({ ...p, [field]: value }));
         }
@@ -819,6 +825,95 @@ export const RegistroForm: React.FC = () => {
                     required
                   />
                 </div>
+
+                {/* Opciones de anclaje basadas en tipo_linea */}
+                {formData.tipo_linea && (
+                  <div className="space-y-4">
+                    <label className="block text-sm font-semibold text-gray-700">
+                      Tipo de Anclaje
+                      <span className="ml-1 text-red-500">*</span>
+                    </label>
+                    
+                    {/* Opciones para Línea de Vida Horizontal */}
+                    {(formData.tipo_linea === "permanente_horizontal" || formData.tipo_linea === "temporal_horizontal") && (
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        {[
+                          { value: "anclaje_terminal", label: "Anclaje Terminal", icon: "🔗" },
+                          { value: "anclaje_intermedio", label: "Anclaje Intermedio", icon: "🔗" },
+                          { value: "anclaje_intermedio_basculante", label: "Anclaje Intermedio Basculante", icon: "🔗" },
+                          { value: "absorbedor_impacto", label: "Absorbedor Impacto", icon: "🛡️" }
+                        ].map((option) => (
+                          <div
+                            key={option.value}
+                            className={`p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 ${
+                              formData.anclaje_tipo === option.value
+                                ? "border-[#18D043] bg-[#18D043]/10 text-[#16a34a] shadow-md"
+                                : "border-gray-200 hover:border-gray-300 text-gray-700 hover:shadow-sm"
+                            }`}
+                            onClick={() => handleChange("anclaje_tipo", option.value)}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-3">
+                                <span className="text-2xl">{option.icon}</span>
+                                <div>
+                                  <p className="font-medium">{option.label}</p>
+                                </div>
+                              </div>
+                              {formData.anclaje_tipo === option.value && (
+                                <div className="w-6 h-6 bg-[#18D043] rounded-full flex items-center justify-center">
+                                  <span className="text-sm font-bold text-white">✓</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Opciones para Línea de Vida Vertical */}
+                    {formData.tipo_linea === "permanente_vertical" && (
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                        {[
+                          { value: "anclaje_superior", label: "Anclaje Superior", icon: "⬆️" },
+                          { value: "anclaje_inferior", label: "Anclaje Inferior", icon: "⬇️" },
+                          { value: "anclaje_impacto", label: "Anclaje Impacto", icon: "🛡️" }
+                        ].map((option) => (
+                          <div
+                            key={option.value}
+                            className={`p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 ${
+                              formData.anclaje_tipo === option.value
+                                ? "border-[#18D043] bg-[#18D043]/10 text-[#16a34a] shadow-md"
+                                : "border-gray-200 hover:border-gray-300 text-gray-700 hover:shadow-sm"
+                            }`}
+                            onClick={() => handleChange("anclaje_tipo", option.value)}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-3">
+                                <span className="text-2xl">{option.icon}</span>
+                                <div>
+                                  <p className="font-medium">{option.label}</p>
+                                </div>
+                              </div>
+                              {formData.anclaje_tipo === option.value && (
+                                <div className="w-6 h-6 bg-[#18D043] rounded-full flex items-center justify-center">
+                                  <span className="text-sm font-bold text-white">✓</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Mensaje de error si no se ha seleccionado anclaje */}
+                    {errors.anclaje_tipo && (
+                      <p className="flex items-center space-x-1 text-sm text-red-600">
+                        <span className="text-red-500">⚠️</span>
+                        <span>{errors.anclaje_tipo}</span>
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 <div className="grid gap-6 md:grid-cols-2">
                   <Input

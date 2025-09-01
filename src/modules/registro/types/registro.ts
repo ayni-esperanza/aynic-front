@@ -18,6 +18,7 @@ export interface BackendRecord {
   tipo_linea?: string;
   ubicacion?: string;
   anclaje_equipos?: string;
+  anclaje_tipo?: string;
   fecha_caducidad?: string;
   estado_actual?: string;
 }
@@ -63,6 +64,7 @@ export interface DataRecord {
   tipo_linea?: string;
   ubicacion?: string;
   anclaje_equipos?: string;
+  anclaje_tipo?: string;
   fecha_caducidad?: Date;
   estado_actual?: string;
   [key: string]: unknown;
@@ -106,6 +108,7 @@ export interface CreateRecordData {
   tipo_linea?: string;
   ubicacion?: string;
   anclaje_equipos?: string;
+  anclaje_tipo?: string;
   fecha_caducidad?: string;
   estado_actual?: string;
 }

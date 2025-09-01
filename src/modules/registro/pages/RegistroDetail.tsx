@@ -582,6 +582,12 @@ export const RegistroDetail: React.FC = () => {
                       <span className="text-gray-600">Tecnología:</span>
                       <Badge variant="primary">{registro.tipo_linea}</Badge>
                     </div>
+                    {registro.anclaje_tipo && (
+                      <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-600">Tipo de Anclaje:</span>
+                        <Badge variant="secondary">{registro.anclaje_tipo}</Badge>
+                      </div>
+                    )}
                     <div className="flex items-center justify-between py-2">
                       <span className="text-gray-600">Extensión:</span>
                       <span className="font-medium">

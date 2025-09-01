@@ -42,6 +42,7 @@ export interface CreateRecordData {
   tipo_linea?: string;
   ubicacion?: string;
   anclaje_equipos?: string;
+  anclaje_tipo?: string;
   fecha_caducidad?: string;
   estado_actual?: string;
 }
@@ -63,6 +64,7 @@ export interface BackendRecord {
   tipo_linea?: string;
   ubicacion?: string;
   anclaje_equipos?: string;
+  anclaje_tipo?: string;
   fecha_caducidad?: string;
   estado_actual?: string;
 }
@@ -184,6 +186,7 @@ class RegistroService {
       tipo_linea: backendRecord.tipo_linea || "",
       ubicacion: backendRecord.ubicacion || "",
       anclaje_equipos: backendRecord.anclaje_equipos || undefined,
+      anclaje_tipo: backendRecord.anclaje_tipo || undefined,
       fecha_caducidad: backendRecord.fecha_caducidad
         ? new Date(backendRecord.fecha_caducidad)
         : undefined,
@@ -217,6 +220,7 @@ class RegistroService {
       tipo_linea: frontendData.tipo_linea || undefined,
       ubicacion: frontendData.ubicacion || undefined,
       anclaje_equipos: frontendData.anclaje_equipos || undefined,
+      anclaje_tipo: frontendData.anclaje_tipo || undefined,
       fecha_caducidad: frontendData.fecha_caducidad
         ? new Date(frontendData.fecha_caducidad).toISOString().split("T")[0]
         : undefined,
