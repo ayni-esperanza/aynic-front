@@ -35,6 +35,7 @@ import {
 } from '../../../shared/services/imageService';
 import { ImageUpload } from '../../../shared/components/common/ImageUpload';
 import { formatDate, formatDateTime } from '../../../shared/utils/formatters';
+import { useAuthStore } from '../../../store/authStore';
 import type { DataRecord } from "../types/registro";
 
 // Función auxiliar para manejar fechas de forma segura
@@ -72,6 +73,7 @@ export const RegistroDetail: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { error: showError, success } = useToast();
+  const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState("general");
   const [currentImage, setCurrentImage] = useState<ImageResponse | null>(null);
   const [hasImage, setHasImage] = useState<boolean | null>(null); // null = loading, true = has image, false = no image
@@ -1019,12 +1021,12 @@ export const RegistroDetail: React.FC = () => {
                       >
                         <div
                           className={`w-10 h-10 rounded-full flex items-center justify-center ${activity!.type === "create"
-                              ? "bg-green-100"
-                              : activity!.type === "update"
-                                ? "bg-blue-100"
-                                : activity!.type === "image"
-                                  ? "bg-orange-100"
-                                  : "bg-purple-100"
+                            ? "bg-green-100"
+                            : activity!.type === "update"
+                              ? "bg-blue-100"
+                              : activity!.type === "image"
+                                ? "bg-orange-100"
+                                : "bg-purple-100"
                             }`}
                         >
                           {activity!.type === "create" && (
@@ -1235,6 +1237,7 @@ export const RegistroDetail: React.FC = () => {
                 onClick={() => navigate(`/registro/editar/${registro.id}`)}
                 icon={Edit}
                 className="bg-gradient-to-r from-[#18D043] to-[#16a34a] hover:from-[#16a34a] hover:to-[#15803d] shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                disabled={!(user?.empresa === 'ayni' || user?.empresa === 'Ayni' || user?.empresa === 'AYNI')}
               >
                 Editar Registro
               </Button>
@@ -1296,8 +1299,8 @@ export const RegistroDetail: React.FC = () => {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 transition-colors duration-200 ${activeTab === tab.id
-                        ? "border-[#18D043] text-[#16a34a]"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                      ? "border-[#18D043] text-[#16a34a]"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                       }`}
                   >
                     <TabIcon size={16} />

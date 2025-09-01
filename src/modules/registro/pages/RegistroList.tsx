@@ -713,7 +713,7 @@ export const RegistroList: React.FC = () => {
               </Badge>
             );
           }
-          
+
           const estado = String(value) as DataRecord["estado_actual"];
           const config = getEstadoConfig(estado);
           return <Badge variant={config.variant}>{estado}</Badge>;
@@ -722,54 +722,60 @@ export const RegistroList: React.FC = () => {
       {
         key: "id",
         label: "Acciones",
-        render: (_: any, registro: DataRecord) => (
-          <div className="flex space-x-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(`detalle/${registro.id}`)}
-              icon={Eye}
-              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-              title="Ver detalles"
-            >
-              Ver
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(`editar/${registro.id}`)}
-              icon={Edit}
-              className="text-green-600 hover:text-green-700 hover:bg-green-50"
-              title="Editar registro"
-            >
-              Editar
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleCreateDerivadas(registro)}
-              icon={Link}
-              className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-              title="Crear Líneas Derivadas"
-            >
-              Derivadas
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleDeleteRegistro(registro)}
-              icon={Trash2}
-              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-              title="Eliminar registro"
-              disabled={deleting}
-            >
-              Eliminar
-            </Button>
-          </div>
-        ),
+        render: (_: any, registro: DataRecord) => {
+          // Verificar si el usuario es de AYNI (considerando variantes)
+          const isAyniUser = user?.empresa === 'ayni' || user?.empresa === 'Ayni' || user?.empresa === 'AYNI';
+
+          return (
+            <div className="flex space-x-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(`detalle/${registro.id}`)}
+                icon={Eye}
+                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                title="Ver detalles"
+              >
+                Ver
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(`editar/${registro.id}`)}
+                icon={Edit}
+                className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                title="Editar registro"
+                disabled={!isAyniUser}
+              >
+                Editar
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleCreateDerivadas(registro)}
+                icon={Link}
+                className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                title="Crear Líneas Derivadas"
+              >
+                Derivadas
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleDeleteRegistro(registro)}
+                icon={Trash2}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                title="Eliminar registro"
+                disabled={deleting || !isAyniUser}
+              >
+                Eliminar
+              </Button>
+            </div>
+          );
+        },
       },
     ],
-    [navigate, deleting, handleDeleteRegistro, getEstadoConfig, recordImages]
+    [navigate, deleting, handleDeleteRegistro, getEstadoConfig, recordImages, user]
   );
 
   // Vista en cuadrícula (actualizada para mostrar empresa y área)
@@ -810,8 +816,8 @@ export const RegistroList: React.FC = () => {
                   {!registro.estado_actual || registro.estado_actual === "undefined" || registro.estado_actual === "null"
                     ? "No registrado"
                     : registro.estado_actual === "por_vencer"
-                    ? "Por Vencer"
-                    : registro.estado_actual}
+                      ? "Por Vencer"
+                      : registro.estado_actual}
                 </Badge>
               </div>
 
@@ -889,6 +895,7 @@ export const RegistroList: React.FC = () => {
                   onClick={() => navigate(`editar/${registro.id}`)}
                   icon={Edit}
                   className="flex-1 text-green-600 border-green-200 hover:bg-green-50"
+                  disabled={!(user?.empresa === 'ayni' || user?.empresa === 'Ayni' || user?.empresa === 'AYNI')}
                 >
                   Editar
                 </Button>
