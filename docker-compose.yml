@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  aynic-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aynic-frontend
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+      - VITE_API_URL=http://host.docker.internal:3001
+    restart: unless-stopped
+    volumes:
+      - ./logs/nginx:/var/log/nginx
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+volumes:
+  nginx-logs:

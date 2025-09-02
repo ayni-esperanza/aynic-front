@@ -1,0 +1,35 @@
+# Dependencias (se instalan en el contenedor)
+node_modules
+
+# Archivos de desarrollo
+npm-debug.log
+*.log
+
+# Control de versiones
+.git
+.gitignore
+
+# Documentación
+README.md
+README-Docker.md
+
+# Builds anteriores
+dist
+coverage
+.nyc_output
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
