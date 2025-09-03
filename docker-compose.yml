@@ -7,9 +7,9 @@ services:
       dockerfile: Dockerfile
     container_name: aynic-frontend
     ports:
-      - "3000:80"
+      - "8080:80"
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
       - VITE_API_URL=http://localhost:3001
     restart: unless-stopped
     volumes:
