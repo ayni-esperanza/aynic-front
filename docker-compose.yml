@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: aynic-frontend
     ports:
-      - "8080:80"
+      - "80:80"
     environment:
       - NODE_ENV=development
       - VITE_API_URL=http://localhost:3001
