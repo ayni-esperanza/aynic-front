@@ -1,29 +1,20 @@
-# Etapa de construcción
-FROM node:18-alpine AS builder
+# Usar Node.js como base
+FROM node:18-alpine
 
+# Establecer directorio de trabajo
 WORKDIR /app
 
 # Copiar archivos de dependencias
 COPY package*.json ./
 
 # Instalar dependencias
+RUN npm ci
+
+# Copiar código fuente
 COPY . .
 
-# Instalar dependencias DESPUÉS de copiar todo
-RUN npm ci --only=production=false
+# Exponer el puerto por defecto de Vite (5173)
+EXPOSE 5173
 
-# Construir la aplicación 
-RUN npm run build
-
-# Etapa de producción
-FROM nginx:alpine AS production
-
-# Copiar archivos construidos
-COPY --from=builder /app/dist /usr/share/nginx/html
-
-# Copiar configuración de nginx
-COPY nginx.conf /etc/nginx/nginx.conf
-
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+# Comando para ejecutar el servidor de desarrollo de Vite
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]

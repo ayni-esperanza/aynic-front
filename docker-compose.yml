@@ -7,15 +7,13 @@ services:
       dockerfile: Dockerfile
     container_name: aynic-frontend
     ports:
-      - "8080:80"
+      - "8080:5173"  # Mapear puerto 8080 del host al 5173 del contenedor (puerto de Vite)
     environment:
       - NODE_ENV=development
       - VITE_API_URL=http://localhost:3001
     restart: unless-stopped
-    volumes:
-      - ./logs/nginx:/var/log/nginx
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5173/"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -28,6 +26,3 @@ services:
         reservations:
           memory: 256M
           cpus: '0.25'
-
-volumes:
-  nginx-logs:
