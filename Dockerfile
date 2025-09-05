@@ -13,8 +13,11 @@ RUN npm ci
 # Copiar código fuente
 COPY . .
 
-# Exponer el puerto por defecto de Vite (5173)
-EXPOSE 5173
+# Construir la aplicación para producción
+RUN npm run build
 
-# Comando para ejecutar el servidor de desarrollo de Vite
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
+# Exponer el puerto por defecto de Vite preview (4173)
+EXPOSE 4173
+
+# Comando para ejecutar el servidor de preview de Vite (producción)
+CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "4173"]

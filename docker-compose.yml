@@ -7,13 +7,13 @@ services:
       dockerfile: Dockerfile
     container_name: aynic-frontend
     ports:
-      - "8080:5173"  # Mapear puerto 8080 del host al 5173 del contenedor (puerto de Vite)
+      - "8080:4173"  # Mapear puerto 8080 del host al 4173 del contenedor (puerto de Vite preview)
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
       - VITE_API_URL=http://localhost:3001
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5173/"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:4173/"]
       interval: 30s
       timeout: 10s
       retries: 3

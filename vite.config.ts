@@ -5,6 +5,28 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   optimizeDeps: {
-    exclude: ['lucide-react'],
+    // Incluir lucide-react en la optimización para evitar problemas de carga
+    include: ['lucide-react'],
+  },
+  build: {
+    // Configuración de build optimizada
+    rollupOptions: {
+      output: {
+        // Configurar nombres de archivos para mejor cache
+        assetFileNames: 'assets/[name]-[hash][extname]',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+      },
+    },
+  },
+  // Configuración del servidor de desarrollo
+  server: {
+    port: 3000,
+    host: true,
+  },
+  // Configuración de preview para testing
+  preview: {
+    port: 4173,
+    host: true,
   },
 });
