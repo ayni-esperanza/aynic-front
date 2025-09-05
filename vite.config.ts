@@ -8,8 +8,8 @@ export default defineConfig({
     // Incluir lucide-react en la optimización para evitar problemas de carga
     include: ['lucide-react'],
   },
-  // Configuración del base path para producción
-  base: process.env.VITE_BASE_PATH || '/portal/',
+  // Configuración del base path - usar raíz ya que Dokploy maneja /portal
+  base: '/',
   build: {
     // Configuración de build optimizada
     rollupOptions: {

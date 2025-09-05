@@ -14,7 +14,6 @@ services:
     environment:
       - NODE_ENV=production
       - VITE_API_URL=http://localhost:3001
-      - VITE_BASE_PATH=/portal/
     labels:
       - traefik.enable=true
       - traefik.http.routers.aynic-frontend.rule=Host(`linea.aynisac.com`)
