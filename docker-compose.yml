@@ -8,7 +8,7 @@ services:
     container_name: aynic-frontend
     restart: always
     ports:
-      - "4173"  # Puerto que espera Dokploy
+      - "8080"  # Puerto interno del contenedor (nginx en 8080)
     networks:
       - dokploy-network
     environment:
@@ -19,9 +19,9 @@ services:
       - traefik.http.routers.aynic-frontend.rule=Host(`linea.aynisac.com`)
       - traefik.http.routers.aynic-frontend.entrypoints=websecure
       - traefik.http.routers.aynic-frontend.tls.certResolver=letsencrypt
-      - traefik.http.services.aynic-frontend.loadbalancer.server.port=4173
+      - traefik.http.services.aynic-frontend.loadbalancer.server.port=8080
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:4173/"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/"]
       interval: 30s
       timeout: 10s
       retries: 3

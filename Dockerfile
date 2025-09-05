@@ -21,9 +21,9 @@ FROM nginx:alpine AS production
 # Copiar archivos construidos
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Configuración de nginx para manejar /portal
+# Configuración de nginx para manejar /portal en puerto 8080
 RUN echo 'server { \
-    listen 4173; \
+    listen 8080; \
     server_name localhost; \
     root /usr/share/nginx/html; \
     index index.html; \
@@ -46,6 +46,6 @@ RUN echo 'server { \
     } \
 }' > /etc/nginx/conf.d/default.conf
 
-EXPOSE 4173
+EXPOSE 8080
 
 CMD ["nginx", "-g", "daemon off;"]
