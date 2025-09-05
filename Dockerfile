@@ -21,16 +21,21 @@ FROM nginx:alpine AS production
 # Copiar archivos construidos
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Configuración de nginx para manejar /portal en puerto 8080
+# Configuración de nginx para manejar /portal correctamente
 RUN echo 'server { \
     listen 8080; \
     server_name localhost; \
     root /usr/share/nginx/html; \
     index index.html; \
     \
-    # Manejar requests a /portal \
-    location /portal { \
-        alias /usr/share/nginx/html; \
+    # Manejar requests a /portal (sin barra final) \
+    location = /portal { \
+        return 301 /portal/; \
+    } \
+    \
+    # Manejar requests a /portal/ (con barra final) \
+    location /portal/ { \
+        alias /usr/share/nginx/html/; \
         try_files $uri $uri/ /index.html; \
     } \
     \
