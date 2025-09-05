@@ -2,15 +2,18 @@ import React, { } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../../../store/authStore";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
+import { Welcome } from "../../../pages/Welcome";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requiredRoles?: Array<"admin" | "supervisor" | "usuario">;
+  showWelcomeOnUnauth?: boolean;
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   requiredRoles = [],
+  showWelcomeOnUnauth = false,
 }) => {
   const { isAuthenticated, user, loading, isInitialized } =
     useAuthStore();
@@ -40,8 +43,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  // Si no está autenticado, redirigir al login
+  // Si no está autenticado, mostrar bienvenida o redirigir al login
   if (!isAuthenticated) {
+    if (showWelcomeOnUnauth) {
+      return <Welcome />;
+    }
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

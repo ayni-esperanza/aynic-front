@@ -115,11 +115,11 @@ export const AppRoutes: React.FC = () => {
       {/* Ruta pública de login */}
       <Route path="/login" element={<Login />} />
 
-      {/* Rutas protegidas */}
+      {/* Ruta raíz - muestra bienvenida o dashboard según autenticación */}
       <Route
         path="/"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute showWelcomeOnUnauth={true}>
             <MainLayout />
           </ProtectedRoute>
         }
