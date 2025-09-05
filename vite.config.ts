@@ -8,6 +8,8 @@ export default defineConfig({
     // Incluir lucide-react en la optimización para evitar problemas de carga
     include: ['lucide-react'],
   },
+  // Configuración del base path para producción
+  base: process.env.VITE_BASE_PATH || '/portal/',
   build: {
     // Configuración de build optimizada
     rollupOptions: {
