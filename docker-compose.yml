@@ -8,7 +8,7 @@ services:
     container_name: aynic-frontend
     restart: always
     ports:
-      - "4173"  # Puerto interno del contenedor
+      - "4173"  # Puerto que espera Dokploy
     networks:
       - dokploy-network
     environment:

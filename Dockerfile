@@ -1,7 +1,6 @@
-# LTS como base
-FROM node:22-alpine
+# Etapa de construcción
+FROM node:22-alpine AS builder
 
-# Establecer directorio de trabajo
 WORKDIR /app
 
 # Copiar archivos de dependencias
@@ -16,8 +15,27 @@ COPY . .
 # Construir la aplicación para producción
 RUN npm run build
 
-# Exponer el puerto por defecto de Vite preview (4173)
+# Etapa de producción con nginx
+FROM nginx:alpine AS production
+
+# Copiar archivos construidos
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Configuración de nginx para SPA en puerto 4173
+RUN echo 'server { \
+    listen 4173; \
+    server_name localhost; \
+    root /usr/share/nginx/html; \
+    index index.html; \
+    location / { \
+        try_files $uri $uri/ /index.html; \
+    } \
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ { \
+        expires 1y; \
+        add_header Cache-Control "public, immutable"; \
+    } \
+}' > /etc/nginx/conf.d/default.conf
+
 EXPOSE 4173
 
-# Comando para ejecutar el servidor de preview de Vite (producción)
-CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "4173"]
+CMD ["nginx", "-g", "daemon off;"]
