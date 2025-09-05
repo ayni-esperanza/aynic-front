@@ -21,36 +21,31 @@ FROM nginx:alpine AS production
 # Copiar archivos construidos
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Configuración de nginx para manejar /portal correctamente
+# Configuración de nginx para manejar SPA con /portal
 RUN echo 'server { \
-    listen 8080; \
+    listen 80; \
     server_name localhost; \
     root /usr/share/nginx/html; \
     index index.html; \
     \
-    # Manejar requests a /portal (sin barra final) \
-    location = /portal { \
-        return 301 /portal/; \
-    } \
-    \
-    # Manejar requests a /portal/ (con barra final) \
-    location /portal/ { \
-        alias /usr/share/nginx/html/; \
-        try_files $uri $uri/ /index.html; \
-    } \
-    \
-    # Manejar requests a la raíz (fallback) \
+    # Configuración para SPA - todas las rutas van a index.html \
     location / { \
         try_files $uri $uri/ /index.html; \
     } \
     \
-    # Archivos estáticos \
+    # Archivos estáticos con cache \
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ { \
         expires 1y; \
         add_header Cache-Control "public, immutable"; \
+        try_files $uri =404; \
     } \
+    \
+    # Configuración de seguridad \
+    add_header X-Frame-Options "SAMEORIGIN" always; \
+    add_header X-Content-Type-Options "nosniff" always; \
+    add_header X-XSS-Protection "1; mode=block" always; \
 }' > /etc/nginx/conf.d/default.conf
 
-EXPOSE 8080
+EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]

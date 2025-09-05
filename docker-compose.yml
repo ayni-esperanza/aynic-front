@@ -8,14 +8,14 @@ services:
     container_name: aynic-frontend
     restart: always
     ports:
-      - "8080"  # Puerto interno del contenedor (nginx en 8080)
+      - "80"  # Puerto interno del contenedor (nginx en 80)
     networks:
       - dokploy-network
     environment:
       - NODE_ENV=production
-      - VITE_API_URL=http://localhost:3001
+      - VITE_API_URL=https://api.aynisac.com
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
       interval: 30s
       timeout: 10s
       retries: 3

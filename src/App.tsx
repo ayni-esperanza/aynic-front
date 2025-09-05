@@ -116,7 +116,7 @@ function App() {
       }}
     >
       <ToastProvider>
-        <Router>
+        <Router basename="/portal">
           <GlobalErrorHandler>
             <AuthInitializer>
               <div id="app-container">
