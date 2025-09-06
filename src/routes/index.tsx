@@ -1,9 +1,19 @@
 import React, { Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import { MainLayout } from "../layouts/MainLayout";
-import { Dashboard } from "../pages/Dashboard";
-import { Login } from "../pages/Login";
 import { ProtectedRoute } from "../shared/components/auth/ProtectedRoute";
+
+// Lazy loading de páginas principales
+const Dashboard = React.lazy(() =>
+  import("../pages/Dashboard").then((module) => ({
+    default: module.Dashboard,
+  }))
+);
+const Login = React.lazy(() =>
+  import("../pages/Login").then((module) => ({
+    default: module.Login,
+  }))
+);
 
 // Lazy loading de módulos con dynamic imports que transforman named exports a default
 const UsuariosModule = React.lazy(() =>
@@ -113,7 +123,14 @@ export const AppRoutes: React.FC = () => {
   return (
     <Routes>
       {/* Ruta pública de login */}
-      <Route path="/login" element={<Login />} />
+      <Route 
+        path="/login" 
+        element={
+          <Suspense fallback={<PageLoadingFallback />}>
+            <Login />
+          </Suspense>
+        } 
+      />
 
       {/* Ruta raíz - muestra bienvenida o dashboard según autenticación */}
       <Route
@@ -124,7 +141,14 @@ export const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         }
       >
-        <Route index element={<Dashboard />} />
+        <Route 
+          index 
+          element={
+            <Suspense fallback={<PageLoadingFallback />}>
+              <Dashboard />
+            </Suspense>
+          } 
+        />
 
         <Route
           path="usuarios/*"

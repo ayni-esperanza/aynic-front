@@ -17,6 +17,8 @@ export interface PaginatedResponse<T> {
   };
 }
 
+import { logger } from './logger';
+
 export interface ApiError {
   message: string;
   status: number;
@@ -190,6 +192,7 @@ class ApiClient {
 
       // Si la respuesta es 401 (Unauthorized), manejar token expirado
       if (response.status === 401) {
+        logger.warn("Token expirado detectado", "API", { url: config.url });
         if (this.tokenExpiredHandler) {
           this.tokenExpiredHandler();
         }
@@ -209,6 +212,7 @@ class ApiClient {
         this.shouldRetry(error) &&
         !(error instanceof ApiClientError && error.status === 401)
       ) {
+        logger.warn(`Retry ${retryCount + 1}/${this.retries} para ${url}`, "API");
         await this.delay(Math.pow(2, retryCount) * 1000);
         return this.executeRequest(url, options, retryCount + 1);
       }
@@ -222,6 +226,9 @@ class ApiClient {
               0,
               "NETWORK_ERROR"
             );
+
+      // Log del error
+      logger.apiError(url, apiError.status, apiError);
 
       // Para errores de red, sugerir verificar conexión
       if (apiError.status === 0) {
