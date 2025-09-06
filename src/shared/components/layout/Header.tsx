@@ -13,6 +13,7 @@ import {
   ExternalLink,
   BellRing,
   FileText,
+  Menu,
 } from "lucide-react";
 import { useAuthStore } from "../../../store/authStore";
 import { useApi } from "../../../shared/hooks/useApi";
@@ -22,7 +23,12 @@ import { Button } from "../ui/Button";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { formatDateTime } from "../../../shared/utils/formatters";
 
-export const Header: React.FC = () => {
+interface HeaderProps {
+  onMenuClick?: () => void;
+  isMobile?: boolean;
+}
+
+export const Header: React.FC<HeaderProps> = ({ onMenuClick, isMobile = false }) => {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
   const [showNotifications, setShowNotifications] = useState(false);
@@ -182,23 +188,37 @@ export const Header: React.FC = () => {
   const isAdmin = user?.rol === "admin";
 
   return (
-    <header className="px-6 py-4 bg-white border-b border-gray-200 shadow-sm">
+    <header className="px-3 sm:px-6 py-3 sm:py-4 bg-white border-b border-gray-200 shadow-sm">
       <div className="flex items-center justify-between">
         {/* Logo/Título del sistema (izquierda) */}
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-lg flex items-center justify-center shadow-sm">
-              <span className="text-sm font-bold text-white">⚡</span>
+        <div className="flex items-center space-x-2 sm:space-x-4">
+          {/* Botón de menú para móvil */}
+          {isMobile && onMenuClick && (
+            <button
+              onClick={onMenuClick}
+              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+              title="Abrir menú"
+            >
+              <Menu size={20} />
+            </button>
+          )}
+          
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-lg flex items-center justify-center shadow-sm">
+              <span className="text-xs sm:text-sm font-bold text-white">⚡</span>
             </div>
-            <div>
-              <h2 className="text-lg font-bold text-gray-900">AyniLine</h2>
-              <p className="text-xs text-gray-500">Sistema de Gestión</p>
+            <div className="hidden sm:block">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900">AyniLine</h2>
+              <p className="text-xs sm:text-sm text-gray-500">Sistema de Gestión</p>
+            </div>
+            <div className="block sm:hidden">
+              <h2 className="text-base font-bold text-gray-900">AyniLine</h2>
             </div>
           </div>
         </div>
 
         {/* Área derecha con notificaciones y usuario */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-4">
           {/* Notificaciones de Alertas */}
           <div className="relative" ref={notificationRef}>
             <button
@@ -229,7 +249,7 @@ export const Header: React.FC = () => {
 
             {/* Dropdown de alertas */}
             {showNotifications && (
-              <div className="absolute right-0 z-50 mt-2 duration-200 transform bg-white border border-gray-200 shadow-xl w-96 rounded-xl animate-in slide-in-from-top-2">
+              <div className="absolute right-0 z-50 mt-2 duration-200 transform bg-white border border-gray-200 shadow-xl w-80 sm:w-96 rounded-xl animate-in slide-in-from-top-2">
                 <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-[#18D043]/5 to-green-50">
                   <div className="flex items-center justify-between">
                     <h3 className="flex items-center text-lg font-semibold text-gray-900">
@@ -383,7 +403,7 @@ export const Header: React.FC = () => {
               <div className="w-9 h-9 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-full flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow duration-200">
                 <User size={18} className="text-white" />
               </div>
-              <div className="hidden text-left md:block">
+              <div className="hidden text-left sm:block">
                 <p className="text-sm font-semibold text-gray-900">
                   {user?.nombre || "Usuario Sistema"}
                 </p>
@@ -401,7 +421,7 @@ export const Header: React.FC = () => {
 
             {/* Dropdown de usuario */}
             {showUserMenu && (
-              <div className="absolute right-0 z-50 w-64 mt-2 duration-200 transform bg-white border border-gray-200 shadow-xl rounded-xl animate-in slide-in-from-top-2">
+              <div className="absolute right-0 z-50 w-56 sm:w-64 mt-2 duration-200 transform bg-white border border-gray-200 shadow-xl rounded-xl animate-in slide-in-from-top-2">
                 {/* Header del perfil */}
                 <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-[#18D043]/5 to-green-50">
                   <div className="flex items-center space-x-3">

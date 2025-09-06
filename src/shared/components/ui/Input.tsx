@@ -1,4 +1,4 @@
-import { DivideIcon as LucideIcon } from "lucide-react";
+import { LucideIcon } from "lucide-react";
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -20,7 +20,7 @@ export const Input: React.FC<InputProps> = ({
   return (
     <div className="space-y-2">
       {label && (
-        <label className="block text-sm font-semibold text-gray-700">
+        <label className="block text-xs sm:text-sm font-semibold text-gray-700">
           {label}
           {props.required && <span className="ml-1 text-red-500">*</span>}
         </label>
@@ -34,15 +34,14 @@ export const Input: React.FC<InputProps> = ({
         )}
         <input
           className={`
-            w-full px-4 py-3 border-2 rounded-xl transition-all duration-200 font-medium
+            w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-xl transition-all duration-200 font-medium text-sm sm:text-base
             focus:outline-none focus:ring-2 focus:ring-[#18D043]/20 focus:border-[#18D043]
-            ${
-              error
-                ? "border-red-300 focus:border-red-500 focus:ring-red-500/20"
-                : "border-gray-200 hover:border-gray-300"
+            ${error
+              ? "border-red-300 focus:border-red-500 focus:ring-red-500/20"
+              : "border-gray-200 hover:border-gray-300"
             }
-            ${Icon && iconPosition === "left" ? "pl-11" : ""}
-            ${Icon && iconPosition === "right" ? "pr-11" : ""}
+            ${Icon && iconPosition === "left" ? "pl-9 sm:pl-11" : ""}
+            ${Icon && iconPosition === "right" ? "pr-9 sm:pr-11" : ""}
             ${className}
           `}
           {...props}
@@ -55,13 +54,13 @@ export const Input: React.FC<InputProps> = ({
         )}
       </div>
       {error && (
-        <p className="flex items-center space-x-1 text-sm text-red-600">
+        <p className="flex items-center space-x-1 text-xs sm:text-sm text-red-600">
           <span className="text-red-500">⚠️</span>
           <span>{error}</span>
         </p>
       )}
       {helperText && !error && (
-        <p className="flex items-center space-x-1 text-sm text-gray-500">
+        <p className="flex items-center space-x-1 text-xs sm:text-sm text-gray-500">
           <span className="text-gray-400">💡</span>
           <span>{helperText}</span>
         </p>

@@ -16,6 +16,7 @@ import {
 interface SidebarProps {
   isCollapsed: boolean;
   onToggle: () => void;
+  isMobile?: boolean;
 }
 
 const menuItems = [
@@ -91,26 +92,25 @@ const menuItems = [
   },
 ];
 
-export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle, isMobile = false }) => {
   return (
     <div
-      className={`bg-white border-r border-gray-200 transition-all duration-300 flex flex-col shadow-lg ${
-        isCollapsed ? "w-20" : "w-72"
-      }`}
+      className={`bg-white border-r border-gray-200 transition-[width] duration-200 ease-out flex flex-col shadow-lg h-full ${isMobile ? "w-72" : isCollapsed ? "w-16" : "w-64"
+        }`}
     >
       {/* Header mejorado */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+      <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
         {!isCollapsed && (
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center justify-center w-10 h-10 bg-white shadow-lg rounded-xl">
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-white shadow-lg rounded-xl">
               <img
                 src={logoAyni}
                 alt="Ayni Logo"
-                className="object-contain w-8 h-8"
+                className="object-contain w-6 h-6 sm:w-8 sm:h-8"
               />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-transparent bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text">
+              <h1 className="text-lg sm:text-xl font-bold text-transparent bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text">
                 AyniLine
               </h1>
               <p className="text-xs text-gray-500">AYNI</p>
@@ -119,11 +119,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
         )}
 
         {isCollapsed && (
-          <div className="flex items-center justify-center w-16 h-16 mx-auto my-3 bg-white shadow-lg rounded-xl">
+          <div className="flex items-center justify-center w-12 h-12 mx-auto my-2 bg-white shadow-lg rounded-xl">
             <img
               src={logoAyni}
               alt="Ayni Logo"
-              className="object-contain w-14 h-14"
+              className="object-contain w-10 h-10"
               style={{ maxWidth: "90%", maxHeight: "90%" }}
             />
           </div>
@@ -131,12 +131,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
 
         <button
           onClick={onToggle}
-          className={`p-2 transition-all duration-200 rounded-lg hover:bg-gray-100 group ${
-            isCollapsed ? "mx-auto mt-2" : ""
-          }`}
-          title={isCollapsed ? "Expandir sidebar" : "Contraer sidebar"}
+          className={`p-2 transition-colors duration-150 rounded-lg hover:bg-gray-100 group ${isCollapsed && !isMobile ? "mx-auto mt-2" : ""
+            }`}
+          title={isMobile ? "Cerrar menú" : isCollapsed ? "Expandir sidebar" : "Contraer sidebar"}
         >
-          {isCollapsed ? (
+          {isMobile ? (
+            <ChevronLeft
+              size={20}
+              className="text-gray-600 group-hover:text-[#16a34a] transition-colors duration-200"
+            />
+          ) : isCollapsed ? (
             <ChevronRight
               size={20}
               className="text-gray-600 group-hover:text-[#16a34a] transition-colors duration-200"
@@ -151,7 +155,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
       </div>
 
       {/* Navigation principal */}
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+      <nav className="flex-1 p-3 sm:p-4 space-y-1 sm:space-y-2 overflow-y-auto">
         <div className="space-y-1">
           {menuItems.map((item, index) => {
             const Icon = item.icon;
@@ -160,32 +164,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
                 key={item.path}
                 to={item.path}
                 className={({ isActive }) =>
-                  `group flex items-center px-3 py-3 rounded-xl transition-all duration-200 relative overflow-hidden ${
-                    isActive
-                      ? `${item.activeColor} text-white shadow-lg transform scale-105`
-                      : `text-gray-700 ${item.hoverColor} hover:scale-105 hover:shadow-md`
-                  } ${isCollapsed ? "justify-center" : ""}`
+                  `group flex items-center px-2 sm:px-3 py-2 sm:py-3 rounded-xl transition-[background-color,color,transform,box-shadow] duration-150 ease-out relative overflow-hidden ${isActive
+                    ? `${item.activeColor} text-white shadow-lg transform scale-105`
+                    : `text-gray-700 ${item.hoverColor} hover:scale-105 hover:shadow-md`
+                  } ${isCollapsed && !isMobile ? "justify-center" : ""}`
                 }
-                title={isCollapsed ? item.label : ""}
+                title={isCollapsed && !isMobile ? item.label : ""}
               >
                 {({ isActive }) => (
                   <>
                     {/* Icono con animación */}
                     <div
-                      className={`relative z-10 ${isCollapsed ? "" : "mr-3"}`}
+                      className={`relative z-10 ${isCollapsed ? "" : "mr-2 sm:mr-3"}`}
                     >
                       <div
-                        className={`p-2 rounded-lg transition-all duration-200 ${
-                          isActive
+                        className={`p-1.5 sm:p-2 rounded-lg transition-[background-color,transform] duration-150 ease-out ${isActive
                             ? "bg-white/20"
                             : `${item.bgColor} group-hover:scale-110`
-                        }`}
+                          }`}
                       >
                         <Icon
-                          size={20}
-                          className={`transition-all duration-200 ${
-                            isActive ? "text-white" : item.color
-                          }`}
+                          size={18}
+                          className={`transition-colors duration-150 ease-out ${isActive ? "text-white" : item.color
+                            }`}
                         />
                       </div>
                     </div>
@@ -194,16 +195,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
                     {!isCollapsed && (
                       <div className="relative z-10 flex-1">
                         <span
-                          className={`font-medium transition-colors duration-200 ${
-                            isActive ? "text-white" : "text-gray-900"
-                          }`}
+                          className={`text-sm sm:text-base font-medium transition-colors duration-150 ease-out ${isActive ? "text-white" : "text-gray-900"
+                            }`}
                         >
                           {item.label}
                         </span>
                         <p
-                          className={`text-xs transition-colors duration-200 ${
-                            isActive ? "text-white/80" : "text-gray-500"
-                          }`}
+                          className={`text-xs transition-colors duration-150 ease-out ${isActive ? "text-white/80" : "text-gray-500"
+                            }`}
                         >
                           {item.description}
                         </p>

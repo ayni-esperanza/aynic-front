@@ -667,7 +667,7 @@ export const RegistroList: React.FC = () => {
               <span className="text-xs italic text-gray-400">No seleccionado</span>
             );
           }
-          
+
           const getAnclajeConfig = (tipo: string) => {
             const configs: Record<string, { color: string; bgColor: string; icon: string }> = {
               anclaje_terminal: { color: "text-blue-700", bgColor: "bg-blue-100", icon: "🔗" },
@@ -683,7 +683,7 @@ export const RegistroList: React.FC = () => {
 
           const config = getAnclajeConfig(value);
           const label = value.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase());
-          
+
           return (
             <span
               className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${config.bgColor} ${config.color}`}
@@ -852,7 +852,7 @@ export const RegistroList: React.FC = () => {
 
   // Vista en cuadrícula (actualizada para mostrar empresa y área)
   const GridView = () => (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {registros.map((registro) => {
         const estadoConfig = getEstadoConfig(registro.estado_actual);
         const hasImage = recordImages.has(registro.id);
@@ -869,19 +869,19 @@ export const RegistroList: React.FC = () => {
               </div>
             )}
 
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-xl flex items-center justify-center shadow-md">
-                    <span className="font-bold text-white">
+            <div className="p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <div className="flex items-center space-x-2 sm:space-x-3">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-xl flex items-center justify-center shadow-md">
+                    <span className="text-sm sm:text-base font-bold text-white">
                       {registro.codigo.slice(-2)}
                     </span>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">
+                    <h3 className="text-sm sm:text-base font-semibold text-gray-900">
                       {registro.codigo}
                     </h3>
-                    <p className="text-sm text-gray-500">{registro.cliente}</p>
+                    <p className="text-xs sm:text-sm text-gray-500">{registro.cliente}</p>
                   </div>
                 </div>
                 <Badge variant={estadoConfig.variant} size="sm">
@@ -893,57 +893,57 @@ export const RegistroList: React.FC = () => {
                 </Badge>
               </div>
 
-              <div className="mb-4 space-y-3">
+              <div className="mb-3 sm:mb-4 space-y-2 sm:space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Empresa:</span>
-                  <span className="text-sm font-medium text-gray-900">
+                  <span className="text-xs sm:text-sm text-gray-500">Empresa:</span>
+                  <span className="text-xs sm:text-sm font-medium text-gray-900 truncate ml-2">
                     {registro.cliente}
                   </span>
                 </div>
                 {registro.codigo_placa && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">Código Placa:</span>
+                    <span className="text-xs sm:text-sm text-gray-500">Código Placa:</span>
                     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                       {registro.codigo_placa}
                     </span>
                   </div>
                 )}
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Área:</span>
+                  <span className="text-xs sm:text-sm text-gray-500">Área:</span>
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                     {registro.area}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Equipo:</span>
-                  <span className="text-sm font-medium text-gray-900">
+                  <span className="text-xs sm:text-sm text-gray-500">Equipo:</span>
+                  <span className="text-xs sm:text-sm font-medium text-gray-900 truncate ml-2">
                     {registro.equipo}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Tipo:</span>
+                  <span className="text-xs sm:text-sm text-gray-500">Tipo:</span>
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                     {registro.tipo_linea}
                   </span>
                 </div>
                 {registro.anclaje_tipo && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">Anclaje:</span>
+                    <span className="text-xs sm:text-sm text-gray-500">Anclaje:</span>
                     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                       {registro.anclaje_tipo.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
                     </span>
                   </div>
                 )}
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Longitud:</span>
-                  <span className="text-sm font-mono bg-gray-100 px-2 py-0.5 rounded">
+                  <span className="text-xs sm:text-sm text-gray-500">Longitud:</span>
+                  <span className="text-xs sm:text-sm font-mono bg-gray-100 px-2 py-0.5 rounded">
                     {registro.longitud}m
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Ubicación:</span>
+                  <span className="text-xs sm:text-sm text-gray-500">Ubicación:</span>
                   <span
-                    className="text-sm text-gray-900 truncate max-w-32"
+                    className="text-xs sm:text-sm text-gray-900 truncate max-w-24 sm:max-w-32"
                     title={registro.ubicacion}
                   >
                     {registro.ubicacion}
@@ -951,7 +951,7 @@ export const RegistroList: React.FC = () => {
                 </div>
                 {hasImage && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">Imagen:</span>
+                    <span className="text-xs sm:text-sm text-gray-500">Imagen:</span>
                     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
                       Disponible
                     </span>
@@ -959,25 +959,27 @@ export const RegistroList: React.FC = () => {
                 )}
               </div>
 
-              <div className="flex pt-3 space-x-2 border-t border-gray-100">
+              <div className="flex pt-2 sm:pt-3 space-x-1 sm:space-x-2 border-t border-gray-100">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => navigate(`detalle/${registro.id}`)}
                   icon={Eye}
-                  className="flex-1 text-blue-600 border-blue-200 hover:bg-blue-50"
+                  className="flex-1 text-blue-600 border-blue-200 hover:bg-blue-50 text-xs sm:text-sm"
                 >
-                  Ver
+                  <span className="hidden sm:inline">Ver</span>
+                  <span className="sm:hidden">Ver</span>
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => navigate(`editar/${registro.id}`)}
                   icon={Edit}
-                  className="flex-1 text-green-600 border-green-200 hover:bg-green-50"
+                  className="flex-1 text-green-600 border-green-200 hover:bg-green-50 text-xs sm:text-sm"
                   disabled={!(user?.empresa === 'ayni' || user?.empresa === 'Ayni' || user?.empresa === 'AYNI')}
                 >
-                  Editar
+                  <span className="hidden sm:inline">Editar</span>
+                  <span className="sm:hidden">Edit</span>
                 </Button>
               </div>
             </div>
@@ -1016,80 +1018,85 @@ export const RegistroList: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 max-w-full">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div className="w-12 h-12 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-xl flex items-center justify-center shadow-lg">
-            <span className="text-xl text-white">📊</span>
+      <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+        <div className="flex items-center space-x-3 sm:space-x-4">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-xl flex items-center justify-center shadow-lg">
+            <span className="text-lg sm:text-xl text-white">📊</span>
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text">
               Gestión de Registros
             </h1>
-            <p className="flex items-center space-x-2 text-gray-600">
+            <p className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2 text-sm sm:text-base text-gray-600">
               <span>Administra todos los registros del sistema</span>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#18D043]/10 text-[#16a34a]">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#18D043]/10 text-[#16a34a] w-fit">
                 {pagination.totalItems} registros
               </span>
             </p>
           </div>
         </div>
-        <div className="flex items-center space-x-3">
-          <Button
-            onClick={refreshDataCallback}
-            variant="outline"
-            icon={RefreshCw}
-            loading={loading}
-            className="border-gray-300 hover:bg-gray-50"
-          >
-            Actualizar
-          </Button>
-          <Button
-            onClick={() => setShowReports(!showReports)}
-            variant="outline"
-            icon={FileText}
-            className={
-              showReports
-                ? "bg-orange-500 text-white border-orange-500"
-                : "border-orange-300 text-orange-600 hover:bg-orange-50"
-            }
-          >
-            Reportes
-          </Button>
+        <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3">
+          <div className="flex space-x-2 sm:space-x-3">
+            <Button
+              onClick={refreshDataCallback}
+              variant="outline"
+              icon={RefreshCw}
+              loading={loading}
+              className="flex-1 sm:flex-none border-gray-300 hover:bg-gray-50 text-sm"
+            >
+              <span className="hidden sm:inline">Actualizar</span>
+              <span className="sm:hidden">Actualizar</span>
+            </Button>
+            <Button
+              onClick={() => setShowReports(!showReports)}
+              variant="outline"
+              icon={FileText}
+              className={`flex-1 sm:flex-none text-sm ${showReports
+                  ? "bg-orange-500 text-white border-orange-500"
+                  : "border-orange-300 text-orange-600 hover:bg-orange-50"
+                }`}
+            >
+              <span className="hidden sm:inline">Reportes</span>
+              <span className="sm:hidden">Reportes</span>
+            </Button>
+          </div>
           <Button
             onClick={() => navigate("nuevo")}
             icon={Plus}
-            className="bg-gradient-to-r from-[#18D043] to-[#16a34a] hover:from-[#16a34a] hover:to-[#15803d] shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+            className="w-full sm:w-auto bg-gradient-to-r from-[#18D043] to-[#16a34a] hover:from-[#16a34a] hover:to-[#15803d] shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 text-sm"
           >
-            Nuevo Registro
+            <span className="hidden sm:inline">Nuevo Registro</span>
+            <span className="sm:hidden">Nuevo</span>
           </Button>
         </div>
       </div>
 
       {/* Estadísticas rápidas */}
-      <div className="grid gap-4 items-stretch [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
-        <Card className="h-full border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
-          <div className="flex items-center justify-between h-full p-4">
-            <div>
-              <p className="text-sm font-medium text-blue-600">Total</p>
-              <div className="text-2xl font-bold text-blue-900 min-h-[1.6rem] flex items-center">
-                {loadingStats ? (
-                  <LoadingSpinner size="sm" />
-                ) : (
-                  estadisticas?.total ?? 0
-                )}
+      <div className="flex justify-center">
+        <div className="flex flex-wrap justify-center gap-3 sm:gap-4 max-w-4xl">
+          <Card className="h-20 w-40 sm:w-44 md:w-48 border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
+            <div className="flex items-center justify-between h-full p-3 sm:p-4">
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-blue-600 truncate">Total</p>
+                <div className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-900 min-h-[1.2rem] sm:min-h-[1.4rem] lg:min-h-[1.6rem] flex items-center">
+                  {loadingStats ? (
+                    <LoadingSpinner size="sm" />
+                  ) : (
+                    estadisticas?.total ?? 0
+                  )}
+                </div>
               </div>
+              <div className="text-lg sm:text-xl lg:text-2xl flex-shrink-0 ml-2">📊</div>
             </div>
-            <div className="text-2xl">📊</div>
-          </div>
-        </Card>
+          </Card>
 
-        <Card className="h-full border-green-200 bg-gradient-to-br from-green-50 to-green-100">
-          <div className="flex items-center justify-between h-full p-4">
-            <div>
-              <p className="text-sm font-medium text-green-600">Activos</p>
-              <div className="text-2xl font-bold text-green-900 min-h-[1.6rem] flex items-center">
+          <Card className="h-20 w-40 sm:w-44 md:w-48 border-green-200 bg-gradient-to-br from-green-50 to-green-100">
+          <div className="flex items-center justify-between h-full p-3 sm:p-4">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs sm:text-sm font-medium text-green-600 truncate">Activos</p>
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-green-900 min-h-[1.2rem] sm:min-h-[1.4rem] lg:min-h-[1.6rem] flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
@@ -1097,15 +1104,15 @@ export const RegistroList: React.FC = () => {
                 )}
               </div>
             </div>
-            <div className="text-2xl">🟢</div>
+            <div className="text-lg sm:text-xl lg:text-2xl flex-shrink-0 ml-2">🟢</div>
           </div>
         </Card>
 
-        <Card className="h-full border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100">
-          <div className="flex items-center justify-between h-full p-4">
-            <div>
-              <p className="text-sm font-medium text-yellow-600">Por Vencer</p>
-              <div className="text-2xl font-bold text-yellow-900 min-h-[1.6rem] flex items-center">
+          <Card className="h-20 w-40 sm:w-44 md:w-48 border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100">
+          <div className="flex items-center justify-between h-full p-3 sm:p-4">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs sm:text-sm font-medium text-yellow-600 truncate">Por Vencer</p>
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-yellow-900 min-h-[1.2rem] sm:min-h-[1.4rem] lg:min-h-[1.6rem] flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
@@ -1113,15 +1120,15 @@ export const RegistroList: React.FC = () => {
                 )}
               </div>
             </div>
-            <div className="text-2xl">🟡</div>
+            <div className="text-lg sm:text-xl lg:text-2xl flex-shrink-0 ml-2">🟡</div>
           </div>
         </Card>
 
-        <Card className="h-full border-red-200 bg-gradient-to-br from-red-50 to-red-100">
-          <div className="flex items-center justify-between h-full p-4">
-            <div>
-              <p className="text-sm font-medium text-red-600">Vencidos</p>
-              <div className="text-2xl font-bold text-red-900 min-h-[1.6rem] flex items-center">
+          <Card className="h-20 w-40 sm:w-44 md:w-48 border-red-200 bg-gradient-to-br from-red-50 to-red-100">
+          <div className="flex items-center justify-between h-full p-3 sm:p-4">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs sm:text-sm font-medium text-red-600 truncate">Vencidos</p>
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-red-900 min-h-[1.2rem] sm:min-h-[1.4rem] lg:min-h-[1.6rem] flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
@@ -1129,17 +1136,17 @@ export const RegistroList: React.FC = () => {
                 )}
               </div>
             </div>
-            <div className="text-2xl">🔴</div>
+            <div className="text-lg sm:text-xl lg:text-2xl flex-shrink-0 ml-2">🔴</div>
           </div>
         </Card>
 
-        <Card className="h-full border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100">
-          <div className="flex items-center justify-between h-full p-4">
-            <div>
-              <p className="text-sm font-medium text-orange-600">
+          <Card className="h-20 w-44 sm:w-48 md:w-60 border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100">
+          <div className="flex items-center justify-between h-full p-3 sm:p-4">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs sm:text-sm font-medium text-orange-600 truncate">
                 Mantenimiento
               </p>
-              <div className="text-2xl font-bold text-orange-900 min-h-[1.6rem] flex items-center">
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-orange-900 min-h-[1.2rem] sm:min-h-[1.4rem] lg:min-h-[1.6rem] flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
@@ -1147,9 +1154,10 @@ export const RegistroList: React.FC = () => {
                 )}
               </div>
             </div>
-            <div className="text-2xl">🔧</div>
+            <div className="text-lg sm:text-xl lg:text-2xl flex-shrink-0 ml-2">🔧</div>
           </div>
         </Card>
+        </div>
       </div>
 
       {/* Sección de Reportes */}
@@ -1157,12 +1165,12 @@ export const RegistroList: React.FC = () => {
 
       {/* Controles y filtros */}
       <Card className="border border-gray-200 shadow-sm bg-gradient-to-r from-gray-50 to-white">
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           {/* Top bar: 5 inputs con label + botones */}
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             {/* 5 filtros alineados */}
             <div className="flex-1">
-              <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {/* Código */}
                 <div className="relative">
                   <label
@@ -1268,26 +1276,26 @@ export const RegistroList: React.FC = () => {
             </div>
 
             {/* Botonera derecha */}
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:gap-2 shrink-0">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => setShowFilters((v) => !v)}
                 icon={showFilters ? SlidersHorizontal : Filter}
-                className={
-                  showFilters
+                className={`w-full sm:w-auto ${showFilters
                     ? "bg-[#18D043] text-white border-[#18D043]"
                     : "border-gray-300"
-                }
+                  }`}
               >
-                Filtros
+                <span className="hidden sm:inline">Filtros</span>
+                <span className="sm:hidden">Filtros</span>
               </Button>
-              <div className="flex p-1 bg-white border border-gray-300 rounded-lg">
+              <div className="flex p-1 bg-white border border-gray-300 rounded-lg w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => setViewMode("table")}
-                  className={`p-2 rounded ${viewMode === "table"
+                  className={`flex-1 sm:flex-none p-2 rounded ${viewMode === "table"
                     ? "bg-[#18D043] text-white"
                     : "text-gray-600 hover:bg-gray-100"
                     }`}
@@ -1299,7 +1307,7 @@ export const RegistroList: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setViewMode("grid")}
-                  className={`p-2 rounded ${viewMode === "grid"
+                  className={`flex-1 sm:flex-none p-2 rounded ${viewMode === "grid"
                     ? "bg-[#18D043] text-white"
                     : "text-gray-600 hover:bg-gray-100"
                     }`}

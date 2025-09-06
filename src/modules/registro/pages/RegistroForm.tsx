@@ -607,27 +607,28 @@ export const RegistroForm: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="max-w-4xl px-4 py-6 mx-auto sm:px-6 lg:px-8">
+      <div className="max-w-4xl px-3 py-4 mx-auto sm:px-6 sm:py-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center mb-6 space-x-4">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4 mb-4 sm:mb-6">
             <Button
               variant="outline"
               onClick={() => navigate("/registro")}
               icon={ArrowLeft}
               disabled={creating}
+              className="w-full sm:w-auto"
             >
               Volver
             </Button>
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-xl text-white">➕</span>
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-lg sm:text-xl text-white">➕</span>
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
                   Nuevo Registro
                 </h1>
-                <p className="text-gray-600">
+                <p className="text-sm sm:text-base text-gray-600">
                   Completa el formulario paso a paso
                 </p>
               </div>
@@ -635,7 +636,7 @@ export const RegistroForm: React.FC = () => {
           </div>
 
           {/* Progress */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-6 sm:mb-8">
             {steps.map((step, idx) => {
               const isActive = currentStep === step.number;
               const isCompleted = currentStep > step.number;
@@ -644,29 +645,29 @@ export const RegistroForm: React.FC = () => {
                 <div key={step.number} className="flex items-center flex-1">
                   <div className="flex items-center">
                     <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${isCompleted
+                      className={`w-8 h-8 sm:w-12 sm:h-12 rounded-full flex items-center justify-center border-2 transition-all ${isCompleted
                         ? "bg-[#18D043] text-white border-[#18D043]"
                         : isActive
                           ? `${step.bgColor} ${step.color} border-current`
                           : "bg-gray-100 border-gray-300 text-gray-400"
                         }`}
                     >
-                      {isCompleted ? "✓" : <Icon size={20} />}
+                      {isCompleted ? "✓" : <Icon size={16} className="sm:w-5 sm:h-5" />}
                     </div>
-                    <div className="ml-4">
+                    <div className="ml-2 sm:ml-4">
                       <p
-                        className={`text-sm font-medium ${isActive ? "text-gray-900" : "text-gray-500"
+                        className={`text-xs sm:text-sm font-medium ${isActive ? "text-gray-900" : "text-gray-500"
                           }`}
                       >
                         {step.title}
                       </p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-gray-400 hidden sm:block">
                         {step.description}
                       </p>
                     </div>
                   </div>
                   {idx < steps.length - 1 && (
-                    <div className="flex-1 mx-6">
+                    <div className="flex-1 mx-2 sm:mx-6">
                       <div
                         className={`h-0.5 transition-all ${isCompleted ? "bg-[#18D043]" : "bg-gray-300"
                           }`}
@@ -680,7 +681,7 @@ export const RegistroForm: React.FC = () => {
         </div>
 
         <Card className="bg-white border-0 shadow-xl">
-          <form onSubmit={handleSubmit} className="p-8">
+          <form onSubmit={handleSubmit} className="p-4 sm:p-6 lg:p-8">
             <h3 className="mb-2 text-xl font-semibold text-gray-900">
               {steps[currentStep - 1].title}
             </h3>
@@ -690,8 +691,8 @@ export const RegistroForm: React.FC = () => {
 
             {/* ------- PASOS ------- */}
             {currentStep === 1 && (
-              <div className="space-y-6">
-                <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-4 sm:space-y-6">
+                <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2">
                   <Input
                     label="Código del Registro"
                     value={formData.codigo}
@@ -716,7 +717,7 @@ export const RegistroForm: React.FC = () => {
                           Nuevo Cliente
                           <span className="ml-1 text-red-500">*</span>
                         </label>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-2">
                           <Input
                             value={newClientName}
                             onChange={(e) => setNewClientName(e.target.value)}
@@ -729,26 +730,30 @@ export const RegistroForm: React.FC = () => {
                               }
                             }}
                           />
-                          <Button
-                            type="button"
-                            size="sm"
-                            onClick={handleAddNewClient}
-                            disabled={!newClientName.trim()}
-                            className="px-3"
-                            icon={Check}
-                          >
-                            Agregar
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={handleCancelNewClient}
-                            className="px-3"
-                            icon={X}
-                          >
-                            Cancelar
-                          </Button>
+                          <div className="flex space-x-2">
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={handleAddNewClient}
+                              disabled={!newClientName.trim()}
+                              className="px-3 flex-1 sm:flex-none"
+                              icon={Check}
+                            >
+                              <span className="hidden sm:inline">Agregar</span>
+                              <span className="sm:hidden">+</span>
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={handleCancelNewClient}
+                              className="px-3 flex-1 sm:flex-none"
+                              icon={X}
+                            >
+                              <span className="hidden sm:inline">Cancelar</span>
+                              <span className="sm:hidden">×</span>
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     ) : (
@@ -1108,7 +1113,7 @@ export const RegistroForm: React.FC = () => {
             )}
 
             {/* ------- BOTONES ------- */}
-            <div className="flex justify-between pt-8 mt-8 border-t border-gray-200">
+            <div className="flex flex-col space-y-4 sm:flex-row sm:justify-between sm:space-y-0 pt-6 sm:pt-8 mt-6 sm:mt-8 border-t border-gray-200">
               <div>
                 {/* Solo mostrar "Anterior" si no estamos en el paso 4 con imagen subida */}
                 {currentStep > 1 && !(currentStep === 4 && hasImage) && (
@@ -1118,13 +1123,14 @@ export const RegistroForm: React.FC = () => {
                     onClick={handlePrev}
                     icon={ArrowLeft}
                     disabled={creating}
+                    className="w-full sm:w-auto"
                   >
                     Anterior
                   </Button>
                 )}
               </div>
 
-              <div className="flex space-x-3">
+              <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
                 {/* Solo mostrar "Cancelar" si no estamos en el paso 4 con imagen subida */}
                 {!(currentStep === 4 && hasImage) && (
                   <Button
@@ -1133,20 +1139,21 @@ export const RegistroForm: React.FC = () => {
                     onClick={() => navigate("/registro")}
                     icon={X}
                     disabled={creating}
+                    className="w-full sm:w-auto"
                   >
                     Cancelar
                   </Button>
                 )}
 
                 {currentStep === 4 ? (
-                  <div className="flex space-x-3">
+                  <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
                     {/* Para nuevos registros sin guardar */}
                     {!savedRecordId && (
                       <Button
                         type="submit"
                         icon={Save}
                         loading={creating}
-                        className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
+                        className="w-full sm:w-auto bg-gradient-to-r from-[#18D043] to-[#16a34a]"
                       >
                         {creating ? "Creando..." : "Crear Registro"}
                       </Button>
@@ -1157,7 +1164,7 @@ export const RegistroForm: React.FC = () => {
                       <Button
                         type="button"
                         onClick={handleFinishWithoutImage}
-                        className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
+                        className="w-full sm:w-auto bg-gradient-to-r from-[#18D043] to-[#16a34a]"
                       >
                         Finalizar
                       </Button>
@@ -1170,7 +1177,7 @@ export const RegistroForm: React.FC = () => {
                       if (validateStep(currentStep)) handleNext();
                     }}
                     disabled={creating}
-                    className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
+                    className="w-full sm:w-auto bg-gradient-to-r from-[#18D043] to-[#16a34a]"
                   >
                     Siguiente
                   </Button>

@@ -49,7 +49,7 @@ const TableRow = <T extends Record<string, unknown>>({
         return (
           <td
             key={String(column.key)}
-            className={`px-6 py-4 text-sm whitespace-nowrap transition-all duration-200 group-hover:scale-[1.02] ${
+            className={`px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm whitespace-nowrap transition-all duration-200 group-hover:scale-[1.02] ${
               colIndex === 0 ? "font-medium text-gray-900" : "text-gray-700"
             } ${column.width ? String(column.width) : ""}`}
           >
@@ -266,7 +266,7 @@ export const DataTable = <T extends Record<string, unknown>>({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Tabla con header sticky */}
       <div className="overflow-hidden bg-white border border-gray-200 shadow-sm rounded-xl">
         {/* Scroll horizontal si hace falta */}
@@ -296,7 +296,7 @@ export const DataTable = <T extends Record<string, unknown>>({
                             ? "sticky [top:var(--header-offset)] z-10"
                             : "",
                           "bg-gradient-to-r from-gray-50 to-gray-100",
-                          "px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider",
+                          "px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider",
                           "border-r border-gray-200 last:border-r-0 shadow-sm",
                           column.width ? String(column.width) : "",
                           column.sortable
@@ -349,9 +349,9 @@ export const DataTable = <T extends Record<string, unknown>>({
       </div>
 
       {/* Paginación */}
-      <div className="flex flex-col items-center justify-between px-6 py-4 space-y-4 bg-white border border-gray-200 shadow-sm sm:flex-row sm:space-y-0 rounded-xl">
-        <div className="flex items-center space-x-4">
-          <div className="px-3 py-2 text-sm text-gray-700 rounded-lg bg-gray-50">
+      <div className="flex flex-col items-center justify-between px-3 sm:px-6 py-3 sm:py-4 space-y-3 sm:space-y-4 bg-white border border-gray-200 shadow-sm sm:flex-row sm:space-y-0 rounded-xl">
+        <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
+          <div className="px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm text-gray-700 rounded-lg bg-gray-50">
             <span className="font-medium">
               {paginationInfo.start} - {paginationInfo.end}
             </span>
@@ -361,7 +361,7 @@ export const DataTable = <T extends Record<string, unknown>>({
           </div>
 
           {totalPages > 1 && (
-            <div className="px-3 py-2 text-sm text-gray-500 rounded-lg bg-blue-50">
+            <div className="px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm text-gray-500 rounded-lg bg-blue-50">
               Página{" "}
               <span className="font-medium text-blue-600">{currentPage}</span>{" "}
               de <span className="font-medium text-blue-600">{totalPages}</span>
@@ -370,7 +370,7 @@ export const DataTable = <T extends Record<string, unknown>>({
         </div>
 
         {totalPages > 1 && (
-          <div className="flex items-center space-x-3">
+          <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3">
             <Button
               type="button"
               variant="outline"
@@ -378,9 +378,10 @@ export const DataTable = <T extends Record<string, unknown>>({
               onClick={() => onPageChange(currentPage - 1)}
               disabled={currentPage === 1}
               icon={ChevronLeft}
-              className="border-gray-300 hover:border-[#18D043] hover:text-[#18D043] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              className="w-full sm:w-auto border-gray-300 hover:border-[#18D043] hover:text-[#18D043] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
-              Anterior
+              <span className="hidden sm:inline">Anterior</span>
+              <span className="sm:hidden">Anterior</span>
             </Button>
 
             <PaginationButtons
@@ -397,9 +398,10 @@ export const DataTable = <T extends Record<string, unknown>>({
               disabled={currentPage === totalPages}
               icon={ChevronRight}
               iconPosition="right"
-              className="border-gray-300 hover:border-[#18D043] hover:text-[#18D043] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              className="w-full sm:w-auto border-gray-300 hover:border-[#18D043] hover:text-[#18D043] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
-              Siguiente
+              <span className="hidden sm:inline">Siguiente</span>
+              <span className="sm:hidden">Siguiente</span>
             </Button>
           </div>
         )}
