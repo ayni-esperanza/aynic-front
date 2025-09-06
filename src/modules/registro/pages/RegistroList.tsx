@@ -799,48 +799,48 @@ export const RegistroList: React.FC = () => {
           const isAyniUser = user?.empresa === 'ayni' || user?.empresa === 'Ayni' || user?.empresa === 'AYNI';
 
           return (
-            <div className="flex space-x-1">
+            <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate(`detalle/${registro.id}`)}
                 icon={Eye}
-                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-xs sm:text-sm"
                 title="Ver detalles"
               >
-                Ver
+                <span className="hidden sm:inline">Ver</span>
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate(`editar/${registro.id}`)}
                 icon={Edit}
-                className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                className="text-green-600 hover:text-green-700 hover:bg-green-50 text-xs sm:text-sm"
                 title="Editar registro"
                 disabled={!isAyniUser}
               >
-                Editar
+                <span className="hidden sm:inline">Editar</span>
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => handleCreateDerivadas(registro)}
                 icon={Link}
-                className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 text-xs sm:text-sm"
                 title="Crear Líneas Derivadas"
               >
-                Derivadas
+                <span className="hidden sm:inline">Derivadas</span>
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => handleDeleteRegistro(registro)}
                 icon={Trash2}
-                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs sm:text-sm"
                 title="Eliminar registro"
                 disabled={deleting || !isAyniUser}
               >
-                Eliminar
+                <span className="hidden sm:inline">Eliminar</span>
               </Button>
             </div>
           );

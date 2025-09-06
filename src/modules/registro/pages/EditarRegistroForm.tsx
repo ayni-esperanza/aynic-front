@@ -379,23 +379,23 @@ export const EditarRegistroForm: React.FC = () => {
       };
 
       setFormData({
-        codigo: data.codigo,
+        codigo: data.codigo || "",
         codigo_placa: data.codigo_placa || "",
-        cliente: data.cliente,
-        equipo: data.equipo,
+        cliente: data.cliente || "",
+        equipo: data.equipo || "",
         fv_anios: Math.floor(Number(data.fv_anios) || 0),
-        fv_meses: data.fv_meses,
-        fecha_instalacion: formatDateForInput(data.fecha_instalacion),
-        longitud: data.longitud,
+        fv_meses: data.fv_meses || 0,
+        fecha_instalacion: formatDateForInput(data.fecha_instalacion || ""),
+        longitud: data.longitud || "",
         observaciones: data.observaciones || "",
         seccion: data.seccion || "",
         area: data.area || "",
         planta: data.planta || "",
-        tipo_linea: data.tipo_linea,
-        ubicacion: data.ubicacion,
+        tipo_linea: data.tipo_linea || "",
+        ubicacion: data.ubicacion || "",
         anclaje_equipos: (data as any).anclaje_equipos || "",
-        fecha_caducidad: formatDateForInput(data.fecha_caducidad),
-        estado_actual: data.estado_actual,
+        fecha_caducidad: formatDateForInput(data.fecha_caducidad || ""),
+        estado_actual: data.estado_actual || "activo",
         anclaje_tipo: (data as any).anclaje_tipo || "",
       });
     },
@@ -682,31 +682,33 @@ export const EditarRegistroForm: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="max-w-4xl px-4 py-6 mx-auto sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center mb-6 space-x-4">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4 mb-6">
             <Button
               variant="outline"
               onClick={() => navigate("/registro")}
               icon={ArrowLeft}
               disabled={updating}
+              className="w-full sm:w-auto"
             >
-              Volver
+              <span className="hidden sm:inline">Volver</span>
+              <span className="sm:hidden">← Volver</span>
             </Button>
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-xl text-white">✏️</span>
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-lg sm:text-xl text-white">✏️</span>
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
                   Editar Registro
                 </h1>
-                <p className="text-gray-600">Modifica los datos del registro</p>
+                <p className="text-sm sm:text-base text-gray-600">Modifica los datos del registro</p>
               </div>
             </div>
           </div>
 
           {/* Progress */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-6 sm:mb-8">
             {steps.map((step, idx) => {
               const isActive = currentStep === step.number;
               const isCompleted = currentStep > step.number;
@@ -715,23 +717,23 @@ export const EditarRegistroForm: React.FC = () => {
                 <div key={step.number} className="flex items-center flex-1">
                   <div className="flex items-center">
                     <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${isCompleted
+                      className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center border-2 transition-all ${isCompleted
                         ? "bg-[#18D043] text-white border-[#18D043]"
                         : isActive
                           ? `${step.bgColor} ${step.color} border-current`
                           : "bg-gray-100 border-gray-300 text-gray-400"
                         }`}
                     >
-                      {isCompleted ? "✓" : <Icon size={20} />}
+                      {isCompleted ? "✓" : <Icon size={18} />}
                     </div>
-                    <div className="ml-4">
+                    <div className="ml-3 sm:ml-4">
                       <p
-                        className={`text-sm font-medium ${isActive ? "text-gray-900" : "text-gray-500"
+                        className={`text-xs sm:text-sm font-medium ${isActive ? "text-gray-900" : "text-gray-500"
                           }`}
                       >
                         {step.title}
                       </p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-gray-400 hidden sm:block">
                         {step.description}
                       </p>
                     </div>
@@ -1166,7 +1168,7 @@ export const EditarRegistroForm: React.FC = () => {
             )}
 
             {/* BOTONES */}
-            <div className="flex justify-between pt-8 mt-8 border-t border-gray-200">
+            <div className="flex flex-col space-y-3 sm:flex-row sm:justify-between sm:space-y-0 pt-6 sm:pt-8 mt-6 sm:mt-8 border-t border-gray-200">
               <div>
                 {/* Solo mostrar "Anterior" si no estamos en el paso 4 con imagen subida */}
                 {currentStep > 1 && !(currentStep === 4 && hasImage) && (
@@ -1176,13 +1178,15 @@ export const EditarRegistroForm: React.FC = () => {
                     onClick={handlePrev}
                     icon={ArrowLeft}
                     disabled={updating}
+                    className="w-full sm:w-auto"
                   >
-                    Anterior
+                    <span className="hidden sm:inline">Anterior</span>
+                    <span className="sm:hidden">← Anterior</span>
                   </Button>
                 )}
               </div>
 
-              <div className="flex space-x-3">
+              <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
                 {/* Solo mostrar "Cancelar" si no estamos en el paso 4 con imagen subida */}
                 {!(currentStep === 4 && hasImage) && (
                   <Button
@@ -1191,8 +1195,10 @@ export const EditarRegistroForm: React.FC = () => {
                     onClick={() => navigate("/registro")}
                     icon={X}
                     disabled={updating}
+                    className="w-full sm:w-auto"
                   >
-                    Cancelar
+                    <span className="hidden sm:inline">Cancelar</span>
+                    <span className="sm:hidden">✕ Cancelar</span>
                   </Button>
                 )}
 
@@ -1202,9 +1208,10 @@ export const EditarRegistroForm: React.FC = () => {
                     onClick={() => navigate("/registro")}
                     icon={Check}
                     disabled={updating}
-                    className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
+                    className="bg-gradient-to-r from-[#18D043] to-[#16a34a] w-full sm:w-auto"
                   >
-                    Finalizar Edición
+                    <span className="hidden sm:inline">Finalizar Edición</span>
+                    <span className="sm:hidden">✓ Finalizar</span>
                   </Button>
                 ) : (
                   <Button
@@ -1221,11 +1228,13 @@ export const EditarRegistroForm: React.FC = () => {
                     }}
                     disabled={updating}
                     loading={currentStep === 3 && updating}
-                    className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
+                    className="bg-gradient-to-r from-[#18D043] to-[#16a34a] w-full sm:w-auto"
                   >
                     {currentStep === 3 && updating
                       ? "Guardando..."
-                      : "Siguiente"}
+                      : currentStep === 3
+                        ? "Guardar y Continuar"
+                        : "Siguiente"}
                   </Button>
                 )}
               </div>
