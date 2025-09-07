@@ -32,6 +32,7 @@ export interface LoginCredentials {
 export interface LoginResponse {
   access_token: string;
   user: BackendUser;
+  needsPasswordChange?: boolean;
 }
 
 export class AuthMappers {

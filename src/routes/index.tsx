@@ -132,11 +132,11 @@ export const AppRoutes: React.FC = () => {
         } 
       />
 
-      {/* Ruta raíz - muestra bienvenida o dashboard según autenticación */}
+      {/* Ruta raíz - redirige al login si no está autenticado */}
       <Route
         path="/"
         element={
-          <ProtectedRoute showWelcomeOnUnauth={true}>
+          <ProtectedRoute showWelcomeOnUnauth={false}>
             <MainLayout />
           </ProtectedRoute>
         }

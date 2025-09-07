@@ -6,11 +6,12 @@ import { Input } from "../shared/components/ui/Input";
 import { Card } from "../shared/components/ui/Card";
 import { useToast } from "../shared/components/ui/Toast";
 import { useAuthStore } from "../store/authStore";
+import { ChangePasswordModal } from "../shared/components/modals/ChangePasswordModal";
 import logoAyni from "../assets/images/logo_ayni.png";
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { login, loading, error, isAuthenticated, clearError } = useAuthStore();
+  const { login, loading, error, isAuthenticated, clearError, needsPasswordChange, setNeedsPasswordChange, user } = useAuthStore();
   const { success, error: showError } = useToast();
 
   const [formData, setFormData] = useState({
@@ -20,6 +21,7 @@ export const Login: React.FC = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   // Limpiar error cuando el componente se monta
   useEffect(() => {
@@ -32,6 +34,20 @@ export const Login: React.FC = () => {
       navigate("/");
     }
   }, [isAuthenticated, navigate]);
+
+  // Mostrar modal de cambio de contraseña si es necesario
+  useEffect(() => {
+    if (needsPasswordChange && isAuthenticated && user?.id) {
+      // Pequeño delay para evitar parpadeo durante el login
+      const timer = setTimeout(() => {
+        setShowPasswordModal(true);
+      }, 500);
+
+      return () => clearTimeout(timer);
+    } else {
+      setShowPasswordModal(false);
+    }
+  }, [needsPasswordChange, isAuthenticated, user?.id]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -72,6 +88,17 @@ export const Login: React.FC = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }));
     if (error) clearError();
+  };
+
+  const handlePasswordChangeSuccess = () => {
+    setNeedsPasswordChange(false);
+    setShowPasswordModal(false);
+    navigate("/");
+  };
+
+  const handlePasswordModalClose = () => {
+    setShowPasswordModal(false);
+    // Permitir cerrar el modal - aparecerá nuevamente en 24 horas
   };
 
   return (
@@ -189,6 +216,13 @@ export const Login: React.FC = () => {
           </p>
         </div>
       </div>
+
+      {/* Modal de cambio de contraseña */}
+      <ChangePasswordModal
+        isOpen={showPasswordModal}
+        onClose={handlePasswordModalClose}
+        onSuccess={handlePasswordChangeSuccess}
+      />
     </div>
   );
 };

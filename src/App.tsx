@@ -7,6 +7,7 @@ import { useToast } from "./shared/components/ui/Toast";
 import { useAuthStore } from "./store/authStore";
 import { setupTokenExpiredHandler } from "./shared/services/apiClient";
 import { LoadingSpinner } from "./shared/components/ui/LoadingSpinner";
+import { PasswordChangeHandler } from "./shared/components/PasswordChangeHandler";
 import { logger, logGlobalError, logUnhandledRejection } from "./shared/services/logger";
 
 // Global error handler setup
@@ -122,6 +123,7 @@ function App() {
             <AuthInitializer>
               <div id="app-container">
                 <AppRoutes />
+                <PasswordChangeHandler />
               </div>
             </AuthInitializer>
           </GlobalErrorHandler>

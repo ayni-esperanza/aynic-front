@@ -12,6 +12,7 @@ interface AuthState {
   loading: boolean;
   error: string | null;
   isInitialized: boolean;
+  needsPasswordChange: boolean;
 
   // Actions
   login: (credentials: LoginCredentials) => Promise<void>;
@@ -24,6 +25,7 @@ interface AuthState {
   loadCurrentUser: () => Promise<void>; // Nueva función para cargar datos del usuario actual
   startSessionVerification: () => void;
   stopSessionVerification: () => void;
+  setNeedsPasswordChange: (needs: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -37,6 +39,7 @@ export const useAuthStore = create<AuthState>()(
         loading: false,
         error: null,
         isInitialized: false,
+        needsPasswordChange: false,
 
         // Actions
         login: async (credentials: LoginCredentials) => {
@@ -68,6 +71,7 @@ export const useAuthStore = create<AuthState>()(
               loading: false,
               error: null,
               isInitialized: true,
+              needsPasswordChange: response.needsPasswordChange || false,
             });
 
             // Después del login exitoso, cargar datos completos del usuario
@@ -111,7 +115,11 @@ export const useAuthStore = create<AuthState>()(
             loading: false,
             error: null,
             isInitialized: true,
+            needsPasswordChange: false,
           });
+
+          // Redirigir al login después del logout usando React Router
+          // La redirección se manejará automáticamente por ProtectedRoute
         },
 
         updateUser: (userData) => {
@@ -145,7 +153,11 @@ export const useAuthStore = create<AuthState>()(
             error:
               "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.",
             isInitialized: true,
+            needsPasswordChange: false,
           });
+
+          // Redirigir al login cuando el token expire usando React Router
+          // La redirección se manejará automáticamente por ProtectedRoute
         },
 
         // Cargar datos completos del usuario actual desde la API
@@ -247,6 +259,10 @@ export const useAuthStore = create<AuthState>()(
             clearInterval(intervalId);
             (window as any).sessionVerificationInterval = null;
           }
+        },
+
+        setNeedsPasswordChange: (needs: boolean) => {
+          set({ needsPasswordChange: needs });
         },
       }),
       {
