@@ -136,7 +136,7 @@ export const AppRoutes: React.FC = () => {
       <Route
         path="/"
         element={
-          <ProtectedRoute showWelcomeOnUnauth={false}>
+          <ProtectedRoute>
             <MainLayout />
           </ProtectedRoute>
         }

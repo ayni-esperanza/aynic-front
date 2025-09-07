@@ -30,7 +30,7 @@ export default defineConfig({
     // límite de warning para chunks grandes
     chunkSizeWarningLimit: 1000,
     // Optimizaciones adicionales
-    minify: 'esbuild', // Usar esbuild en lugar de terser para evitar problemas
+    minify: 'esbuild', // Usar esbuild en lugar de terser 
   },
   // Configuración del servidor de desarrollo
   server: {
