@@ -24,7 +24,7 @@ const menuItems = [
     path: "/",
     icon: LayoutDashboard,
     label: "Dashboard",
-    description: "Panel principal",
+    description: "Gestion de alertas",
     color: "text-blue-600",
     bgColor: "bg-blue-50",
     hoverColor: "hover:bg-blue-100",
