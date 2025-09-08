@@ -348,6 +348,13 @@ export const Dashboard: React.FC = () => {
   // Estados de paginación
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [allAlerts, setAllAlerts] = useState<Alert[]>([]);
+  const [alertsPagination, setAlertsPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 10,
+  });
 
   // Hooks de API
   const { loading: loadingAlertStats, execute: loadAlertStats } = useApi(
@@ -363,6 +370,20 @@ export const Dashboard: React.FC = () => {
             ? (error as Error).message
             : String(error)
         );
+      },
+    }
+  );
+
+  // Hook para cargar alertas con paginación real
+  const { loading: loadingAlerts, execute: loadAlerts } = useApi(
+    alertService.getAlerts.bind(alertService),
+    {
+      onSuccess: (data) => {
+        setAllAlerts(data.data);
+        setAlertsPagination(data.pagination);
+      },
+      onError: (error) => {
+        showError("Error al cargar alertas", error);
       },
     }
   );
@@ -426,30 +447,68 @@ export const Dashboard: React.FC = () => {
     }
   }, []);
 
+  const loadAlertsStable = useCallback(async () => {
+    if (!mountedRef.current) return;
+
+    try {
+      const filters = {
+        page: currentPage,
+        limit: itemsPerPage,
+        sortBy: "fecha_creada",
+        sortOrder: "DESC" as const,
+        ...alertFilters,
+      };
+      
+      const data = await alertService.getAlerts(filters);
+      if (mountedRef.current) {
+        setAllAlerts(data.data);
+        setAlertsPagination(data.pagination);
+      }
+    } catch (error) {
+      if (mountedRef.current) {
+        showError(
+          "Error al cargar alertas",
+          error instanceof Error ? error.message : String(error)
+        );
+      }
+    }
+  }, [currentPage, itemsPerPage, alertFilters]);
+
   useEffect(() => {
     mountedRef.current = true;
 
     if (!isInitializedRef.current) {
       isInitializedRef.current = true;
       loadAlertStatsStable();
+      loadAlertsStable();
     }
 
     return () => {
       mountedRef.current = false;
     };
-  }, [loadAlertStatsStable]);
+  }, [loadAlertStatsStable, loadAlertsStable]);
+
+  // Cargar alertas cuando cambian los filtros o la página
+  useEffect(() => {
+    if (isInitializedRef.current) {
+      loadAlertsStable();
+    }
+  }, [loadAlertsStable]);
 
   // Funciones
   const refreshData = useCallback(async () => {
     setRefreshing(true);
     try {
-      await loadAlertStats();
+      await Promise.all([
+        loadAlertStats(),
+        loadAlerts()
+      ]);
     } catch (error) {
       console.error("Error refreshing data:", error);
     } finally {
       setRefreshing(false);
     }
-  }, [loadAlertStats]);
+  }, [loadAlertStats, loadAlerts]);
 
   const handleMarkAsRead = useCallback(
     async (alertId: string) => {
@@ -485,35 +544,9 @@ export const Dashboard: React.FC = () => {
     }
   }, [generateAlerts]);
 
-  // Filtrar alertas
-  const filteredAlerts = useMemo(() => {
-    if (!alertStats) return [];
-
-    let alerts = [...alertStats.recientes];
-
-    if (alertFilters.tipo) {
-      alerts = alerts.filter((alert) => alert.tipo === alertFilters.tipo);
-    }
-    if (alertFilters.prioridad) {
-      alerts = alerts.filter(
-        (alert) => alert.prioridad === alertFilters.prioridad
-      );
-    }
-    if (alertFilters.leida !== "") {
-      alerts = alerts.filter((alert) => alert.leida === alertFilters.leida);
-    }
-
-    return alerts;
-  }, [alertStats, alertFilters]);
-
-  // Calcular paginación
-  const paginatedAlerts = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    return filteredAlerts.slice(startIndex, endIndex);
-  }, [filteredAlerts, currentPage]);
-
-  const totalPages = Math.ceil(filteredAlerts.length / itemsPerPage);
+  // Usar las alertas cargadas con paginación real
+  const paginatedAlerts = allAlerts;
+  const totalPages = alertsPagination.totalPages;
 
   // Resetear página cuando cambian los filtros
   useEffect(() => {
@@ -532,7 +565,7 @@ export const Dashboard: React.FC = () => {
     };
   }, [alertStats]);
 
-  const loading = loadingAlertStats;
+  const loading = loadingAlertStats || loadingAlerts;
 
   return (
     <div className="pb-8 space-y-8">
@@ -877,7 +910,7 @@ export const Dashboard: React.FC = () => {
               Centro de Gestión de Alertas
               {alertStats && (
                 <Badge variant="primary" className="ml-2">
-                  {filteredAlerts.length} de {alertStats.total}
+                  {paginatedAlerts.length} de {alertStats.total}
                 </Badge>
               )}
             </h3>
@@ -981,7 +1014,7 @@ export const Dashboard: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <Activity size={16} className="text-blue-600" />
                 <span className="text-sm font-medium text-blue-800">
-                  Filtros aplicados: {filteredAlerts.length} alertas encontradas
+                  Filtros aplicados: {paginatedAlerts.length} alertas encontradas
                 </span>
               </div>
               <div className="flex items-center space-x-4 text-xs text-blue-600">
@@ -1010,7 +1043,7 @@ export const Dashboard: React.FC = () => {
               <LoadingSpinner size="lg" />
               <span className="ml-3 text-gray-600">Cargando alertas...</span>
             </div>
-          ) : filteredAlerts.length === 0 ? (
+          ) : paginatedAlerts.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-48 text-center">
               <div className="flex items-center justify-center w-16 h-16 mb-4 bg-gray-100 rounded-full">
                 <Bell className="w-8 h-8 text-gray-400" />
@@ -1041,14 +1074,14 @@ export const Dashboard: React.FC = () => {
               <div className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-4">
                 <div className="p-3 text-center border border-gray-200 rounded-lg bg-gray-50">
                   <div className="text-lg font-bold text-gray-900">
-                    {filteredAlerts.length}
+                    {paginatedAlerts.length}
                   </div>
                   <div className="text-xs text-gray-600">Total mostradas</div>
                 </div>
                 <div className="p-3 text-center border border-red-200 rounded-lg bg-red-50">
                   <div className="text-lg font-bold text-red-900">
                     {
-                      filteredAlerts.filter((a) => a.prioridad === "critical")
+                      paginatedAlerts.filter((a) => a.prioridad === "critical")
                         .length
                     }
                   </div>
@@ -1056,13 +1089,13 @@ export const Dashboard: React.FC = () => {
                 </div>
                 <div className="p-3 text-center border border-orange-200 rounded-lg bg-orange-50">
                   <div className="text-lg font-bold text-orange-900">
-                    {filteredAlerts.filter((a) => !a.leida).length}
+                    {paginatedAlerts.filter((a) => !a.leida).length}
                   </div>
                   <div className="text-xs text-orange-600">No leídas</div>
                 </div>
                 <div className="p-3 text-center border border-green-200 rounded-lg bg-green-50">
                   <div className="text-lg font-bold text-green-900">
-                    {filteredAlerts.filter((a) => a.leida).length}
+                    {paginatedAlerts.filter((a) => a.leida).length}
                   </div>
                   <div className="text-xs text-green-600">Procesadas</div>
                 </div>
@@ -1084,7 +1117,7 @@ export const Dashboard: React.FC = () => {
               {totalPages > 1 && (
                 <div className="flex items-center justify-between pt-6 mt-6 border-t border-gray-200">
                   <div className="text-sm text-gray-600">
-                    Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, filteredAlerts.length)} de {filteredAlerts.length} alertas
+                    Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, alertsPagination.totalItems)} de {alertsPagination.totalItems} alertas
                   </div>
                   
                   <div className="flex items-center space-x-2">
@@ -1128,10 +1161,10 @@ export const Dashboard: React.FC = () => {
               )}
 
               {/* Acciones masivas */}
-              {filteredAlerts.some((alert) => !alert.leida) && (
+              {paginatedAlerts.some((alert) => !alert.leida) && (
                 <div className="flex items-center justify-between pt-4 mt-6 border-t border-gray-200">
                   <div className="text-sm text-gray-600">
-                    {filteredAlerts.filter((a) => !a.leida).length} alertas sin
+                    {paginatedAlerts.filter((a) => !a.leida).length} alertas sin
                     leer en la vista actual
                   </div>
                   <div className="flex space-x-2">

@@ -8,7 +8,6 @@ import {
   LogOut,
   AlertTriangle,
   Clock,
-  Calendar,
   Check,
   ExternalLink,
   BellRing,
@@ -46,8 +45,8 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, isMobile = false })
   const { loading: loadingAlerts, execute: loadAlerts } = useApi(
     () =>
       alertService.getAlerts({
-        leida: false,
-        limit: 10,
+        leida: false, // Volver al filtro original
+        limit: 10, // Reducir límite
         sortBy: "fecha_creada",
         sortOrder: "DESC",
       }),
@@ -58,6 +57,8 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, isMobile = false })
       },
       onError: (error) => {
         console.error("Error loading alerts:", error);
+        setAlerts([]);
+        setUnreadCount(0);
       },
     }
   );
@@ -86,8 +87,8 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, isMobile = false })
 
     try {
       const data = await alertService.getAlerts({
-        leida: false,
-        limit: 10,
+        leida: false, // Volver al filtro original
+        limit: 10, // Reducir límite
         sortBy: "fecha_creada",
         sortOrder: "DESC",
       });
@@ -99,23 +100,20 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, isMobile = false })
     } catch (error) {
       if (mountedRef.current) {
         console.error("Error loading alerts:", error);
+        setAlerts([]);
+        setUnreadCount(0);
       }
     }
   }, []);
 
   useEffect(() => {
     mountedRef.current = true;
-
-    // Cargar alertas inicial
-    loadAlertsStable();
+    loadAlerts();
 
     return () => {
       mountedRef.current = false;
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
     };
-  }, [loadAlertsStable]);
+  }, []); // Solo cargar una vez al montar
 
   // Cerrar dropdowns cuando se hace clic fuera
   useEffect(() => {
