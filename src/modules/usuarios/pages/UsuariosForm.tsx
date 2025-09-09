@@ -9,7 +9,6 @@ import {
   Mail,
   Phone,
   Building,
-  UserCheck,
 } from "lucide-react";
 import { Button } from '../../../shared/components/ui/Button';
 import { Card } from '../../../shared/components/ui/Card';
@@ -251,234 +250,236 @@ export const UsuariosForm: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="max-w-4xl px-4 py-6 mx-auto sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center mb-6 space-x-4">
-            <Button
-              variant="outline"
-              onClick={() => navigate("/usuarios")}
-              icon={ArrowLeft}
-              disabled={isSubmitting}
-              className="border-gray-300 hover:bg-gray-50"
-            >
-              Volver
-            </Button>
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-xl text-white">
-                  {isEditing ? "✏️" : "➕"}
-                </span>
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">
-                  {isEditing ? "Editar Usuario" : "Nuevo Usuario"}
-                </h1>
-                <p className="text-gray-600">
-                  {isEditing
-                    ? "Modifica los datos del usuario"
-                    : "Completa el formulario para crear un nuevo usuario"}
-                </p>
+      <div className="max-w-4xl px-3 py-4 mx-auto sm:px-6 sm:py-6 lg:px-8">
+        <div className="space-y-6 sm:space-y-8">
+          {/* Header */}
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:space-y-0">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <Button
+                variant="outline"
+                onClick={() => navigate("/usuarios")}
+                icon={ArrowLeft}
+                disabled={isSubmitting}
+                className="w-full sm:w-auto border-gray-300 hover:bg-gray-50"
+              >
+                Volver
+              </Button>
+              <div className="flex items-center space-x-3 sm:space-x-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-xl flex items-center justify-center shadow-lg">
+                  <span className="text-lg sm:text-xl text-white">
+                    {isEditing ? "✏️" : "➕"}
+                  </span>
+                </div>
+                <div>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                    {isEditing ? "Editar Usuario" : "Nuevo Usuario"}
+                  </h1>
+                  <p className="text-sm sm:text-base text-gray-600">
+                    {isEditing
+                      ? "Modifica los datos del usuario"
+                      : "Completa el formulario para crear un nuevo usuario"}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
+
+          <Card className="bg-white border-0 shadow-xl">
+            <form onSubmit={handleSubmit} className="p-4 sm:p-8 space-y-6 sm:space-y-8">
+              {/* Información básica */}
+              <div>
+                <h3 className="mb-4 sm:mb-6 text-lg sm:text-xl font-semibold text-gray-900">
+                  Información Básica
+                </h3>
+                <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
+                  <Input
+                    label="Usuario"
+                    value={formData.usuario}
+                    onChange={(e) => handleChange("usuario", e.target.value)}
+                    error={errors.usuario}
+                    placeholder="usuario123"
+                    icon={User}
+                    required
+                    disabled={isSubmitting}
+                  />
+
+                  <Input
+                    label="Nombre"
+                    value={formData.nombre}
+                    onChange={(e) => handleChange("nombre", e.target.value)}
+                    error={errors.nombre}
+                    placeholder="Juan"
+                    required
+                    disabled={isSubmitting}
+                  />
+
+                  <Input
+                    label="Apellidos"
+                    value={formData.apellidos}
+                    onChange={(e) => handleChange("apellidos", e.target.value)}
+                    error={errors.apellidos}
+                    placeholder="Pérez García"
+                    disabled={isSubmitting}
+                  />
+
+                  <Input
+                    label="Email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleChange("email", e.target.value)}
+                    error={errors.email}
+                    placeholder="usuario@empresa.com"
+                    icon={Mail}
+                    required
+                    disabled={isSubmitting}
+                  />
+                </div>
+              </div>
+
+              {/* Información de contacto y empresa */}
+              <div>
+                <h3 className="mb-4 sm:mb-6 text-lg sm:text-xl font-semibold text-gray-900">
+                  Información de Contacto y Empresa
+                </h3>
+                <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
+                  <Input
+                    label="Teléfono"
+                    value={formData.telefono}
+                    onChange={(e) => handleChange("telefono", e.target.value)}
+                    error={errors.telefono}
+                    placeholder="+1 234 567 890"
+                    icon={Phone}
+                    disabled={isSubmitting}
+                  />
+
+                  <Input
+                    label="Cargo"
+                    value={formData.cargo}
+                    onChange={(e) => handleChange("cargo", e.target.value)}
+                    error={errors.cargo}
+                    placeholder="Electricidad"
+                    disabled={isSubmitting}
+                  />
+
+                  <Input
+                    label="Empresa"
+                    value={formData.empresa}
+                    onChange={(e) => handleChange("empresa", e.target.value)}
+                    error={errors.empresa}
+                    placeholder="Mi Empresa S.A."
+                    icon={Building}
+                    required
+                    disabled={isSubmitting}
+                  />
+
+                  <Select
+                    label="Rol"
+                    value={formData.rol}
+                    onChange={(e) => handleChange("rol", e.target.value)}
+                    error={errors.rol}
+                    options={[
+                      { value: "usuario", label: "👤 Usuario" },
+                      { value: "supervisor", label: "👨‍💼 Supervisor" },
+                      { value: "admin", label: "👑 Administrador" },
+                    ]}
+                    required
+                    disabled={isSubmitting}
+                  />
+                </div>
+              </div>
+
+              {/* Seguridad */}
+              <div>
+                <h3 className="mb-4 sm:mb-6 text-lg sm:text-xl font-semibold text-gray-900">
+                  {isEditing ? "Cambiar Contraseña (Opcional)" : "Seguridad"}
+                </h3>
+                <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
+                  <div className="relative">
+                    <Input
+                      label={isEditing ? "Nueva Contraseña" : "Contraseña"}
+                      type={showPassword ? "text" : "password"}
+                      value={formData.contrasenia}
+                      onChange={(e) =>
+                        handleChange("contrasenia", e.target.value)
+                      }
+                      error={errors.contrasenia}
+                      placeholder="••••••••"
+                      required={!isEditing}
+                      disabled={isSubmitting}
+                      helperText={
+                        !isEditing
+                          ? "Mínimo 6 caracteres, incluir mayúsculas, minúsculas y números"
+                          : "Déjalo vacío si no quieres cambiarla"
+                      }
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute text-gray-400 transition-colors duration-200 right-3 top-9 hover:text-gray-600"
+                      disabled={isSubmitting}
+                    >
+                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+
+                  <div className="relative">
+                    <Input
+                      label="Confirmar Contraseña"
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={formData.confirmarContrasenia}
+                      onChange={(e) =>
+                        handleChange("confirmarContrasenia", e.target.value)
+                      }
+                      error={errors.confirmarContrasenia}
+                      placeholder="••••••••"
+                      required={!isEditing || Boolean(formData.contrasenia)}
+                      disabled={isSubmitting}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute text-gray-400 transition-colors duration-200 right-3 top-9 hover:text-gray-600"
+                      disabled={isSubmitting}
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff size={20} />
+                      ) : (
+                        <Eye size={20} />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Botones */}
+              <div className="flex flex-col space-y-3 sm:flex-row sm:justify-end sm:space-y-0 sm:space-x-4 pt-6 sm:pt-8 border-t border-gray-200">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate("/usuarios")}
+                  disabled={isSubmitting}
+                  className="w-full sm:w-auto border-gray-300 hover:bg-gray-50"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  icon={Save}
+                  loading={isSubmitting}
+                  className="w-full sm:w-auto bg-gradient-to-r from-[#18D043] to-[#16a34a] hover:from-[#16a34a] hover:to-[#15803d] shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                >
+                  {isSubmitting
+                    ? isEditing
+                      ? "Actualizando..."
+                      : "Creando..."
+                    : isEditing
+                      ? "Actualizar Usuario"
+                      : "Crear Usuario"}
+                </Button>
+              </div>
+            </form>
+          </Card>
         </div>
-
-        <Card className="bg-white border-0 shadow-xl">
-          <form onSubmit={handleSubmit} className="p-8 space-y-8">
-            {/* Información básica */}
-            <div>
-              <h3 className="mb-6 text-xl font-semibold text-gray-900">
-                Información Básica
-              </h3>
-              <div className="grid gap-6 md:grid-cols-2">
-                <Input
-                  label="Usuario"
-                  value={formData.usuario}
-                  onChange={(e) => handleChange("usuario", e.target.value)}
-                  error={errors.usuario}
-                  placeholder="usuario123"
-                  icon={User}
-                  required
-                  disabled={isSubmitting}
-                />
-
-                <Input
-                  label="Nombre"
-                  value={formData.nombre}
-                  onChange={(e) => handleChange("nombre", e.target.value)}
-                  error={errors.nombre}
-                  placeholder="Juan"
-                  required
-                  disabled={isSubmitting}
-                />
-
-                <Input
-                  label="Apellidos"
-                  value={formData.apellidos}
-                  onChange={(e) => handleChange("apellidos", e.target.value)}
-                  error={errors.apellidos}
-                  placeholder="Pérez García"
-                  disabled={isSubmitting}
-                />
-
-                <Input
-                  label="Email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleChange("email", e.target.value)}
-                  error={errors.email}
-                  placeholder="usuario@empresa.com"
-                  icon={Mail}
-                  required
-                  disabled={isSubmitting}
-                />
-              </div>
-            </div>
-
-            {/* Información de contacto y empresa */}
-            <div>
-              <h3 className="mb-6 text-xl font-semibold text-gray-900">
-                Información de Contacto y Empresa
-              </h3>
-              <div className="grid gap-6 md:grid-cols-2">
-                <Input
-                  label="Teléfono"
-                  value={formData.telefono}
-                  onChange={(e) => handleChange("telefono", e.target.value)}
-                  error={errors.telefono}
-                  placeholder="+1 234 567 890"
-                  icon={Phone}
-                  disabled={isSubmitting}
-                />
-
-                <Input
-                  label="Cargo"
-                  value={formData.cargo}
-                  onChange={(e) => handleChange("cargo", e.target.value)}
-                  error={errors.cargo}
-                  placeholder="Electricidad"
-                  disabled={isSubmitting}
-                />
-
-                <Input
-                  label="Empresa"
-                  value={formData.empresa}
-                  onChange={(e) => handleChange("empresa", e.target.value)}
-                  error={errors.empresa}
-                  placeholder="Mi Empresa S.A."
-                  icon={Building}
-                  required
-                  disabled={isSubmitting}
-                />
-
-                <Select
-                  label="Rol"
-                  value={formData.rol}
-                  onChange={(e) => handleChange("rol", e.target.value)}
-                  error={errors.rol}
-                  options={[
-                    { value: "usuario", label: "👤 Usuario" },
-                    { value: "supervisor", label: "👨‍💼 Supervisor" },
-                    { value: "admin", label: "👑 Administrador" },
-                  ]}
-                  required
-                  disabled={isSubmitting}
-                />
-              </div>
-            </div>
-
-            {/* Seguridad */}
-            <div>
-              <h3 className="mb-6 text-xl font-semibold text-gray-900">
-                {isEditing ? "Cambiar Contraseña (Opcional)" : "Seguridad"}
-              </h3>
-              <div className="grid gap-6 md:grid-cols-2">
-                <div className="relative">
-                  <Input
-                    label={isEditing ? "Nueva Contraseña" : "Contraseña"}
-                    type={showPassword ? "text" : "password"}
-                    value={formData.contrasenia}
-                    onChange={(e) =>
-                      handleChange("contrasenia", e.target.value)
-                    }
-                    error={errors.contrasenia}
-                    placeholder="••••••••"
-                    required={!isEditing}
-                    disabled={isSubmitting}
-                    helperText={
-                      !isEditing
-                        ? "Mínimo 6 caracteres, incluir mayúsculas, minúsculas y números"
-                        : "Déjalo vacío si no quieres cambiarla"
-                    }
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute text-gray-400 transition-colors duration-200 right-3 top-9 hover:text-gray-600"
-                    disabled={isSubmitting}
-                  >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-
-                <div className="relative">
-                  <Input
-                    label="Confirmar Contraseña"
-                    type={showConfirmPassword ? "text" : "password"}
-                    value={formData.confirmarContrasenia}
-                    onChange={(e) =>
-                      handleChange("confirmarContrasenia", e.target.value)
-                    }
-                    error={errors.confirmarContrasenia}
-                    placeholder="••••••••"
-                    required={!isEditing || Boolean(formData.contrasenia)}
-                    disabled={isSubmitting}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute text-gray-400 transition-colors duration-200 right-3 top-9 hover:text-gray-600"
-                    disabled={isSubmitting}
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff size={20} />
-                    ) : (
-                      <Eye size={20} />
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Botones */}
-            <div className="flex justify-end pt-8 space-x-4 border-t border-gray-200">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate("/usuarios")}
-                disabled={isSubmitting}
-                className="border-gray-300 hover:bg-gray-50"
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                icon={Save}
-                loading={isSubmitting}
-                className="bg-gradient-to-r from-[#18D043] to-[#16a34a] hover:from-[#16a34a] hover:to-[#15803d] shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-              >
-                {isSubmitting
-                  ? isEditing
-                    ? "Actualizando..."
-                    : "Creando..."
-                  : isEditing
-                  ? "Actualizar Usuario"
-                  : "Crear Usuario"}
-              </Button>
-            </div>
-          </form>
-        </Card>
       </div>
     </div>
   );

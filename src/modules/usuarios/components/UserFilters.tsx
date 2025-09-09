@@ -21,26 +21,27 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
   );
 
   return (
-    <div className="bg-white p-4 rounded-lg border border-gray-200 mb-6">
-      <div className="flex items-center justify-between mb-4">
+    <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200 mb-4 sm:mb-6">
+      <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-3 sm:mb-4">
         <div className="flex items-center space-x-2">
-          <Filter className="w-5 h-5 text-gray-500" />
-          <h3 className="text-lg font-medium text-gray-900">Filtros</h3>
+          <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
+          <h3 className="text-base sm:text-lg font-medium text-gray-900">Filtros</h3>
         </div>
         {hasActiveFilters && (
           <Button
             variant="ghost"
             size="sm"
             onClick={onClearFilters}
-            className="text-gray-500 hover:text-gray-700"
+            className="w-full sm:w-auto text-gray-500 hover:text-gray-700"
           >
             <X className="w-4 h-4 mr-1" />
-            Limpiar filtros
+            <span className="hidden sm:inline">Limpiar filtros</span>
+            <span className="sm:hidden">Limpiar</span>
           </Button>
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Búsqueda */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -113,12 +114,12 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
 
       {/* Mostrar filtros activos */}
       {hasActiveFilters && (
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium text-gray-700">
+        <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200">
+          <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-2">
+            <span className="text-xs sm:text-sm font-medium text-gray-700">
               Filtros activos:
             </span>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1 sm:gap-2">
               {filters.search && (
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                   Búsqueda: {filters.search}

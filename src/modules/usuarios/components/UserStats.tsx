@@ -110,7 +110,7 @@ export const UserStats: React.FC<UserStatsProps> = ({ users, loading = false }) 
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-4 sm:mb-6">
       {statCards.map((stat, index) => {
         const colors = colorClasses[stat.color as keyof typeof colorClasses];
         const Icon = stat.icon;
@@ -120,12 +120,12 @@ export const UserStats: React.FC<UserStatsProps> = ({ users, loading = false }) 
             key={index}
             className={`${colors.bg} ${colors.border} transition-all duration-200 hover:shadow-lg`}
           >
-            <div className="flex items-center justify-between p-6">
+            <div className="flex items-center justify-between p-4 sm:p-6">
               <div className="flex-1">
-                <div className={`text-sm font-medium ${colors.icon}`}>
+                <div className={`text-xs sm:text-sm font-medium ${colors.icon}`}>
                   {stat.title}
                 </div>
-                <div className={`text-3xl font-bold ${colors.text} mt-2`}>
+                <div className={`text-2xl sm:text-3xl font-bold ${colors.text} mt-1 sm:mt-2`}>
                   {stat.value.toLocaleString()}
                 </div>
                 <div className="text-xs text-gray-600 mt-1">
@@ -133,9 +133,9 @@ export const UserStats: React.FC<UserStatsProps> = ({ users, loading = false }) 
                 </div>
               </div>
               <div
-                className={`w-12 h-12 ${colors.iconBg} rounded-xl flex items-center justify-center shadow-sm`}
+                className={`w-10 h-10 sm:w-12 sm:h-12 ${colors.iconBg} rounded-xl flex items-center justify-center shadow-sm`}
               >
-                <Icon className={`w-6 h-6 ${colors.icon}`} />
+                <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${colors.icon}`} />
               </div>
             </div>
           </Card>
