@@ -703,62 +703,69 @@ export const HistorialList: React.FC = () => {
             {/* Filtros Desktop */}
             <div className="hidden sm:block">
               <div className="space-y-4">
-                <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  {/* Búsqueda */}
-                  <Input
-                    placeholder="Buscar en descripciones..."
-                    value={filters.search || ""}
-                    onChange={(e) => handleFilterChange("search", e.target.value)}
-                    icon={Search}
-                  />
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {/* Búsqueda */}
+                    <Input
+                      placeholder="Buscar en descripciones..."
+                      value={filters.search || ""}
+                      onChange={(e) => handleFilterChange("search", e.target.value)}
+                      icon={Search}
+                    />
 
-                  {/* Filtro por Usuario */}
-                  <SearchableSelect
-                    options={[
-                      "Todos los usuarios",
-                      ...usernameOptions.map((option) => option.value),
-                    ]}
-                    value={filters.username ? filters.username : "Todos los usuarios"}
-                    onChange={(value) =>
-                      handleFilterChange(
-                        "username",
-                        value === "Todos los usuarios" ? "" : value
-                      )
-                    }
-                    placeholder="Buscar usuario..."
-                  />
+                    {/* Filtro por Usuario */}
+                    <SearchableSelect
+                      options={[
+                        "Todos los usuarios",
+                        ...usernameOptions.map((option) => option.value),
+                      ]}
+                      value={filters.username ? filters.username : "Todos los usuarios"}
+                      onChange={(value) =>
+                        handleFilterChange(
+                          "username",
+                          value === "Todos los usuarios" ? "" : value
+                        )
+                      }
+                      placeholder="Buscar usuario..."
+                    />
 
-                  {/* Acción */}
-                  <Select
-                    value={filters.action || ""}
-                    onChange={(e) => handleFilterChange("action", e.target.value)}
-                    options={[
-                      { value: "", label: "Todas las acciones" },
-                      ...actionOptions.map((option) => ({
-                        value: option.value,
-                        label: option.label,
-                      })),
-                    ]}
-                  />
+                    {/* Acción */}
+                    <Select
+                      value={filters.action || ""}
+                      onChange={(e) => handleFilterChange("action", e.target.value)}
+                      options={[
+                        { value: "", label: "Todas las acciones" },
+                        ...actionOptions.map((option) => ({
+                          value: option.value,
+                          label: option.label,
+                        })),
+                      ]}
+                    />
+                  </div>
 
                   {/* Fechas */}
-                  <div className="flex space-x-2">
-                    <Input
-                      type="date"
-                      value={filters.date_from || ""}
-                      onChange={(e) =>
-                        handleFilterChange("date_from", e.target.value)
-                      }
-                      max={today}
-                      placeholder="Desde"
-                    />
-                    <Input
-                      type="date"
-                      value={filters.date_to || ""}
-                      onChange={(e) => handleFilterChange("date_to", e.target.value)}
-                      max={today}
-                      placeholder="Hasta"
-                    />
+                  <div className="space-y-2">
+                    <label className="block text-xs sm:text-sm font-semibold text-gray-700">
+                      Rango de fechas
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      <Input
+                        type="date"
+                        value={filters.date_from || ""}
+                        onChange={(e) =>
+                          handleFilterChange("date_from", e.target.value)
+                        }
+                        max={today}
+                        placeholder="Desde"
+                      />
+                      <Input
+                        type="date"
+                        value={filters.date_to || ""}
+                        onChange={(e) => handleFilterChange("date_to", e.target.value)}
+                        max={today}
+                        placeholder="Hasta"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -850,8 +857,13 @@ export const HistorialList: React.FC = () => {
                       })),
                     ]}
                   />
+                </div>
 
-                  {/* Fechas */}
+                {/* Fechas */}
+                <div className="space-y-2">
+                  <label className="block text-xs sm:text-sm font-semibold text-gray-700">
+                    Rango de fechas
+                  </label>
                   <div className="grid grid-cols-2 gap-2">
                     <Input
                       type="date"
