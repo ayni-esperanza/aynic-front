@@ -32,20 +32,20 @@ const ImagePreviewModal: React.FC<{
 }> = ({ open, src, title, onClose, onError }) => {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80">
       <div className="relative max-w-5xl max-h-full">
         <Button
-          className="absolute z-10 text-white top-3 right-3 bg-black/60 hover:bg-black/80"
+          className="absolute z-10 text-white top-2 right-2 sm:top-3 sm:right-3 bg-black/60 hover:bg-black/80"
           onClick={onClose}
           icon={X}
           size="sm"
         >
-          Cerrar
+          <span className="hidden sm:inline">Cerrar</span>
         </Button>
         <img
           src={src}
           alt={title || "Imagen"}
-          className="max-w-[90vw] max-h-[85vh] object-contain rounded-lg bg-black/20"
+          className="max-w-[95vw] sm:max-w-[90vw] max-h-[90vh] sm:max-h-[85vh] object-contain rounded-lg bg-black/20"
           onError={onError}
         />
       </div>
@@ -313,74 +313,82 @@ export const MaintenancesList: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Mantenimientos</h1>
-          <p className="text-gray-600">
-            Gestión de mantenimientos de líneas de vida
-          </p>
-        </div>
-        <div className="flex items-center space-x-4">
-          <Button variant="outline" icon={Download} disabled={loading}>
-            Exportar
-          </Button>
-          <Button icon={Plus} onClick={() => navigate("/mantenimiento/nuevo")}>
-            Nuevo Mantenimiento
-          </Button>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="max-w-7xl px-3 py-4 mx-auto sm:px-6 sm:py-6 lg:px-8">
+        <div className="space-y-6 sm:space-y-8">
+          {/* Header */}
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Mantenimientos</h1>
+              <p className="text-sm sm:text-base text-gray-600">
+                Gestión de mantenimientos de líneas de vida
+              </p>
+            </div>
+            <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
+              <Button variant="outline" icon={Download} disabled={loading} className="w-full sm:w-auto">
+                Exportar
+              </Button>
+              <Button icon={Plus} onClick={() => navigate("/mantenimiento/nuevo")} className="w-full sm:w-auto">
+                Nuevo Mantenimiento
+              </Button>
+            </div>
+          </div>
 
-      {/* Filtro mínimo: Línea de Vida */}
-      <Card className="p-4">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <SearchableSelect
-            label="Línea de Vida *"
-            value={selectedLineaCodigo}
-            options={lineaOptions}
-            onChange={handleLineaChange}
-            onSearch={(term) => execSearch(term)}
-            placeholder="Buscar por código, cliente o ubicación..."
-            required
+          {/* Filtro mínimo: Línea de Vida */}
+          <Card className="p-4 sm:p-6">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <SearchableSelect
+                label="Línea de Vida *"
+                value={selectedLineaCodigo}
+                options={lineaOptions}
+                onChange={handleLineaChange}
+                onSearch={(term) => execSearch(term)}
+                placeholder="Buscar por código, cliente o ubicación..."
+                required
+              />
+            </div>
+          </Card>
+
+          {/* Tabla o vacío */}
+          {!filters.record_id ? (
+            <Card className="py-8 sm:py-10 text-center text-gray-600">
+              <div className="px-4">
+                <p className="text-sm sm:text-base">
+                  Selecciona una <b>Línea de Vida</b> en los filtros para ver sus
+                  mantenimientos.
+                </p>
+              </div>
+            </Card>
+          ) : (
+            <DataTable
+              data={maintenances}
+              columns={columns}
+              currentPage={pagination.page}
+              totalPages={pagination.totalPages}
+              totalItems={pagination.total}
+              onPageChange={(page) => updateFilters({ ...filters, page })}
+              loading={loading}
+              stickyHeader
+              maxBodyHeight="60vh"
+            />
+          )}
+
+          {/* Modal de imagen */}
+          <ImagePreviewModal
+            open={imgOpen}
+            src={imgSrc}
+            title={imgTitle}
+            onClose={() => setImgOpen(false)}
+            onError={() => {
+              setImgOpen(false);
+              showError(
+                "No se pudo mostrar la imagen",
+                "La URL es inválida o el objeto no es público."
+              );
+            }}
           />
         </div>
-      </Card>
-
-      {/* Tabla o vacío */}
-      {!filters.record_id ? (
-        <Card className="py-10 text-center text-gray-600">
-          Selecciona una <b>Línea de Vida</b> en los filtros para ver sus
-          mantenimientos.
-        </Card>
-      ) : (
-        <DataTable
-          data={maintenances}
-          columns={columns}
-          currentPage={pagination.page}
-          totalPages={pagination.totalPages}
-          totalItems={pagination.total}
-          onPageChange={(page) => updateFilters({ ...filters, page })}
-          loading={loading}
-          stickyHeader
-          maxBodyHeight="60vh"
-        />
-      )}
-
-      {/* Modal de imagen */}
-      <ImagePreviewModal
-        open={imgOpen}
-        src={imgSrc}
-        title={imgTitle}
-        onClose={() => setImgOpen(false)}
-        onError={() => {
-          setImgOpen(false);
-          showError(
-            "No se pudo mostrar la imagen",
-            "La URL es inválida o el objeto no es público."
-          );
-        }}
-      />
+      </div>
     </div>
   );
 };
