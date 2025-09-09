@@ -13,6 +13,8 @@ import {
   EyeOff,
   Download,
   Filter,
+  Menu,
+  X,
 } from "lucide-react";
 import { Card } from '../../../shared/components/ui/Card';
 import { Badge } from '../../../shared/components/ui/Badge';
@@ -20,7 +22,6 @@ import { Button } from '../../../shared/components/ui/Button';
 import { Input } from '../../../shared/components/ui/Input';
 import { Select } from '../../../shared/components/ui/Select';
 import { useToast } from '../../../shared/components/ui/Toast';
-import { useApi } from '../../../shared/hooks/useApi';
 import { SearchableSelect } from '../../../shared/components/ui/SearchableSelect';
 import {
   movementHistoryService,
@@ -109,65 +110,47 @@ const MovementHistoryItem: React.FC<{
 
   return (
     <div className="p-4 transition-shadow bg-white border border-gray-200 rounded-lg hover:shadow-md">
-      <div className="flex items-start justify-between">
-        <div className="flex items-start space-x-3">
-          {/* Icono de acción */}
-          <div
-            className={`p-2 rounded-lg bg-${getActionColor(
-              movement.action
-            )}-100`}
-          >
-            <span className="text-lg">{getActionIcon(movement.action)}</span>
-          </div>
+      {/* Badge */}
+      <div className="mb-2">
+        <Badge variant={getActionColor(movement.action)}>
+          {movement.action_label}
+        </Badge>
+      </div>
 
-          <div className="flex-1">
-            {/* Header */}
-            <div className="flex items-center space-x-2">
-              <Badge variant={getActionColor(movement.action)}>
-                {movement.action_label}
-              </Badge>
-              {movement.record_code && (
-                <span className="text-sm text-gray-500">
-                  {movement.record_code}
-                </span>
-              )}
-            </div>
+      {/* Descripción */}
+      <div className="mb-3">
+        <p className="font-medium text-gray-900">
+          {movement.description}
+        </p>
+      </div>
 
-            {/* Descripción */}
-            <p className="mt-1 font-medium text-gray-900">
-              {movement.description}
-            </p>
-
-            {/* Metadatos */}
-            <div className="flex items-center mt-2 space-x-4 text-sm text-gray-500">
-              <span className="flex items-center space-x-1">
-                <Users size={14} />
-                <span>{movement.user_display_name}</span>
-              </span>
-              <span className="flex items-center space-x-1">
-                <Calendar size={14} />
-                <span>{movement.formatted_date}</span>
-              </span>
-              {movement.ip_address && (
-                <span className="px-2 py-1 text-xs bg-gray-100 rounded">
-                  IP: {movement.ip_address}
-                </span>
-              )}
-            </div>
-          </div>
+      {/* IP Address */}
+      {movement.ip_address && (
+        <div className="mb-2 text-sm text-gray-500">
+          <strong>IP:</strong> {movement.ip_address.replace(/^::ffff:/, '')}
         </div>
+      )}
 
-        {/* Botón para ver detalles */}
-        <div className="flex space-x-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowDetails(!showDetails)}
-            icon={showDetails ? EyeOff : Eye}
-          >
-            {showDetails ? "Ocultar" : "Ver"} datos
-          </Button>
-        </div>
+      {/* Botón para ver detalles */}
+      <div className="mb-3">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowDetails(!showDetails)}
+          icon={showDetails ? EyeOff : Eye}
+        >
+          {showDetails ? "Ocultar" : "Ver"} datos
+        </Button>
+      </div>
+
+      {/* Usuario */}
+      <div className="mb-2 text-sm text-gray-500">
+        <strong>Usuario:</strong> {movement.user_display_name}
+      </div>
+
+      {/* Fecha */}
+      <div className="mb-2 text-sm text-gray-500">
+        <strong>Fecha:</strong> {movement.formatted_date}
       </div>
 
       {/* Detalles expandibles */}
@@ -258,10 +241,10 @@ const PaginationComponent: React.FC<PaginationComponentProps> = React.memo(
     }
 
     return (
-      <div className="flex flex-col items-center justify-between px-6 py-4 mt-6 space-y-4 bg-white border border-gray-200 shadow-sm sm:flex-row sm:space-y-0 rounded-xl">
+      <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between px-3 sm:px-4 py-3 sm:py-4 mt-4 sm:mt-6 bg-white border border-gray-200 shadow-sm rounded-lg">
         {/* Información de registros */}
-        <div className="flex items-center space-x-4">
-          <div className="px-3 py-2 text-sm text-gray-700 rounded-lg bg-gray-50">
+        <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3">
+          <div className="px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-700 rounded-md bg-gray-50 text-center sm:text-left">
             <span className="font-medium">
               {Math.min(
                 (pagination.currentPage - 1) * 10 + 1,
@@ -274,7 +257,7 @@ const PaginationComponent: React.FC<PaginationComponentProps> = React.memo(
             <span className="text-gray-500"> registros</span>
           </div>
 
-          <div className="px-3 py-2 text-sm text-gray-500 rounded-lg bg-blue-50">
+          <div className="px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-500 rounded-md bg-blue-50 text-center sm:text-left">
             Página{" "}
             <span className="font-medium text-blue-600">
               {pagination.currentPage}
@@ -287,32 +270,33 @@ const PaginationComponent: React.FC<PaginationComponentProps> = React.memo(
         </div>
 
         {/* Controles de paginación */}
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-2">
           {/* Botón Anterior */}
           <Button
             variant="outline"
             size="sm"
             onClick={() => handlePageChange(pagination.currentPage - 1)}
             disabled={pagination.currentPage === 1 || loading}
-            className="border-gray-300 hover:border-[#18D043] hover:text-[#18D043] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto border-gray-300 hover:border-[#18D043] hover:text-[#18D043] disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Anterior
+            <span className="hidden sm:inline">Anterior</span>
+            <span className="sm:hidden">← Anterior</span>
           </Button>
 
           {/* Números de página */}
-          <div className="flex items-center space-x-1">
+          <div className="hidden md:flex items-center space-x-1">
             {/* Primera página si no está visible */}
             {startPage > 1 && (
               <>
                 <button
                   onClick={() => handlePageChange(1)}
                   disabled={loading}
-                  className="px-3 py-2 text-sm font-medium text-gray-700 transition-all duration-200 rounded-lg hover:bg-gray-100 disabled:opacity-50"
+                  className="px-2 py-1.5 text-xs font-medium text-gray-700 transition-all duration-200 rounded-md hover:bg-gray-100 disabled:opacity-50"
                 >
                   1
                 </button>
                 {startPage > 2 && (
-                  <span className="px-2 text-sm text-gray-500">...</span>
+                  <span className="px-1 text-xs text-gray-500">...</span>
                 )}
               </>
             )}
@@ -323,11 +307,10 @@ const PaginationComponent: React.FC<PaginationComponentProps> = React.memo(
                 key={pageNumber}
                 onClick={() => handlePageChange(pageNumber)}
                 disabled={loading}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 ${
-                  pageNumber === pagination.currentPage
-                    ? "bg-gradient-to-r from-[#18D043] to-[#16a34a] text-white shadow-lg shadow-[#18D043]/25"
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 disabled:opacity-50 ${pageNumber === pagination.currentPage
+                    ? "bg-[#18D043] text-white shadow-sm"
                     : "text-gray-700 hover:bg-gray-100"
-                }`}
+                  }`}
               >
                 {pageNumber}
               </button>
@@ -337,17 +320,24 @@ const PaginationComponent: React.FC<PaginationComponentProps> = React.memo(
             {endPage < totalPages && (
               <>
                 {endPage < totalPages - 1 && (
-                  <span className="px-2 text-sm text-gray-500">...</span>
+                  <span className="px-1 text-xs text-gray-500">...</span>
                 )}
                 <button
                   onClick={() => handlePageChange(totalPages)}
                   disabled={loading}
-                  className="px-3 py-2 text-sm font-medium text-gray-700 transition-all duration-200 rounded-lg hover:bg-gray-100 disabled:opacity-50"
+                  className="px-2 py-1.5 text-xs font-medium text-gray-700 transition-all duration-200 rounded-md hover:bg-gray-100 disabled:opacity-50"
                 >
                   {totalPages}
                 </button>
               </>
             )}
+          </div>
+
+          {/* Indicador de página en responsivo */}
+          <div className="md:hidden flex items-center justify-center">
+            <span className="text-xs text-gray-500">
+              {pagination.currentPage} / {pagination.totalPages}
+            </span>
           </div>
 
           {/* Botón Siguiente */}
@@ -358,9 +348,10 @@ const PaginationComponent: React.FC<PaginationComponentProps> = React.memo(
             disabled={
               pagination.currentPage === pagination.totalPages || loading
             }
-            className="border-gray-300 hover:border-[#18D043] hover:text-[#18D043] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto border-gray-300 hover:border-[#18D043] hover:text-[#18D043] disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Siguiente
+            <span className="hidden sm:inline">Siguiente</span>
+            <span className="sm:hidden">Siguiente →</span>
           </Button>
         </div>
       </div>
@@ -373,7 +364,10 @@ export const HistorialList: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { success, error: showError } = useToast();
 
-  // ESTADO CON FILTROS SEPARADOS: rol y usuario
+  // Estado para controlar filtros móviles
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+
+  // ESTADO CON FILTROS SEPARADOS
   const [filters, setFilters] = useState<MovementFilters>({
     search: searchParams.get("search") || "",
     action: (searchParams.get("action") as MovementAction) || undefined,
@@ -432,10 +426,6 @@ export const HistorialList: React.FC = () => {
     [filters, loading, showError]
   );
 
-  // FUNCIÓN handlePageChange DECLARADA PRIMERO
-  const handlePageChange = useCallback((page: number) => {
-    setFilters((prev) => ({ ...prev, page }));
-  }, []);
 
   // CARGAR DATOS INICIALES UNA SOLA VEZ
   useEffect(() => {
@@ -594,8 +584,7 @@ export const HistorialList: React.FC = () => {
       console.error("Export error:", error);
       showError(
         "Error",
-        `No se pudo exportar: ${
-          error instanceof Error ? error.message : "Error desconocido"
+        `No se pudo exportar: ${error instanceof Error ? error.message : "Error desconocido"
         }`
       );
     }
@@ -614,272 +603,406 @@ export const HistorialList: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="flex items-center space-x-2 text-2xl font-bold text-gray-900">
-          <History className="w-8 h-8 text-[#18D043]" />
-          <span>Historial de Movimientos</span>
-        </h1>
-        <p className="text-gray-600">
-          Registro completo y detallado de todas las acciones realizadas en las
-          líneas de vida
-        </p>
-      </div>
-
-      {/* Estadísticas */}
-      {statistics && (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
-          <Card>
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Activity className="w-6 h-6 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Total Movimientos
-                </p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {statistics.total}
-                </p>
-              </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <div className="space-y-4 sm:space-y-6 lg:space-y-8">
+          {/* Header Responsive */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex-1">
+              <h1 className="flex items-center space-x-2 text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
+                <History className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-[#18D043] flex-shrink-0" />
+                <span className="truncate">Historial de Movimientos</span>
+              </h1>
+              <p className="text-sm sm:text-base text-gray-600 mt-1">
+                Registro completo y detallado de todas las acciones realizadas en las
+                líneas de vida
+              </p>
             </div>
-          </Card>
 
-          <Card>
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <Calendar className="w-6 h-6 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600">Hoy</p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {statistics.today}
-                </p>
-              </div>
-            </div>
-          </Card>
-
-          <Card>
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Activity className="w-6 h-6 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600">Esta Semana</p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {statistics.thisWeek}
-                </p>
-              </div>
-            </div>
-          </Card>
-
-          <Card>
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <Users className="w-6 h-6 text-orange-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Usuarios Activos
-                </p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {statistics.activeUsers}
-                </p>
-              </div>
-            </div>
-          </Card>
-        </div>
-      )}
-
-      {/* FILTROS CON ROL Y USUARIO */}
-      <Card padding="lg">
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-            {/* Búsqueda */}
-            <Input
-              placeholder="Buscar en descripciones..."
-              value={filters.search || ""}
-              onChange={(e) => handleFilterChange("search", e.target.value)}
-              icon={Search}
-            />
-
-            {/* Filtro por Usuario */}
-            <SearchableSelect
-              options={[
-                "Todos los usuarios",
-                ...usernameOptions.map((option) => option.value),
-              ]}
-              value={filters.username ? filters.username : "Todos los usuarios"}
-              onChange={(value) =>
-                handleFilterChange(
-                  "username",
-                  value === "Todos los usuarios" ? "" : value
-                )
-              }
-              placeholder="Buscar usuario..."
-            />
-
-            {/* Acción */}
-            <Select
-              value={filters.action || ""}
-              onChange={(e) => handleFilterChange("action", e.target.value)}
-              options={[
-                { value: "", label: "Todas las acciones" },
-                ...actionOptions.map((option) => ({
-                  value: option.value,
-                  label: option.label,
-                })),
-              ]}
-            />
-
-            {/* Fechas en una sola fila */}
-            <div className="flex space-x-2">
-              <Input
-                type="date"
-                value={filters.date_from || ""}
-                onChange={(e) =>
-                  handleFilterChange("date_from", e.target.value)
-                }
-                max={today}
-                placeholder="Desde"
-              />
-              <Input
-                type="date"
-                value={filters.date_to || ""}
-                onChange={(e) => handleFilterChange("date_to", e.target.value)}
-                max={today}
-                placeholder="Hasta"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex space-x-3">
-              <Button
-                onClick={handleSearch}
-                icon={Filter}
-                disabled={loading || !isInitialized}
-                loading={loading}
-              >
-                Buscar
-              </Button>
+            {/* Botón de filtros móviles */}
+            <div className="flex items-center gap-2 sm:hidden">
               <Button
                 variant="outline"
-                onClick={handleClearFilters}
-                icon={RotateCcw}
-                disabled={loading || !isInitialized}
-              >
-                Limpiar Filtros
-              </Button>
-            </div>
-
-            <div className="flex space-x-3">
-              <Button
-                variant="outline"
-                onClick={handleSearch}
-                icon={RotateCcw}
-                disabled={loading || !isInitialized}
                 size="sm"
+                onClick={() => setShowMobileFilters(!showMobileFilters)}
+                icon={showMobileFilters ? X : Menu}
+                className="flex-shrink-0"
               >
-                Recargar
-              </Button>
-              <Button
-                variant="outline"
-                onClick={handleExport}
-                icon={Download}
-                size="sm"
-                disabled={loading || !isInitialized}
-              >
-                Exportar CSV
+                Filtros
               </Button>
             </div>
           </div>
-        </div>
-      </Card>
 
-      {/* Lista de movimientos */}
-      <Card padding="lg">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="flex items-center space-x-2 text-lg font-semibold text-gray-900">
-            <Activity className="w-5 h-5 text-[#18D043]" />
-            <span>Registro de Actividades</span>
-          </h2>
-        </div>
+          {/* Estadísticas Responsive */}
+          {statistics && (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+              <Card className="p-3 sm:p-4 lg:p-6">
+                <div className="flex items-center space-x-2 sm:space-x-3">
+                  <div className="p-1.5 sm:p-2 bg-blue-100 rounded-lg flex-shrink-0">
+                    <Activity className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-blue-600" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">
+                      Total Movimientos
+                    </p>
+                    <p className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900">
+                      {statistics.total.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              </Card>
 
-        {loading && (
-          <div className="flex items-center justify-center h-64">
-            <div className="relative">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#18D043]/20 border-t-[#18D043]"></div>
+              <Card className="p-3 sm:p-4 lg:p-6">
+                <div className="flex items-center space-x-2 sm:space-x-3">
+                  <div className="p-1.5 sm:p-2 bg-green-100 rounded-lg flex-shrink-0">
+                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-green-600" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Hoy</p>
+                    <p className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900">
+                      {statistics.today.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-3 sm:p-4 lg:p-6">
+                <div className="flex items-center space-x-2 sm:space-x-3">
+                  <div className="p-1.5 sm:p-2 bg-purple-100 rounded-lg flex-shrink-0">
+                    <Activity className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-purple-600" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Esta Semana</p>
+                    <p className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900">
+                      {statistics.thisWeek.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-3 sm:p-4 lg:p-6">
+                <div className="flex items-center space-x-2 sm:space-x-3">
+                  <div className="p-1.5 sm:p-2 bg-orange-100 rounded-lg flex-shrink-0">
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-orange-600" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">
+                      Usuarios Activos
+                    </p>
+                    <p className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900">
+                      {statistics.activeUsers.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              </Card>
             </div>
-            <p className="ml-4 font-medium text-gray-600">
-              Cargando movimientos...
-            </p>
-          </div>
-        )}
+          )}
 
-        {error && (
-          <div className="flex flex-col items-center justify-center h-64 space-y-4">
-            <div className="flex items-center justify-center w-16 h-16 bg-red-100 rounded-full">
-              <span className="text-2xl">⚠️</span>
-            </div>
-            <div className="text-center">
-              <p className="mb-2 text-lg font-medium text-gray-900">
-                Error al cargar el historial
-              </p>
-              <p className="mb-4 text-gray-600">{error}</p>
-              <Button onClick={handleSearch} variant="outline">
-                Reintentar
-              </Button>
-            </div>
-          </div>
-        )}
+          {/* Filtros Responsive */}
+          <Card className="p-4 sm:p-6">
+            {/* Filtros Desktop */}
+            <div className="hidden sm:block">
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  {/* Búsqueda */}
+                  <Input
+                    placeholder="Buscar en descripciones..."
+                    value={filters.search || ""}
+                    onChange={(e) => handleFilterChange("search", e.target.value)}
+                    icon={Search}
+                  />
 
-        {!loading && !error && movements.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-64 space-y-4">
-            <div className="flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full">
-              <span className="text-2xl">📄</span>
-            </div>
-            <div className="text-center">
-              <p className="mb-2 text-lg font-medium text-gray-900">
-                No hay movimientos registrados
-              </p>
-              <p className="text-gray-600">
-                No se encontraron registros que coincidan con los criterios de
-                búsqueda.
-              </p>
-            </div>
-          </div>
-        )}
+                  {/* Filtro por Usuario */}
+                  <SearchableSelect
+                    options={[
+                      "Todos los usuarios",
+                      ...usernameOptions.map((option) => option.value),
+                    ]}
+                    value={filters.username ? filters.username : "Todos los usuarios"}
+                    onChange={(value) =>
+                      handleFilterChange(
+                        "username",
+                        value === "Todos los usuarios" ? "" : value
+                      )
+                    }
+                    placeholder="Buscar usuario..."
+                  />
 
-        {!loading && !error && movements.length > 0 && (
-          <>
-            <div className="space-y-4">
-              {movements.map((movement) => (
-                <MovementHistoryItem key={movement.id} movement={movement} />
-              ))}
+                  {/* Acción */}
+                  <Select
+                    value={filters.action || ""}
+                    onChange={(e) => handleFilterChange("action", e.target.value)}
+                    options={[
+                      { value: "", label: "Todas las acciones" },
+                      ...actionOptions.map((option) => ({
+                        value: option.value,
+                        label: option.label,
+                      })),
+                    ]}
+                  />
+
+                  {/* Fechas */}
+                  <div className="flex space-x-2">
+                    <Input
+                      type="date"
+                      value={filters.date_from || ""}
+                      onChange={(e) =>
+                        handleFilterChange("date_from", e.target.value)
+                      }
+                      max={today}
+                      placeholder="Desde"
+                    />
+                    <Input
+                      type="date"
+                      value={filters.date_to || ""}
+                      onChange={(e) => handleFilterChange("date_to", e.target.value)}
+                      max={today}
+                      placeholder="Hasta"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+                  <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
+                    <Button
+                      onClick={handleSearch}
+                      icon={Filter}
+                      disabled={loading || !isInitialized}
+                      loading={loading}
+                      className="w-full sm:w-auto"
+                    >
+                      Buscar
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={handleClearFilters}
+                      icon={RotateCcw}
+                      disabled={loading || !isInitialized}
+                      className="w-full sm:w-auto"
+                    >
+                      Limpiar Filtros
+                    </Button>
+                  </div>
+
+                  <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
+                    <Button
+                      variant="outline"
+                      onClick={handleSearch}
+                      icon={RotateCcw}
+                      disabled={loading || !isInitialized}
+                      size="sm"
+                      className="w-full sm:w-auto"
+                    >
+                      Recargar
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={handleExport}
+                      icon={Download}
+                      size="sm"
+                      disabled={loading || !isInitialized}
+                      className="w-full sm:w-auto"
+                    >
+                      Exportar CSV
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Paginación usa handlePageChangeAndSearch */}
-            <PaginationComponent
-              pagination={pagination}
-              loading={loading}
-              handlePageChange={handlePageChangeAndSearch}
-            />
-          </>
-        )}
-      </Card>
+            {/* Filtros Móviles */}
+            <div className={`sm:hidden ${showMobileFilters ? 'block' : 'hidden'}`}>
+              <div className="space-y-4">
+                <div className="space-y-3">
+                  {/* Búsqueda */}
+                  <Input
+                    placeholder="Buscar en descripciones..."
+                    value={filters.search || ""}
+                    onChange={(e) => handleFilterChange("search", e.target.value)}
+                    icon={Search}
+                  />
 
-      {/* Info pie */}
-      <div className="flex items-center justify-center">
-        <div className="flex items-center px-4 py-2 space-x-4 text-xs text-gray-500 rounded-full bg-gray-50">
-          <div className="flex items-center space-x-1">
-            <div className="w-2 h-2 bg-[#18D043] rounded-full"></div>
-            <span>Datos en tiempo real</span>
-          </div>
-          <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
-          <div className="flex items-center space-x-1">
-            <span>Última actualización: {new Date().toLocaleTimeString()}</span>
+                  {/* Filtro por Usuario */}
+                  <SearchableSelect
+                    options={[
+                      "Todos los usuarios",
+                      ...usernameOptions.map((option) => option.value),
+                    ]}
+                    value={filters.username ? filters.username : "Todos los usuarios"}
+                    onChange={(value) =>
+                      handleFilterChange(
+                        "username",
+                        value === "Todos los usuarios" ? "" : value
+                      )
+                    }
+                    placeholder="Buscar usuario..."
+                  />
+
+                  {/* Acción */}
+                  <Select
+                    value={filters.action || ""}
+                    onChange={(e) => handleFilterChange("action", e.target.value)}
+                    options={[
+                      { value: "", label: "Todas las acciones" },
+                      ...actionOptions.map((option) => ({
+                        value: option.value,
+                        label: option.label,
+                      })),
+                    ]}
+                  />
+
+                  {/* Fechas */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      type="date"
+                      value={filters.date_from || ""}
+                      onChange={(e) =>
+                        handleFilterChange("date_from", e.target.value)
+                      }
+                      max={today}
+                      placeholder="Desde"
+                    />
+                    <Input
+                      type="date"
+                      value={filters.date_to || ""}
+                      onChange={(e) => handleFilterChange("date_to", e.target.value)}
+                      max={today}
+                      placeholder="Hasta"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      onClick={handleSearch}
+                      icon={Filter}
+                      disabled={loading || !isInitialized}
+                      loading={loading}
+                      size="sm"
+                    >
+                      Buscar
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={handleClearFilters}
+                      icon={RotateCcw}
+                      disabled={loading || !isInitialized}
+                      size="sm"
+                    >
+                      Limpiar
+                    </Button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={handleSearch}
+                      icon={RotateCcw}
+                      disabled={loading || !isInitialized}
+                      size="sm"
+                    >
+                      Recargar
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={handleExport}
+                      icon={Download}
+                      size="sm"
+                      disabled={loading || !isInitialized}
+                    >
+                      Exportar
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Lista de movimientos */}
+          <Card className="p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h2 className="flex items-center space-x-2 text-base sm:text-lg font-semibold text-gray-900">
+                <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-[#18D043] flex-shrink-0" />
+                <span>Registro de Actividades</span>
+              </h2>
+            </div>
+
+            {loading && (
+              <div className="flex flex-col items-center justify-center h-48 sm:h-64 space-y-4">
+                <div className="relative">
+                  <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-4 border-[#18D043]/20 border-t-[#18D043]"></div>
+                </div>
+                <p className="text-sm sm:text-base font-medium text-gray-600 text-center">
+                  Cargando movimientos...
+                </p>
+              </div>
+            )}
+
+            {error && (
+              <div className="flex flex-col items-center justify-center h-48 sm:h-64 space-y-4">
+                <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-red-100 rounded-full">
+                  <span className="text-xl sm:text-2xl">⚠️</span>
+                </div>
+                <div className="text-center px-4">
+                  <p className="mb-2 text-base sm:text-lg font-medium text-gray-900">
+                    Error al cargar el historial
+                  </p>
+                  <p className="mb-4 text-sm sm:text-base text-gray-600">{error}</p>
+                  <Button onClick={handleSearch} variant="outline" size="sm">
+                    Reintentar
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {!loading && !error && movements.length === 0 && (
+              <div className="flex flex-col items-center justify-center h-48 sm:h-64 space-y-4">
+                <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-full">
+                  <span className="text-xl sm:text-2xl">📄</span>
+                </div>
+                <div className="text-center px-4">
+                  <p className="mb-2 text-base sm:text-lg font-medium text-gray-900">
+                    No hay movimientos registrados
+                  </p>
+                  <p className="text-sm sm:text-base text-gray-600">
+                    No se encontraron registros que coincidan con los criterios de
+                    búsqueda.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {!loading && !error && movements.length > 0 && (
+              <>
+                <div className="space-y-3 sm:space-y-4 w-full">
+                  {movements.map((movement) => (
+                    <MovementHistoryItem key={movement.id} movement={movement} />
+                  ))}
+                </div>
+
+                {/* Paginación usando handlePageChangeAndSearch */}
+                <PaginationComponent
+                  pagination={pagination}
+                  loading={loading}
+                  handlePageChange={handlePageChangeAndSearch}
+                />
+              </>
+            )}
+          </Card>
+
+          {/* Info pie */}
+          <div className="flex items-center justify-center">
+            <div className="flex flex-col items-center space-y-2 sm:flex-row sm:space-y-0 sm:space-x-4 px-3 sm:px-4 py-2 text-xs text-gray-500 rounded-full bg-gray-50">
+              <div className="flex items-center space-x-1">
+                <div className="w-2 h-2 bg-[#18D043] rounded-full flex-shrink-0"></div>
+                <span>Datos en tiempo real</span>
+              </div>
+              <div className="hidden sm:block w-1 h-1 bg-gray-300 rounded-full"></div>
+              <div className="flex items-center space-x-1">
+                <span className="text-center sm:text-left">Última actualización: {new Date().toLocaleTimeString()}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
