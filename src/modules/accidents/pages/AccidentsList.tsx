@@ -14,10 +14,10 @@ import { formatDate } from '../../../shared/utils/formatters';
 import type {
   Accident,
   AccidentFilters as FilterType,
-  EstadoAccidente,
-  SeveridadAccidente,
   AccidentsPaginatedResponse,
+  AccidentStatistics,
 } from "../types/accident";
+import { EstadoAccidente, SeveridadAccidente } from "../types/accident";
 import type { TableColumn } from "../../../types";
 
 export const AccidentsList: React.FC = () => {
@@ -34,10 +34,10 @@ export const AccidentsList: React.FC = () => {
     totalPages: 1,
   });
   const [loading, setLoading] = useState(false);
-  const [statistics, setStatistics] = useState(null);
+  const [statistics, setStatistics] = useState<AccidentStatistics | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
   const [lineasVida, setLineasVida] = useState<
-    Array<{ id: number; codigo: string; cliente: string; ubicacion: string }>
+    Array<{ id: string; codigo: string; cliente: string; ubicacion: string }>
   >([]);
   const [showForm, setShowForm] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -250,17 +250,17 @@ export const AccidentsList: React.FC = () => {
       render: (value) => `#${value}`,
     },
     {
-      key: "lineaVida",
+      key: "linea_vida_codigo",
       label: "Línea de Vida",
       sortable: false,
-      render: (value, record) => (
+      render: (_, record) => (
         <div>
           <div className="font-medium text-gray-900">
-            {record.lineaVida?.codigo || `ID: ${record.linea_vida_id}`}
+            {record.linea_vida_codigo || `ID: ${record.linea_vida_id}`}
           </div>
-          {record.lineaVida?.cliente && (
+          {record.linea_vida_cliente && (
             <div className="text-sm text-gray-500">
-              {record.lineaVida.cliente}
+              {record.linea_vida_cliente}
             </div>
           )}
         </div>
@@ -270,10 +270,10 @@ export const AccidentsList: React.FC = () => {
       key: "fecha_accidente",
       label: "Fecha Accidente",
       sortable: true,
-      render: (value) => formatDate(value as Date),
+      render: (value) => formatDate(value as string),
     },
     {
-      key: "descripcion_incidente",
+      key: "descripcion",
       label: "Descripción",
       sortable: false,
       render: (value) => (
@@ -285,10 +285,10 @@ export const AccidentsList: React.FC = () => {
       ),
     },
     {
-      key: "persona_involucrada",
-      label: "Persona Involucrada",
+      key: "lesiones",
+      label: "Lesiones",
       sortable: false,
-      render: (value) => value || "-",
+      render: (value) => (value as string) || "-",
     },
     {
       key: "estado",
@@ -303,16 +303,13 @@ export const AccidentsList: React.FC = () => {
       render: (value) => renderSeveridadBadge(value as SeveridadAccidente),
     },
     {
-      key: "usuario",
-      label: "Reportado Por",
+      key: "created_at",
+      label: "Reportado",
       sortable: false,
-      render: (value, record) =>
-        record.usuario
-          ? `${record.usuario.nombre} ${record.usuario.apellidos}`
-          : "-",
+      render: (value) => formatDate(value as string),
     },
     {
-      key: "acciones",
+      key: "actions" as keyof Accident,
       label: "Acciones",
       sortable: false,
       render: (_, record) => (
@@ -323,14 +320,18 @@ export const AccidentsList: React.FC = () => {
             icon={Eye}
             onClick={() => handleViewAccident(record)}
             title="Ver detalles"
-          />
+          >
+            Ver
+          </Button>
           <Button
             size="sm"
             variant="outline"
             icon={Edit}
             onClick={() => handleEditAccident(record)}
             title="Editar"
-          />
+          >
+            Editar
+          </Button>
           <Button
             size="sm"
             variant="outline"
@@ -338,73 +339,79 @@ export const AccidentsList: React.FC = () => {
             onClick={() => handleDeleteAccident(record)}
             title="Eliminar"
             className="text-red-600 hover:text-red-700"
-          />
+          >
+            Eliminar
+          </Button>
         </div>
       ),
     },
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Gestión de Accidentes
-          </h1>
-          <p className="text-gray-600">
-            Administra todos los reportes de incidentes del sistema
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="max-w-7xl px-3 py-4 mx-auto sm:px-6 sm:py-6 lg:px-8">
+        <div className="space-y-6 sm:space-y-8">
+          {/* Header */}
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                Gestión de Accidentes
+              </h1>
+              <p className="text-sm sm:text-base text-gray-600">
+                Administra todos los reportes de incidentes del sistema
+              </p>
+            </div>
+            <Button onClick={handleNewAccident} icon={Plus} className="w-full sm:w-auto">
+              Nuevo Accidente
+            </Button>
+          </div>
+
+          {/* Estadísticas */}
+          <AccidentStats statistics={statistics} loading={statsLoading} />
+
+          {/* Filtros */}
+          <Card className="p-4 sm:p-6">
+            <AccidentFilters
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+              onSearch={handleSearch}
+              onClearFilters={handleClearFilters}
+              lineasVida={lineasVida as any}
+              loading={loading}
+            />
+          </Card>
+
+          {/* Tabla de accidentes */}
+          <DataTable
+            data={accidents as any}
+            columns={columns}
+            currentPage={pagination?.page || 1}
+            totalPages={pagination?.totalPages || 1}
+            totalItems={pagination?.total || 0}
+            onPageChange={handlePageChange}
+            onSort={handleSort as any}
+            loading={loading}
+          />
+
+          {/* Modal de formulario */}
+          <AccidentForm
+            accident={selectedAccident}
+            isOpen={showForm}
+            onClose={handleCloseForm}
+            onSuccess={handleFormSuccess}
+            lineasVida={lineasVida}
+          />
+
+          {/* Modal de detalles */}
+          {selectedAccident && (
+            <AccidentDetails
+              accident={selectedAccident}
+              isOpen={showDetails}
+              onClose={handleCloseDetails}
+            />
+          )}
         </div>
-        <Button onClick={handleNewAccident} icon={Plus}>
-          Nuevo Accidente
-        </Button>
       </div>
-
-      {/* Estadísticas */}
-      <AccidentStats statistics={statistics} loading={statsLoading} />
-
-      {/* Filtros */}
-      <Card className="p-6">
-        <AccidentFilters
-          filters={filters}
-          onFiltersChange={handleFiltersChange}
-          onSearch={handleSearch}
-          onClearFilters={handleClearFilters}
-          lineasVida={lineasVida}
-          loading={loading}
-        />
-      </Card>
-
-      {/* Tabla de accidentes */}
-      <DataTable
-        data={accidents}
-        columns={columns}
-        currentPage={pagination?.page || 1}
-        totalPages={pagination?.totalPages || 1}
-        totalItems={pagination?.total || 0}
-        onPageChange={handlePageChange}
-        onSort={handleSort}
-        loading={loading}
-      />
-
-      {/* Modal de formulario */}
-      <AccidentForm
-        accident={selectedAccident}
-        isOpen={showForm}
-        onClose={handleCloseForm}
-        onSuccess={handleFormSuccess}
-        lineasVida={lineasVida}
-      />
-
-      {/* Modal de detalles */}
-      {selectedAccident && (
-        <AccidentDetails
-          accident={selectedAccident}
-          isOpen={showDetails}
-          onClose={handleCloseDetails}
-        />
-      )}
     </div>
   );
 };

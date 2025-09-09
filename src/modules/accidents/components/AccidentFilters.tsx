@@ -100,9 +100,9 @@ export const AccidentFilters: React.FC<AccidentFiltersProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Primera fila de filtros */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <SearchableSelect
           options={lineaVidaOptions}
           value={getSelectedLineaVida()}
@@ -140,7 +140,7 @@ export const AccidentFilters: React.FC<AccidentFiltersProps> = ({
       </div>
 
       {/* Segunda fila de filtros */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Input
           label="Fecha Hasta"
           type="date"
@@ -160,12 +160,12 @@ export const AccidentFilters: React.FC<AccidentFiltersProps> = ({
           icon={Search}
         />
 
-        <div className="flex items-end space-x-3">
+        <div className="flex flex-col space-y-2 sm:flex-row sm:items-end sm:space-y-0 sm:space-x-3">
           <Button
             onClick={handleSearch}
             disabled={loading}
             loading={loading}
-            className="flex-1"
+            className="w-full sm:flex-1"
           >
             Buscar
           </Button>
@@ -175,8 +175,10 @@ export const AccidentFilters: React.FC<AccidentFiltersProps> = ({
             onClick={handleClearFilters}
             disabled={loading}
             icon={X}
+            className="w-full sm:w-auto"
           >
-            Limpiar Filtros
+            <span className="hidden sm:inline">Limpiar Filtros</span>
+            <span className="sm:hidden">Limpiar</span>
           </Button>
         </div>
       </div>
