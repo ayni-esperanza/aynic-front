@@ -598,7 +598,7 @@ export const Dashboard: React.FC = () => {
                 variant="outline"
                 icon={RefreshCw}
                 loading={refreshing}
-                className="w-full sm:w-auto border-gray-300 hover:bg-gray-50"
+                className="w-full sm:w-auto"
               >
                 Actualizar
               </Button>
