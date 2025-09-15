@@ -79,10 +79,6 @@ export const useAuthStore = create<AuthState>()(
               await get().loadCurrentUser();
             } catch (userError) {
               // Si falla cargar el perfil, no es crítico
-              console.warn(
-                "Error loading user profile after login:",
-                userError
-              );
             }
 
             // Iniciar verificación periódica de sesión
@@ -137,7 +133,6 @@ export const useAuthStore = create<AuthState>()(
 
         // manejo de token expirado
         handleTokenExpired: () => {
-          console.warn("Token expirado o inválido, cerrando sesión...");
 
           // Detener verificación periódica
           get().stopSessionVerification();
@@ -166,7 +161,6 @@ export const useAuthStore = create<AuthState>()(
             const userProfile = await userService.getCurrentUserProfile();
             set({ user: userProfile });
           } catch (error) {
-            console.error("Error loading current user profile:", error);
             // Si no se carga el perfil, mantener los datos básicos del login
             throw error;
           }
@@ -207,7 +201,6 @@ export const useAuthStore = create<AuthState>()(
             get().startSessionVerification();
           } catch (error) {
             // Si falla, el token es inválido - NO mostrar error de servidor
-            console.warn("Token validacion fallo:", error);
 
             // Limpiar estado de autenticación silenciosamente
             apiClient.logout();
@@ -233,7 +226,7 @@ export const useAuthStore = create<AuthState>()(
           try {
             await get().checkAuthStatus();
           } catch (error) {
-            console.error("Error in auth initialization:", error);
+            // Error en inicialización de auth
           }
         },
 

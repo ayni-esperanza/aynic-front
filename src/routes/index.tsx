@@ -75,7 +75,7 @@ class ModuleErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error("Module loading error:", error, errorInfo);
+    // Error en carga de módulo
   }
 
   render() {

@@ -165,7 +165,6 @@ class ImageService {
       const result: BackendImageResponse = await response.json();
       return this.mapBackendToFrontend(result);
     } catch (error) {
-      console.error("Error uploading image:", error);
       if (error instanceof ApiClientError) {
         throw error;
       }

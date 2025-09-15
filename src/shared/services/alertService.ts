@@ -290,7 +290,6 @@ class AlertService {
         },
       };
     } catch (error) {
-      console.error("Error fetching alerts:", error);
       throw error;
     }
   }
@@ -401,7 +400,6 @@ class AlertService {
       );
       return response;
     } catch (error) {
-      console.error("Error fetching unread count:", error);
       return { count: 0 };
     }
   }
@@ -416,7 +414,6 @@ class AlertService {
       );
       return this.mapBackendStatsToFrontend(response);
     } catch (error) {
-      console.error("Error fetching dashboard summary:", error);
       // Retornar datos por defecto en caso de error
       return {
         total: 0,
@@ -458,7 +455,6 @@ class AlertService {
       );
       return response;
     } catch (error) {
-      console.error("Error marking all alerts as read:", error);
       throw error;
     }
   }
@@ -473,7 +469,6 @@ class AlertService {
       );
       return response.map((alert) => this.mapBackendToFrontend(alert));
     } catch (error) {
-      console.error("Error fetching critical alerts:", error);
       return [];
     }
   }
@@ -488,7 +483,6 @@ class AlertService {
       );
       return response.map((alert) => this.mapBackendToFrontend(alert));
     } catch (error) {
-      console.error("Error fetching alerts by record:", error);
       return [];
     }
   }
@@ -562,7 +556,6 @@ class AlertService {
         count: parseInt(item.count, 10),
       }));
     } catch (error) {
-      console.error("Error fetching alert stats by period:", error);
       return [];
     }
   }

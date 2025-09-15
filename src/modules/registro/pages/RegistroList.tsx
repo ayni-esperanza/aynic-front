@@ -298,7 +298,7 @@ export const RegistroList: React.FC = () => {
 
           await loadStats();
         } catch (error) {
-          console.error("Error loading initial data:", error);
+          // Error loading initial data
         }
       };
       loadInitialData();
@@ -339,7 +339,7 @@ export const RegistroList: React.FC = () => {
     try {
       await fetchWith({}, pagination.currentPage);
     } catch (error) {
-      console.error("Error refreshing data:", error);
+      // Error refreshing data
     }
   }, [fetchWith, pagination.currentPage]);
 
@@ -567,7 +567,7 @@ export const RegistroList: React.FC = () => {
               try {
                 await loadStats();
               } catch (error) {
-                console.error("Error al limpiar filtros:", error);
+                // Error al limpiar filtros
               }
             }}
           >
@@ -1631,7 +1631,7 @@ export const RegistroList: React.FC = () => {
                           try {
                             await loadStats();
                           } catch (error) {
-                            console.error("Error al limpiar filtros:", error);
+                            // Error al limpiar filtros
                           }
                         }}
                       >

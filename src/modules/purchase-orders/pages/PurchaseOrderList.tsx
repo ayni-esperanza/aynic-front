@@ -204,7 +204,7 @@ export const PurchaseOrderList: React.FC = () => {
                       Recargar
                     </button>
                     <button
-                      onClick={() => console.log('Exportar')}
+                      onClick={() => {/* TODO: Implementar exportación */}}
                       className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#18D043] focus:border-transparent w-full sm:w-auto justify-center"
                     >
                       <Download size={16} className="mr-2" />
@@ -279,7 +279,7 @@ export const PurchaseOrderList: React.FC = () => {
 
                   <div className="grid grid-cols-1 gap-2">
                     <button
-                      onClick={() => console.log('Exportar')}
+                      onClick={() => {/* TODO: Implementar exportación */}}
                       className="inline-flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#18D043] focus:border-transparent"
                     >
                       <Download size={16} className="mr-2" />

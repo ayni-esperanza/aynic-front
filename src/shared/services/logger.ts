@@ -94,11 +94,8 @@ class Logger {
       
       if (entry.level >= LogLevel.ERROR) {
         // Para errores críticos, podríamos enviar a un endpoint
-        console.error('Production Error Log:', entry);
-      }
     } catch (error) {
       // No fallar si el logging externo falla
-      console.error('Failed to send log to external service:', error);
     }
   }
 
@@ -108,20 +105,21 @@ class Logger {
     const entry = this.createLogEntry(level, message, context, data);
     const formattedMessage = this.formatMessage(entry);
 
-    // Log local
-    switch (level) {
-      case LogLevel.DEBUG:
-        console.debug(formattedMessage, data);
-        break;
-      case LogLevel.INFO:
-        console.info(formattedMessage, data);
-        break;
-      case LogLevel.WARN:
-        console.warn(formattedMessage, data);
-        break;
-      case LogLevel.ERROR:
-        console.error(formattedMessage, data);
-        break;
+    if (!this.isProduction) {
+      switch (level) {
+        case LogLevel.DEBUG:
+          console.debug(formattedMessage, data);
+          break;
+        case LogLevel.INFO:
+          console.info(formattedMessage, data);
+          break;
+        case LogLevel.WARN:
+          console.warn(formattedMessage, data);
+          break;
+        case LogLevel.ERROR:
+          console.error(formattedMessage, data);
+          break;
+      }
     }
 
     // Enviar a servicio externo en producción
@@ -194,4 +192,28 @@ export const logUnhandledRejection = (reason: unknown, promise: Promise<unknown>
       promise: promise.toString(),
     }
   );
+};
+
+// Función helper para reemplazar console.log en producción
+export const safeLog = {
+  error: (message: string, ...args: unknown[]) => {
+    if (!import.meta.env.PROD) {
+      console.error(message, ...args);
+    }
+  },
+  warn: (message: string, ...args: unknown[]) => {
+    if (!import.meta.env.PROD) {
+      console.warn(message, ...args);
+    }
+  },
+  info: (message: string, ...args: unknown[]) => {
+    if (!import.meta.env.PROD) {
+      console.info(message, ...args);
+    }
+  },
+  log: (message: string, ...args: unknown[]) => {
+    if (!import.meta.env.PROD) {
+      console.log(message, ...args);
+    }
+  }
 };

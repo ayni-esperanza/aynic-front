@@ -59,7 +59,6 @@ const TableRow = <T extends Record<string, unknown>>({
           </td>
         );
       } catch (error) {
-        console.warn(`Error rendering column ${String(column.key)}:`, error);
         return (
           <td
             key={String(column.key)}

@@ -15,7 +15,6 @@ export const formatDate = (date: Date | string | null | undefined): string => {
       day: "2-digit",
     }).format(parsedDate);
   } catch (error) {
-    console.warn("Error formatting date:", error);
     return "-";
   }
 };
@@ -41,7 +40,6 @@ export const formatDateTime = (
       minute: "2-digit",
     }).format(parsedDate);
   } catch (error) {
-    console.warn("Error formatting datetime:", error);
     return "-";
   }
 };
@@ -52,7 +50,6 @@ export const formatNumber = (num: number | null | undefined): string => {
   try {
     return new Intl.NumberFormat("es-ES").format(num);
   } catch (error) {
-    console.warn("Error formatting number:", error);
     return String(num);
   }
 };
@@ -66,7 +63,6 @@ export const formatCurrency = (amount: number | null | undefined): string => {
       currency: "EUR",
     }).format(amount);
   } catch (error) {
-    console.warn("Error formatting currency:", error);
     return `€${amount}`;
   }
 };

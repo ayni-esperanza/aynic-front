@@ -65,7 +65,6 @@ export const Login: React.FC = () => {
       navigate("/");
     } catch (err) {
       // El error ya está manejado en el store
-      console.error("Error en login:", err);
     }
   };
 

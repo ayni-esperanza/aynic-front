@@ -42,11 +42,6 @@ export class ErrorBoundary extends React.Component<
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Log error to console in development
     if (process.env.NODE_ENV === "development") {
-      console.group("Error Boundary Caught an Error");
-      console.error("Error:", error);
-      console.error("Error Info:", errorInfo);
-      console.error("Component Stack:", errorInfo.componentStack);
-      console.groupEnd();
     }
 
     // Log error to external service in production
@@ -77,17 +72,7 @@ export class ErrorBoundary extends React.Component<
         url: window.location.href,
       };
 
-      // For now, just log to console
-      console.error("Error Report:", errorReport);
-
-      // Uncomment and configure for real error service
-      // await fetch('/api/errors', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(errorReport),
-      // });
     } catch (loggingError) {
-      console.error("Failed to log error:", loggingError);
     }
   };
 

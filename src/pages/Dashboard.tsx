@@ -506,7 +506,7 @@ export const Dashboard: React.FC = () => {
         loadAlerts()
       ]);
     } catch (error) {
-      console.error("Error refreshing data:", error);
+      // Error refreshing data
     } finally {
       setRefreshing(false);
     }

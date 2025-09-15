@@ -217,7 +217,6 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
 
   const handleFileUpload = () => {
     // TODO: Implementar upload de archivos
-    console.log("Upload de evidencias");
   };
 
   if (!isOpen) return null;

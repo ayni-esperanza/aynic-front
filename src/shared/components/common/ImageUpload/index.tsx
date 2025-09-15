@@ -79,7 +79,6 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           !error?.message?.includes("404") &&
           !error?.message?.includes("Not Found")
         ) {
-          console.warn("Error loading image:", error);
         }
         isLoadingImageRef.current = false;
         hasLoadedImageRef.current = true; // Marcar como intentado

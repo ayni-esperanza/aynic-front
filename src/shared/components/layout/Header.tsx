@@ -55,7 +55,6 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, isMobile = false })
         setUnreadCount(data.pagination.totalItems);
       },
       onError: (error) => {
-        console.error("Error loading alerts:", error);
         setAlerts([]);
         setUnreadCount(0);
       },

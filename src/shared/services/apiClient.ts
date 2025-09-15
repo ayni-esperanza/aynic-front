@@ -104,7 +104,6 @@ class ApiClient {
 
         // Manejar token expirado (401 Unauthorized)
         if (response.status === 401) {
-          console.warn("Token expirado o inválido detectado");
 
           // Llamar al callback si está configurado
           if (this.tokenExpiredCallback) {
@@ -325,7 +324,6 @@ class ApiClient {
       });
     } catch (error) {
       // Si falla, continuar con el logout local
-      console.warn("Error en logout del servidor:", error);
     } finally {
       // Siempre limpiar el token local
       localStorage.removeItem("authToken");
@@ -352,7 +350,6 @@ class ApiClient {
       await this.get("/auth/profile");
       return true;
     } catch (error) {
-      console.warn("Token verification failed:", error);
       return false;
     }
   }
