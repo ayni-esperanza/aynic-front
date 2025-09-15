@@ -385,24 +385,16 @@ export const RegistroForm: React.FC = () => {
     const e: Record<string, string> = {};
     if (step === 1) {
       if (!formData.codigo.trim()) e.codigo = "Requerido";
-      if (!formData.cliente.trim()) e.cliente = "Requerido";
-      if (!formData.equipo.trim()) e.equipo = "Requerido";
-      if (!formData.seccion.trim()) e.seccion = "Requerido";
-      if (!formData.area.trim()) e.area = "Requerido";
-      if (!formData.planta.trim()) e.planta = "Requerido";
       if (formData.codigo_placa && formData.codigo_placa.length > 50) {
         e.codigo_placa = "No puede exceder 50 caracteres";
       }
     }
     if (step === 2) {
-      if (!formData.tipo_linea) e.tipo_linea = "Requerido";
-      if (!formData.ubicacion.trim()) e.ubicacion = "Requerido";
       const val = parseFloat(String(formData.longitud));
-      if (isNaN(val) || val <= 0) e.longitud = "Mayor a 0";
+      if (formData.longitud && (isNaN(val) || val <= 0)) e.longitud = "Mayor a 0";
       if (formData.anclaje_equipos && formData.anclaje_equipos.length > 100) {
         e.anclaje_equipos = "No puede exceder 100 caracteres";
       }
-      if (!formData.anclaje_tipo) e.anclaje_tipo = "Requerido"; // Validar anclaje_tipo
     }
     if (step === 3) {
       if (!formData.fecha_instalacion) {
@@ -764,7 +756,6 @@ export const RegistroForm: React.FC = () => {
                           placeholder="Buscar cliente..."
                           label="Cliente"
                           error={errors.cliente}
-                          required
                         />
                         <div className="flex-shrink-0 mb-2">
                           <Button
@@ -789,7 +780,6 @@ export const RegistroForm: React.FC = () => {
                     onChange={(e) => handleChange("equipo", e.target.value)}
                     error={errors.equipo}
                     placeholder="Equipo-A1"
-                    required
                   />
                   <Input
                     label="Sección"
@@ -797,7 +787,6 @@ export const RegistroForm: React.FC = () => {
                     onChange={(e) => handleChange("seccion", e.target.value)}
                     error={errors.seccion}
                     placeholder="Sección A"
-                    required
                   />
                   <Input
                     label="Área"
@@ -805,7 +794,6 @@ export const RegistroForm: React.FC = () => {
                     onChange={(e) => handleChange("area", e.target.value)}
                     error={errors.area}
                     placeholder="Área 1"
-                    required
                   />
                   <Input
                     label="Planta"
@@ -813,7 +801,6 @@ export const RegistroForm: React.FC = () => {
                     onChange={(e) => handleChange("planta", e.target.value)}
                     error={errors.planta}
                     placeholder="Planta 1"
-                    required
                   />
                 </div>
               </div>
@@ -826,7 +813,6 @@ export const RegistroForm: React.FC = () => {
                     value={formData.tipo_linea}
                     onChange={(value) => handleChange("tipo_linea", value)}
                     error={errors.tipo_linea}
-                    required
                   />
                 </div>
 
@@ -927,7 +913,6 @@ export const RegistroForm: React.FC = () => {
                     onChange={(e) => handleChange("longitud", e.target.value)}
                     error={errors.longitud}
                     placeholder="100.50"
-                    required
                     inputMode="decimal"
                     pattern="[0-9]*[.]?[0-9]*"
                   />
@@ -937,7 +922,6 @@ export const RegistroForm: React.FC = () => {
                     onChange={(e) => handleChange("ubicacion", e.target.value)}
                     error={errors.ubicacion}
                     placeholder="Dirección o coordenadas"
-                    required
                   />
                 </div>
 
@@ -1026,7 +1010,6 @@ export const RegistroForm: React.FC = () => {
                     min={0}
                     max={50}
                     step={1}
-                    required
                   />
                   <Input
                     label="Vida útil meses"
@@ -1046,7 +1029,6 @@ export const RegistroForm: React.FC = () => {
                     min={0}
                     max={11}
                     maxLength={2}
-                    required
                   />
                   <Select
                     label="Estado"

@@ -1281,7 +1281,7 @@ export const RegistroDetail: React.FC = () => {
                   <Badge
                     variant={estadoConfig.variant}
                     size="md"
-                    className="text-white bg-white/20 border-white/30"
+                    className={`${estadoConfig.color} ${estadoConfig.bgColor} ${estadoConfig.borderColor} font-semibold`}
                   >
                     {registro.estado_actual}
                   </Badge>
