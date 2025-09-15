@@ -133,34 +133,34 @@ export const ReportsSection: React.FC = () => {
 
   return (
     <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100">
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-6">
+      <div className="p-4 sm:p-6">
+        <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-6">
           <div className="flex items-center space-x-3">
-            <div className="flex items-center justify-center w-12 h-12 bg-orange-200 rounded-xl">
-              <FileText className="w-6 h-6 text-orange-600" />
+            <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-orange-200 rounded-xl">
+              <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-orange-900">
+            <div className="min-w-0 flex-1">
+              <h3 className="text-base sm:text-lg font-semibold text-orange-900">
                 Reporte de Líneas Vencidas
               </h3>
-              <p className="text-orange-600">
+              <p className="text-sm sm:text-base text-orange-600">
                 Genera un PDF con las líneas de vida vencidas en formato de
                 tarjetas
               </p>
             </div>
           </div>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3">
             <Button
               variant="outline"
               size="sm"
               onClick={() => setShowFilters(!showFilters)}
               icon={showFilters ? X : Filter}
-              className={
+              className={`w-full sm:w-auto ${
                 showFilters
                   ? "bg-orange-600 text-white border-orange-600"
                   : "border-orange-300 text-orange-600 hover:bg-orange-50"
-              }
+              }`}
             >
               {showFilters ? "Ocultar" : "Filtros"}
             </Button>
@@ -169,7 +169,7 @@ export const ReportsSection: React.FC = () => {
               onClick={generateReport}
               loading={loading}
               icon={Download}
-              className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800"
+              className="w-full sm:w-auto bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800"
             >
               {loading ? "Generando..." : "Generar PDF"}
             </Button>
@@ -178,8 +178,8 @@ export const ReportsSection: React.FC = () => {
 
         {/* Filtros */}
         {showFilters && (
-          <div className="p-4 mb-6 border border-orange-200 bg-white/50 rounded-xl">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="p-3 sm:p-4 mb-6 border border-orange-200 bg-white/50 rounded-xl">
+            <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <div>
                 <label className="block mb-2 text-sm font-medium text-orange-700">
                   <Building className="inline w-4 h-4 mr-1" />
@@ -278,7 +278,7 @@ export const ReportsSection: React.FC = () => {
         {/* Indicadores de filtros activos */}
         {hasActiveFilters && (
           <div className="flex flex-wrap gap-2 mb-4">
-            <span className="text-sm font-medium text-orange-600">
+            <span className="text-xs sm:text-sm font-medium text-orange-600">
               Filtros activos:
             </span>
             {Object.entries(filters).map(([key, value]) => {
@@ -295,14 +295,16 @@ export const ReportsSection: React.FC = () => {
               return (
                 <span
                   key={key}
-                  className="inline-flex items-center px-3 py-1 text-xs font-medium text-orange-800 bg-orange-200 rounded-full"
+                  className="inline-flex items-center px-2 sm:px-3 py-1 text-xs font-medium text-orange-800 bg-orange-200 rounded-full max-w-full"
                 >
-                  {labels[key]}: {value}
+                  <span className="truncate">
+                    {labels[key]}: {value}
+                  </span>
                   <button
                     onClick={() =>
                       handleFilterChange(key as keyof ReportFilters, "")
                     }
-                    className="ml-1 hover:text-orange-900"
+                    className="ml-1 hover:text-orange-900 flex-shrink-0"
                   >
                     ×
                   </button>
@@ -313,11 +315,11 @@ export const ReportsSection: React.FC = () => {
         )}
 
         {/* Información adicional */}
-        <div className="p-4 border border-orange-200 bg-white/30 rounded-xl">
-          <h4 className="mb-2 text-sm font-medium text-orange-800">
+        <div className="p-3 sm:p-4 border border-orange-200 bg-white/30 rounded-xl">
+          <h4 className="mb-2 text-xs sm:text-sm font-medium text-orange-800">
             ℹ️ Información del reporte
           </h4>
-          <ul className="space-y-1 text-sm text-orange-700">
+          <ul className="space-y-1 text-xs sm:text-sm text-orange-700">
             <li>
               • Se generarán tarjetas solo para líneas de vida con estado
               "VENCIDO"
