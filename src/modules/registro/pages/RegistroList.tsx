@@ -61,7 +61,23 @@ export const RegistroList: React.FC = () => {
   const [installDateFrom, setInstallDateFrom] = useState("");
   const [installDateTo, setInstallDateTo] = useState("");
   const [anclajeTipoFilter, setAnclajeTipoFilter] = useState("");
-  const [viewMode, setViewMode] = useState<"table" | "grid">("table");
+  const [isMobile, setIsMobile] = useState(false);
+  const [viewMode, setViewMode] = useState<"table" | "grid">(() => {
+    // Inicializar con la vista correcta desde el inicio
+    if (typeof window !== 'undefined') {
+      const mobile = window.innerWidth < 768;
+      const savedViewMode = localStorage.getItem('registroViewMode') as "table" | "grid" | null;
+      
+      
+      // En móviles, siempre usar grid (cards) por defecto
+      if (mobile) {
+        return 'grid';
+      }
+      // En desktop, usar la vista guardada o table por defecto
+      return savedViewMode || 'table';
+    }
+    return 'table';
+  });
   const [showFilters, setShowFilters] = useState(false);
   const [showRelationshipModal, setShowRelationshipModal] = useState(false);
   const [selectedRecordForRelation, setSelectedRecordForRelation] =
@@ -228,6 +244,29 @@ export const RegistroList: React.FC = () => {
     setRecordImages(newImageMap);
   }, []);
 
+  // Detectar cambios de tamaño de pantalla
+  useEffect(() => {
+    const checkIsMobile = () => {
+      const mobile = window.innerWidth < 768; // md breakpoint
+      setIsMobile(mobile);
+      
+      // Si cambia a móvil, cambiar a grid (cards)
+      if (mobile) {
+        setViewMode('grid');
+      } else {
+        // Si cambia a desktop, usar la vista guardada o table por defecto
+        const savedViewMode = localStorage.getItem('registroViewMode') as "table" | "grid" | null;
+        const newViewMode = savedViewMode || 'table';
+        setViewMode(newViewMode);
+      }
+    };
+
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+    
+    return () => window.removeEventListener('resize', checkIsMobile);
+  }, []);
+
   // Cargar datos inicial solo una vez
   useEffect(() => {
     if (isInitialLoadRef.current) {
@@ -272,6 +311,13 @@ export const RegistroList: React.FC = () => {
       localStorage.setItem('registroFilters', JSON.stringify(appliedFilters));
     }
   }, [appliedFilters]);
+
+  // Guardar vista seleccionada en localStorage (solo en desktop)
+  useEffect(() => {
+    if (!isMobile) {
+      localStorage.setItem('registroViewMode', viewMode);
+    }
+  }, [viewMode, isMobile]);
 
   // Limpiar timeout al desmontar
   useEffect(() => {
@@ -852,7 +898,7 @@ export const RegistroList: React.FC = () => {
 
   // Vista en cuadrícula (actualizada para mostrar empresa y área)
   const GridView = () => (
-    <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {registros.map((registro) => {
         const estadoConfig = getEstadoConfig(registro.estado_actual);
         const hasImage = recordImages.has(registro.id);
@@ -869,22 +915,22 @@ export const RegistroList: React.FC = () => {
               </div>
             )}
 
-            <div className="p-4 sm:p-6">
-              <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <div className="p-3 sm:p-4 lg:p-6">
+              <div className="flex items-center justify-between mb-2 sm:mb-3 lg:mb-4">
                 <div className="flex items-center space-x-2 sm:space-x-3">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-xl flex items-center justify-center shadow-md">
-                    <span className="text-sm sm:text-base font-bold text-white">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-lg sm:rounded-xl flex items-center justify-center shadow-md">
+                    <span className="text-xs sm:text-sm lg:text-base font-bold text-white">
                       {registro.codigo.slice(-2)}
                     </span>
                   </div>
-                  <div>
-                    <h3 className="text-sm sm:text-base font-semibold text-gray-900">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-sm sm:text-base font-semibold text-gray-900 truncate">
                       {registro.codigo}
                     </h3>
-                    <p className="text-xs sm:text-sm text-gray-500">{registro.cliente}</p>
+                    <p className="text-xs sm:text-sm text-gray-500 truncate">{registro.cliente}</p>
                   </div>
                 </div>
-                <Badge variant={estadoConfig.variant} size="sm">
+                <Badge variant={estadoConfig.variant} size="sm" className="flex-shrink-0">
                   {!registro.estado_actual || registro.estado_actual === "undefined" || registro.estado_actual === "null"
                     ? "No registrado"
                     : registro.estado_actual === "por_vencer"
@@ -893,57 +939,51 @@ export const RegistroList: React.FC = () => {
                 </Badge>
               </div>
 
-              <div className="mb-3 sm:mb-4 space-y-2 sm:space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs sm:text-sm text-gray-500">Empresa:</span>
-                  <span className="text-xs sm:text-sm font-medium text-gray-900 truncate ml-2">
-                    {registro.cliente}
-                  </span>
-                </div>
+              <div className="mb-2 sm:mb-3 lg:mb-4 space-y-1.5 sm:space-y-2 lg:space-y-3">
                 {registro.codigo_placa && (
                   <div className="flex items-center justify-between">
                     <span className="text-xs sm:text-sm text-gray-500">Código Placa:</span>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                    <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                       {registro.codigo_placa}
                     </span>
                   </div>
                 )}
                 <div className="flex items-center justify-between">
                   <span className="text-xs sm:text-sm text-gray-500">Área:</span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                  <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                     {registro.area}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs sm:text-sm text-gray-500">Equipo:</span>
-                  <span className="text-xs sm:text-sm font-medium text-gray-900 truncate ml-2">
+                  <span className="text-xs sm:text-sm font-medium text-gray-900 truncate ml-2 max-w-20 sm:max-w-32">
                     {registro.equipo}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs sm:text-sm text-gray-500">Tipo:</span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                     {registro.tipo_linea}
                   </span>
                 </div>
                 {registro.anclaje_tipo && (
                   <div className="flex items-center justify-between">
                     <span className="text-xs sm:text-sm text-gray-500">Anclaje:</span>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                       {registro.anclaje_tipo.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
                     </span>
                   </div>
                 )}
                 <div className="flex items-center justify-between">
                   <span className="text-xs sm:text-sm text-gray-500">Longitud:</span>
-                  <span className="text-xs sm:text-sm font-mono bg-gray-100 px-2 py-0.5 rounded">
+                  <span className="text-xs sm:text-sm font-mono bg-gray-100 px-1.5 sm:px-2 py-0.5 rounded">
                     {registro.longitud}m
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs sm:text-sm text-gray-500">Ubicación:</span>
                   <span
-                    className="text-xs sm:text-sm text-gray-900 truncate max-w-24 sm:max-w-32"
+                    className="text-xs sm:text-sm text-gray-900 truncate max-w-20 sm:max-w-32"
                     title={registro.ubicacion}
                   >
                     {registro.ubicacion}
@@ -952,20 +992,20 @@ export const RegistroList: React.FC = () => {
                 {hasImage && (
                   <div className="flex items-center justify-between">
                     <span className="text-xs sm:text-sm text-gray-500">Imagen:</span>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                    <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
                       Disponible
                     </span>
                   </div>
                 )}
               </div>
 
-              <div className="flex pt-2 sm:pt-3 space-x-1 sm:space-x-2 border-t border-gray-100">
+              <div className="grid grid-cols-2 sm:flex sm:flex-row pt-2 sm:pt-3 gap-1 sm:gap-1 sm:space-x-1 sm:space-x-2 border-t border-gray-100">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => navigate(`detalle/${registro.id}`)}
                   icon={Eye}
-                  className="flex-1 text-blue-600 border-blue-200 hover:bg-blue-50 text-xs sm:text-sm"
+                  className="text-blue-600 border-blue-200 hover:bg-blue-50 text-xs sm:text-sm"
                 >
                   <span className="hidden sm:inline">Ver</span>
                   <span className="sm:hidden">Ver</span>
@@ -975,11 +1015,32 @@ export const RegistroList: React.FC = () => {
                   size="sm"
                   onClick={() => navigate(`editar/${registro.id}`)}
                   icon={Edit}
-                  className="flex-1 text-green-600 border-green-200 hover:bg-green-50 text-xs sm:text-sm"
+                  className="text-green-600 border-green-200 hover:bg-green-50 text-xs sm:text-sm"
                   disabled={!(user?.empresa === 'ayni' || user?.empresa === 'Ayni' || user?.empresa === 'AYNI')}
                 >
                   <span className="hidden sm:inline">Editar</span>
                   <span className="sm:hidden">Edit</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleCreateDerivadas(registro)}
+                  icon={Link}
+                  className="text-blue-500 border-blue-200 hover:bg-blue-50 text-xs sm:text-sm"
+                >
+                  <span className="hidden sm:inline">Derivadas</span>
+                  <span className="sm:hidden">Derivadas</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDeleteRegistro(registro)}
+                  icon={Trash2}
+                  className="text-red-600 border-red-200 hover:bg-red-50 text-xs sm:text-sm"
+                  disabled={deleting || !(user?.empresa === 'ayni' || user?.empresa === 'Ayni' || user?.empresa === 'AYNI')}
+                >
+                  <span className="hidden sm:inline">Eliminar</span>
+                  <span className="sm:hidden">Eliminar</span>
                 </Button>
               </div>
             </div>
