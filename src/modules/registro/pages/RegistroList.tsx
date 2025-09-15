@@ -1665,8 +1665,8 @@ export const RegistroList: React.FC = () => {
                 <GridView />
                 {/* Paginación para vista grid */}
                 {pagination.totalPages > 1 && (
-                  <div className="flex items-center justify-between mt-6">
-                    <div className="text-sm text-gray-700">
+                  <div className="flex flex-col sm:flex-row items-center justify-between mt-6 space-y-4 sm:space-y-0">
+                    <div className="text-xs sm:text-sm text-gray-700 text-center sm:text-left">
                       Mostrando{" "}
                       {Math.min(
                         (pagination.currentPage - 1) * pagination.itemsPerPage +
@@ -1680,22 +1680,89 @@ export const RegistroList: React.FC = () => {
                       )}
                       de {pagination.totalItems} registros
                     </div>
-                    <div className="flex items-center space-x-2">
-                      {Array.from(
-                        { length: pagination.totalPages },
-                        (_, i) => i + 1
-                      ).map((page) => (
-                        <button
-                          key={page}
-                          onClick={() => handlePageChange(page)}
-                          className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${page === pagination.currentPage
-                            ? "bg-[#18D043] text-white"
-                            : "text-gray-700 hover:bg-gray-100"
-                            }`}
-                        >
-                          {page}
-                        </button>
-                      ))}
+                    
+                    {/* Paginación responsive */}
+                    <div className="flex items-center space-x-1 sm:space-x-2">
+                      {/* Botón anterior */}
+                      <button
+                        onClick={() => handlePageChange(pagination.currentPage - 1)}
+                        disabled={pagination.currentPage === 1}
+                        className="px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 hover:bg-gray-100"
+                      >
+                        ←
+                      </button>
+                      
+                      {/* Números de página - responsive */}
+                      {(() => {
+                        const currentPage = pagination.currentPage;
+                        const totalPages = pagination.totalPages;
+                        const isMobile = window.innerWidth < 768;
+                        
+                        if (isMobile) {
+                          // En móviles: mostrar solo página actual y algunas adyacentes
+                          const startPage = Math.max(1, currentPage - 1);
+                          const endPage = Math.min(totalPages, currentPage + 1);
+                          const pages = [];
+                          
+                          if (startPage > 1) {
+                            pages.push(1);
+                            if (startPage > 2) pages.push('...');
+                          }
+                          
+                          for (let i = startPage; i <= endPage; i++) {
+                            pages.push(i);
+                          }
+                          
+                          if (endPage < totalPages) {
+                            if (endPage < totalPages - 1) pages.push('...');
+                            pages.push(totalPages);
+                          }
+                          
+                          return pages.map((page, index) => (
+                            <button
+                              key={index}
+                              onClick={() => typeof page === 'number' && handlePageChange(page)}
+                              disabled={page === '...'}
+                              className={`px-2 py-2 text-xs font-medium rounded-md transition-colors ${
+                                page === currentPage
+                                  ? "bg-[#18D043] text-white"
+                                  : page === '...'
+                                  ? "text-gray-400 cursor-default"
+                                  : "text-gray-700 hover:bg-gray-100"
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          ));
+                        } else {
+                          // En desktop: mostrar todos los números
+                          return Array.from(
+                            { length: totalPages },
+                            (_, i) => i + 1
+                          ).map((page) => (
+                            <button
+                              key={page}
+                              onClick={() => handlePageChange(page)}
+                              className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                                page === currentPage
+                                  ? "bg-[#18D043] text-white"
+                                  : "text-gray-700 hover:bg-gray-100"
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          ));
+                        }
+                      })()}
+                      
+                      {/* Botón siguiente */}
+                      <button
+                        onClick={() => handlePageChange(pagination.currentPage + 1)}
+                        disabled={pagination.currentPage === pagination.totalPages}
+                        className="px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 hover:bg-gray-100"
+                      >
+                        →
+                      </button>
                     </div>
                   </div>
                 )}
