@@ -6,7 +6,7 @@ export interface BackendAlert {
   tipo: "POR_VENCER" | "VENCIDO" | "CRITICO";
   registro_id: number;
   mensaje: string;
-  prioridad: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  prioridad: "low" | "medium" | "high" | "critical";
   usuario_id?: number;
   metadata?: string;
   leida: boolean;
@@ -142,6 +142,10 @@ class AlertService {
       MEDIUM: "medium",
       HIGH: "high",
       CRITICAL: "critical",
+      low: "low",
+      medium: "medium",
+      high: "high",
+      critical: "critical",
     };
     return priorityMap[backendPriority] || "medium";
   }
@@ -153,12 +157,12 @@ class AlertService {
     frontendPriority: Alert["prioridad"]
   ): string {
     const priorityMap: Record<Alert["prioridad"], string> = {
-      low: "LOW",
-      medium: "MEDIUM",
-      high: "HIGH",
-      critical: "CRITICAL",
+      low: "low",
+      medium: "medium",
+      high: "high",
+      critical: "critical",
     };
-    return priorityMap[frontendPriority] || "MEDIUM";
+    return priorityMap[frontendPriority] || "medium";
   }
 
   /**
