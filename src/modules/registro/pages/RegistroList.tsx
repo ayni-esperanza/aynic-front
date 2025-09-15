@@ -898,14 +898,14 @@ export const RegistroList: React.FC = () => {
 
   // Vista en cuadrícula (actualizada para mostrar empresa y área)
   const GridView = () => (
-    <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
       {registros.map((registro) => {
         const estadoConfig = getEstadoConfig(registro.estado_actual);
         const hasImage = recordImages.has(registro.id);
         return (
           <Card
             key={registro.id}
-            className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-[#18D043] relative"
+            className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-[#18D043] relative w-full max-w-sm mx-auto"
           >
             {hasImage && (
               <div className="absolute z-10 top-2 right-2">
@@ -999,49 +999,51 @@ export const RegistroList: React.FC = () => {
                 )}
               </div>
 
-              <div className="grid grid-cols-2 sm:flex sm:flex-row pt-2 sm:pt-3 gap-1 sm:gap-1 sm:space-x-1 sm:space-x-2 border-t border-gray-100">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate(`detalle/${registro.id}`)}
-                  icon={Eye}
-                  className="text-blue-600 border-blue-200 hover:bg-blue-50 text-xs sm:text-sm"
-                >
-                  <span className="hidden sm:inline">Ver</span>
-                  <span className="sm:hidden">Ver</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate(`editar/${registro.id}`)}
-                  icon={Edit}
-                  className="text-green-600 border-green-200 hover:bg-green-50 text-xs sm:text-sm"
-                  disabled={!(user?.empresa === 'ayni' || user?.empresa === 'Ayni' || user?.empresa === 'AYNI')}
-                >
-                  <span className="hidden sm:inline">Editar</span>
-                  <span className="sm:hidden">Edit</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleCreateDerivadas(registro)}
-                  icon={Link}
-                  className="text-blue-500 border-blue-200 hover:bg-blue-50 text-xs sm:text-sm"
-                >
-                  <span className="hidden sm:inline">Derivadas</span>
-                  <span className="sm:hidden">Derivadas</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleDeleteRegistro(registro)}
-                  icon={Trash2}
-                  className="text-red-600 border-red-200 hover:bg-red-50 text-xs sm:text-sm"
-                  disabled={deleting || !(user?.empresa === 'ayni' || user?.empresa === 'Ayni' || user?.empresa === 'AYNI')}
-                >
-                  <span className="hidden sm:inline">Eliminar</span>
-                  <span className="sm:hidden">Eliminar</span>
-                </Button>
+              <div className="pt-2 sm:pt-3 border-t border-gray-100">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate(`detalle/${registro.id}`)}
+                    icon={Eye}
+                    className="w-full text-blue-600 border-blue-600 hover:bg-blue-600 hover:text-white font-bold text-xs sm:text-sm justify-center transition-all duration-200"
+                    title="Ver detalles"
+                  >
+                    <span className="hidden sm:inline ml-1">Ver</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate(`editar/${registro.id}`)}
+                    icon={Edit}
+                    className="w-full text-green-600 border-green-600 hover:bg-green-600 hover:text-white font-bold text-xs sm:text-sm justify-center transition-all duration-200"
+                    disabled={!(user?.empresa === 'ayni' || user?.empresa === 'Ayni' || user?.empresa === 'AYNI')}
+                    title="Editar registro"
+                  >
+                    <span className="hidden sm:inline ml-1">Editar</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleCreateDerivadas(registro)}
+                    icon={Link}
+                    className="w-full text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white font-bold text-xs sm:text-sm justify-center transition-all duration-200"
+                    title="Crear líneas derivadas"
+                  >
+                    <span className="hidden sm:inline ml-1">Derivadas</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDeleteRegistro(registro)}
+                    icon={Trash2}
+                    className="w-full text-red-600 border-red-600 hover:bg-red-600 hover:text-white font-bold text-xs sm:text-sm justify-center transition-all duration-200"
+                    disabled={deleting || !(user?.empresa === 'ayni' || user?.empresa === 'Ayni' || user?.empresa === 'AYNI')}
+                    title="Eliminar registro"
+                  >
+                    <span className="hidden sm:inline ml-1">Eliminar</span>
+                  </Button>
+                </div>
               </div>
             </div>
           </Card>
@@ -1661,7 +1663,7 @@ export const RegistroList: React.FC = () => {
             ) : registros.length === 0 ? (
               <NoResultsMessage />
             ) : (
-              <>
+              <div className="max-w-full overflow-hidden">
                 <GridView />
                 {/* Paginación para vista grid */}
                 {pagination.totalPages > 1 && (
@@ -1677,7 +1679,7 @@ export const RegistroList: React.FC = () => {
                       {Math.min(
                         pagination.currentPage * pagination.itemsPerPage,
                         pagination.totalItems
-                      )}
+                      )}{" "}
                       de {pagination.totalItems} registros
                     </div>
                     
@@ -1766,7 +1768,7 @@ export const RegistroList: React.FC = () => {
                     </div>
                   </div>
                 )}
-              </>
+              </div>
             )}
           </div>
         )}
