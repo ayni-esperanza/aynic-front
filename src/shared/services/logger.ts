@@ -27,7 +27,7 @@ class Logger {
   private isProduction: boolean;
 
   constructor() {
-    this.isProduction = import.meta.env.PROD;
+    this.isProduction = import.meta.env.NODE_ENV === 'production';
     this.currentLevel = this.isProduction ? LogLevel.WARN : LogLevel.DEBUG;
   }
 
@@ -91,9 +91,9 @@ class Logger {
     if (!this.isProduction) return;
 
     try {
-      
       if (entry.level >= LogLevel.ERROR) {
         // Para errores críticos, podríamos enviar a un endpoint
+      }
     } catch (error) {
       // No fallar si el logging externo falla
     }
@@ -197,22 +197,22 @@ export const logUnhandledRejection = (reason: unknown, promise: Promise<unknown>
 // Función helper para reemplazar console.log en producción
 export const safeLog = {
   error: (message: string, ...args: unknown[]) => {
-    if (!import.meta.env.PROD) {
+    if (import.meta.env.NODE_ENV !== 'production') {
       console.error(message, ...args);
     }
   },
   warn: (message: string, ...args: unknown[]) => {
-    if (!import.meta.env.PROD) {
+    if (import.meta.env.NODE_ENV !== 'production') {
       console.warn(message, ...args);
     }
   },
   info: (message: string, ...args: unknown[]) => {
-    if (!import.meta.env.PROD) {
+    if (import.meta.env.NODE_ENV !== 'production') {
       console.info(message, ...args);
     }
   },
   log: (message: string, ...args: unknown[]) => {
-    if (!import.meta.env.PROD) {
+    if (import.meta.env.NODE_ENV !== 'production') {
       console.log(message, ...args);
     }
   }

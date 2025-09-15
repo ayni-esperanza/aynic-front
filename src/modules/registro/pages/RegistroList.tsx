@@ -36,7 +36,7 @@ import {
   type ImageResponse,
 } from '../../../shared/services/imageService';
 import { RelationshipModal } from "../components/RelationshipModal";
-import { formatDate } from "../../../shared/utils/formatters";
+import { formatDate, isAyniUser } from "../../../shared/utils";
 import { useAuthStore } from "../../../store/authStore";
 import { DeleteModal } from "../../solicitudes/components/DeleteModal";
 import { apiClient } from '../../../shared/services/apiClient';
@@ -849,8 +849,8 @@ export const RegistroList: React.FC = () => {
         key: "id",
         label: "Acciones",
         render: (_: any, registro: DataRecord) => {
-          // Verificar si el usuario es de AYNI (considerando variantes)
-          const isAyniUser = user?.empresa === 'ayni' || user?.empresa === 'Ayni' || user?.empresa === 'AYNI';
+          // Verificar si el usuario es de AYNI (case-insensitive)
+          const isAyni = isAyniUser(user?.empresa);
 
           return (
             <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
@@ -871,7 +871,7 @@ export const RegistroList: React.FC = () => {
                 icon={Edit}
                 className="text-green-600 hover:text-green-700 hover:bg-green-50 text-xs sm:text-sm"
                 title="Editar registro"
-                disabled={!isAyniUser}
+                disabled={!isAyni}
               >
                 <span className="hidden sm:inline">Editar</span>
               </Button>
@@ -892,7 +892,7 @@ export const RegistroList: React.FC = () => {
                 icon={Trash2}
                 className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs sm:text-sm"
                 title="Eliminar registro"
-                disabled={deleting || !isAyniUser}
+                disabled={deleting || !isAyni}
               >
                 <span className="hidden sm:inline">Eliminar</span>
               </Button>
@@ -905,11 +905,14 @@ export const RegistroList: React.FC = () => {
   );
 
   // Vista en cuadrícula (actualizada para mostrar empresa y área)
-  const GridView = () => (
-    <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-      {registros.map((registro) => {
-        const estadoConfig = getEstadoConfig(registro.estado_actual);
-        const hasImage = recordImages.has(registro.id);
+  const GridView = () => {
+    const isAyni = isAyniUser(user?.empresa);
+    
+    return (
+      <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+        {registros.map((registro) => {
+          const estadoConfig = getEstadoConfig(registro.estado_actual);
+          const hasImage = recordImages.has(registro.id);
         return (
           <Card
             key={registro.id}
@@ -1025,7 +1028,7 @@ export const RegistroList: React.FC = () => {
                     onClick={() => navigate(`editar/${registro.id}`)}
                     icon={Edit}
                     className="w-full text-green-600 border-green-600 hover:bg-green-600 hover:text-white font-bold text-xs sm:text-sm justify-center transition-all duration-200"
-                    disabled={!(user?.empresa === 'ayni' || user?.empresa === 'Ayni' || user?.empresa === 'AYNI')}
+                    disabled={!isAyni}
                     title="Editar registro"
                   >
                     <span className="hidden sm:inline ml-1">Editar</span>
@@ -1046,7 +1049,7 @@ export const RegistroList: React.FC = () => {
                     onClick={() => handleDeleteRegistro(registro)}
                     icon={Trash2}
                     className="w-full text-red-600 border-red-600 hover:bg-red-600 hover:text-white font-bold text-xs sm:text-sm justify-center transition-all duration-200"
-                    disabled={deleting || !(user?.empresa === 'ayni' || user?.empresa === 'Ayni' || user?.empresa === 'AYNI')}
+                    disabled={deleting || !isAyni}
                     title="Eliminar registro"
                   >
                     <span className="hidden sm:inline ml-1">Eliminar</span>
@@ -1058,7 +1061,8 @@ export const RegistroList: React.FC = () => {
         );
       })}
     </div>
-  );
+    );
+  };
 
   // Loading state inicial
   if (loading && registros.length === 0) {
