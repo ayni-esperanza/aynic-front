@@ -332,6 +332,9 @@ export const Dashboard: React.FC = () => {
   // Referencias para el ciclo de vida del componente
   const mountedRef = useRef(true);
   const isInitializedRef = useRef(false);
+  
+  // Referencia para el scroll a la sección de alertas
+  const alertsSectionRef = useRef<HTMLDivElement>(null);
 
   // Estados
   const [alertStats, setAlertStats] = useState<AlertStats | null>(null);
@@ -543,6 +546,16 @@ export const Dashboard: React.FC = () => {
     }
   }, [generateAlerts]);
 
+  // Función para hacer scroll a la sección de alertas
+  const scrollToAlerts = useCallback(() => {
+    if (alertsSectionRef.current) {
+      alertsSectionRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }
+  }, []);
+
   // Usar las alertas cargadas con paginación real
   const paginatedAlerts = allAlerts;
   const totalPages = alertsPagination.totalPages;
@@ -623,6 +636,7 @@ export const Dashboard: React.FC = () => {
               loading={loading}
               description="Todas las alertas del sistema"
               trend={alertTrends?.totalTrend}
+              onClick={scrollToAlerts}
             />
 
             <AlertMetricCard
@@ -633,6 +647,7 @@ export const Dashboard: React.FC = () => {
               loading={loading}
               description="Requieren atención inmediata"
               trend={alertTrends?.criticalTrend}
+              onClick={scrollToAlerts}
             />
 
             <AlertMetricCard
@@ -643,6 +658,7 @@ export const Dashboard: React.FC = () => {
               loading={loading}
               description="Alertas pendientes de revisar"
               trend={alertTrends?.unreadTrend}
+              onClick={scrollToAlerts}
             />
 
             <AlertMetricCard
@@ -653,6 +669,7 @@ export const Dashboard: React.FC = () => {
               loading={loading}
               description="Alertas procesadas"
               trend={alertTrends?.resolvedTrend}
+              onClick={scrollToAlerts}
             />
           </div>
 
@@ -902,8 +919,8 @@ export const Dashboard: React.FC = () => {
           )}
 
           {/* Centro de Alertas */}
-          <Card>
-            <div className="p-4 sm:p-6">
+          <div ref={alertsSectionRef}>
+            <Card>
               <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-4 sm:mb-6">
                 <h3 className="flex items-center text-lg sm:text-xl font-semibold text-gray-900">
                   <Bell className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-[#18D043]" />
@@ -1208,8 +1225,8 @@ export const Dashboard: React.FC = () => {
                 )}
                 </>
               )}
-            </div>
-          </Card>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
