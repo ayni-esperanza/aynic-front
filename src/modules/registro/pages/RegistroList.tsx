@@ -439,6 +439,14 @@ export const RegistroList: React.FC = () => {
     setShowRelationshipModal(true);
   }, []);
 
+  const handleStatusCardClick = useCallback(async (status: string) => {
+    setStatusFilter(status);
+    // Aplicar el filtro inmediatamente
+    await fetchWith({ estado_actual: status }, 1);
+    // Scroll hacia arriba para mostrar los resultados filtrados
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [fetchWith]);
+
   const handleRelationshipSuccess = useCallback(() => {
     setShowRelationshipModal(false);
     setSelectedRecordForRelation(null);
@@ -1155,71 +1163,91 @@ export const RegistroList: React.FC = () => {
             </div>
           </Card>
 
-          <Card className="h-20 w-40 sm:w-44 md:w-48 border-green-200 bg-gradient-to-br from-green-50 to-green-100">
-          <div className="flex items-center justify-between h-full p-3 sm:p-4">
-            <div className="flex-1 min-w-0">
-              <p className="text-xs sm:text-sm font-medium text-green-600 truncate">Activos</p>
-              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-green-900 min-h-[1.2rem] sm:min-h-[1.4rem] lg:min-h-[1.6rem] flex items-center">
-                {loadingStats ? (
-                  <LoadingSpinner size="sm" />
-                ) : (
-                  estadisticas?.activos ?? 0
-                )}
+          <div 
+            className="cursor-pointer hover:shadow-md transition-shadow duration-200"
+            onClick={() => handleStatusCardClick('activo')}
+          >
+            <Card className="h-20 w-40 sm:w-44 md:w-48 border-green-200 bg-gradient-to-br from-green-50 to-green-100">
+              <div className="flex items-center justify-between h-full p-3 sm:p-4">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs sm:text-sm font-medium text-green-600 truncate">Activos</p>
+                  <div className="text-lg sm:text-xl lg:text-2xl font-bold text-green-900 min-h-[1.2rem] sm:min-h-[1.4rem] lg:min-h-[1.6rem] flex items-center">
+                    {loadingStats ? (
+                      <LoadingSpinner size="sm" />
+                    ) : (
+                      estadisticas?.activos ?? 0
+                    )}
+                  </div>
+                </div>
+                <div className="text-lg sm:text-xl lg:text-2xl flex-shrink-0 ml-2">🟢</div>
               </div>
-            </div>
-            <div className="text-lg sm:text-xl lg:text-2xl flex-shrink-0 ml-2">🟢</div>
+            </Card>
           </div>
-        </Card>
 
-          <Card className="h-20 w-40 sm:w-44 md:w-48 border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100">
-          <div className="flex items-center justify-between h-full p-3 sm:p-4">
-            <div className="flex-1 min-w-0">
-              <p className="text-xs sm:text-sm font-medium text-yellow-600 truncate">Por Vencer</p>
-              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-yellow-900 min-h-[1.2rem] sm:min-h-[1.4rem] lg:min-h-[1.6rem] flex items-center">
-                {loadingStats ? (
-                  <LoadingSpinner size="sm" />
-                ) : (
-                  estadisticas?.por_vencer ?? 0
-                )}
+          <div 
+            className="cursor-pointer hover:shadow-md transition-shadow duration-200"
+            onClick={() => handleStatusCardClick('por_vencer')}
+          >
+            <Card className="h-20 w-40 sm:w-44 md:w-48 border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100">
+              <div className="flex items-center justify-between h-full p-3 sm:p-4">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs sm:text-sm font-medium text-yellow-600 truncate">Por Vencer</p>
+                  <div className="text-lg sm:text-xl lg:text-2xl font-bold text-yellow-900 min-h-[1.2rem] sm:min-h-[1.4rem] lg:min-h-[1.6rem] flex items-center">
+                    {loadingStats ? (
+                      <LoadingSpinner size="sm" />
+                    ) : (
+                      estadisticas?.por_vencer ?? 0
+                    )}
+                  </div>
+                </div>
+                <div className="text-lg sm:text-xl lg:text-2xl flex-shrink-0 ml-2">🟡</div>
               </div>
-            </div>
-            <div className="text-lg sm:text-xl lg:text-2xl flex-shrink-0 ml-2">🟡</div>
+            </Card>
           </div>
-        </Card>
 
-          <Card className="h-20 w-40 sm:w-44 md:w-48 border-red-200 bg-gradient-to-br from-red-50 to-red-100">
-          <div className="flex items-center justify-between h-full p-3 sm:p-4">
-            <div className="flex-1 min-w-0">
-              <p className="text-xs sm:text-sm font-medium text-red-600 truncate">Vencidos</p>
-              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-red-900 min-h-[1.2rem] sm:min-h-[1.4rem] lg:min-h-[1.6rem] flex items-center">
-                {loadingStats ? (
-                  <LoadingSpinner size="sm" />
-                ) : (
-                  estadisticas?.vencidos ?? 0
-                )}
+          <div 
+            className="cursor-pointer hover:shadow-md transition-shadow duration-200"
+            onClick={() => handleStatusCardClick('vencido')}
+          >
+            <Card className="h-20 w-40 sm:w-44 md:w-48 border-red-200 bg-gradient-to-br from-red-50 to-red-100">
+              <div className="flex items-center justify-between h-full p-3 sm:p-4">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs sm:text-sm font-medium text-red-600 truncate">Vencidos</p>
+                  <div className="text-lg sm:text-xl lg:text-2xl font-bold text-red-900 min-h-[1.2rem] sm:min-h-[1.4rem] lg:min-h-[1.6rem] flex items-center">
+                    {loadingStats ? (
+                      <LoadingSpinner size="sm" />
+                    ) : (
+                      estadisticas?.vencidos ?? 0
+                    )}
+                  </div>
+                </div>
+                <div className="text-lg sm:text-xl lg:text-2xl flex-shrink-0 ml-2">🔴</div>
               </div>
-            </div>
-            <div className="text-lg sm:text-xl lg:text-2xl flex-shrink-0 ml-2">🔴</div>
+            </Card>
           </div>
-        </Card>
 
-          <Card className="h-20 w-44 sm:w-48 md:w-60 border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100">
-          <div className="flex items-center justify-between h-full p-3 sm:p-4">
-            <div className="flex-1 min-w-0">
-              <p className="text-xs sm:text-sm font-medium text-orange-600 truncate">
-                Mantenimiento
-              </p>
-              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-orange-900 min-h-[1.2rem] sm:min-h-[1.4rem] lg:min-h-[1.6rem] flex items-center">
-                {loadingStats ? (
-                  <LoadingSpinner size="sm" />
-                ) : (
-                  estadisticas?.mantenimiento ?? 0
-                )}
+          <div 
+            className="cursor-pointer hover:shadow-md transition-shadow duration-200"
+            onClick={() => handleStatusCardClick('mantenimiento')}
+          >
+            <Card className="h-20 w-44 sm:w-48 md:w-60 border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100">
+              <div className="flex items-center justify-between h-full p-3 sm:p-4">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs sm:text-sm font-medium text-orange-600 truncate">
+                    Mantenimiento
+                  </p>
+                  <div className="text-lg sm:text-xl lg:text-2xl font-bold text-orange-900 min-h-[1.2rem] sm:min-h-[1.4rem] lg:min-h-[1.6rem] flex items-center">
+                    {loadingStats ? (
+                      <LoadingSpinner size="sm" />
+                    ) : (
+                      estadisticas?.mantenimiento ?? 0
+                    )}
+                  </div>
+                </div>
+                <div className="text-lg sm:text-xl lg:text-2xl flex-shrink-0 ml-2">🔧</div>
               </div>
-            </div>
-            <div className="text-lg sm:text-xl lg:text-2xl flex-shrink-0 ml-2">🔧</div>
+            </Card>
           </div>
-        </Card>
         </div>
       </div>
 
