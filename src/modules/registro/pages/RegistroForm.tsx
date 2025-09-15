@@ -640,7 +640,6 @@ export const RegistroForm: React.FC = () => {
             {steps.map((step, idx) => {
               const isActive = currentStep === step.number;
               const isCompleted = currentStep > step.number;
-              const Icon = step.icon;
               return (
                 <div key={step.number} className="flex items-center flex-1">
                   <div className="flex items-center">
@@ -652,7 +651,7 @@ export const RegistroForm: React.FC = () => {
                           : "bg-gray-100 border-gray-300 text-gray-400"
                         }`}
                     >
-                      {isCompleted ? "✓" : <Icon size={16} className="sm:w-5 sm:h-5" />}
+                      {isCompleted ? "✓" : <span className="text-sm sm:text-base font-bold">{step.number}</span>}
                     </div>
                     <div className="ml-2 sm:ml-4">
                       <p

@@ -712,7 +712,6 @@ export const EditarRegistroForm: React.FC = () => {
             {steps.map((step, idx) => {
               const isActive = currentStep === step.number;
               const isCompleted = currentStep > step.number;
-              const Icon = step.icon;
               return (
                 <div key={step.number} className="flex items-center flex-1">
                   <div className="flex items-center">
@@ -724,7 +723,7 @@ export const EditarRegistroForm: React.FC = () => {
                           : "bg-gray-100 border-gray-300 text-gray-400"
                         }`}
                     >
-                      {isCompleted ? "✓" : <Icon size={18} />}
+                      {isCompleted ? "✓" : <span className="text-sm sm:text-base font-bold">{step.number}</span>}
                     </div>
                     <div className="ml-3 sm:ml-4">
                       <p
