@@ -66,14 +66,15 @@ export const ReportsSection: React.FC = () => {
         queryString ? `?${queryString}` : ""
       }`;
 
-      // Hacer la petición para obtener el PDF
       const response = await fetch(
         `${import.meta.env.VITE_API_URL || "http://localhost:3000"}${url}`,
         {
           method: "GET",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            'Content-Type': 'application/json',
           },
+          credentials: 'include', // Para incluir cookies de sesión
         }
       );
 
