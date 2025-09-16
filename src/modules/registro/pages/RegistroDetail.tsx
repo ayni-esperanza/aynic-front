@@ -714,6 +714,46 @@ export const RegistroDetail: React.FC = () => {
                   </div>
                 </div>
               </Card>
+
+              <Card className="border-teal-200 bg-gradient-to-br from-teal-50 to-cyan-100">
+                <div className="p-6">
+                  <div className="flex items-center mb-4 space-x-4">
+                    <div className="flex items-center justify-center w-12 h-12 bg-teal-200 rounded-full">
+                      <Calendar className="w-6 h-6 text-teal-600" />
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-semibold text-teal-900">
+                        Próximo Mantenimiento
+                      </h4>
+                      <p className="text-teal-600">Fecha programada</p>
+                    </div>
+                  </div>
+                  <div className="py-4 text-center">
+                    <p className="mb-2 text-3xl font-bold text-teal-900">
+                      {safeFormatDate((registro as any).fecha_mantenimiento)}
+                    </p>
+                    <p className="text-teal-700">
+                      {(() => {
+                        try {
+                          const fm = (registro as any).fecha_mantenimiento as Date | undefined;
+                          if (fm && !isNaN(fm.getTime())) {
+                            const today = new Date();
+                            const diffDays = Math.floor(
+                              (fm.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+                            );
+                            if (diffDays > 0) return `En ${diffDays} días`;
+                            if (diffDays === 0) return 'Hoy';
+                            return `Hace ${Math.abs(diffDays)} días`;
+                          }
+                          return 'Sin fecha';
+                        } catch {
+                          return 'Error en cálculo';
+                        }
+                      })()}
+                    </p>
+                  </div>
+                </div>
+              </Card>
             </div>
 
             {/* Línea de tiempo y estadísticas adicionales */}

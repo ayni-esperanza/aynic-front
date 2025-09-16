@@ -10,6 +10,7 @@ export interface BackendRecord {
   fv_anios?: number;
   fv_meses?: number;
   fecha_instalacion?: string;
+  fecha_mantenimiento?: string;
   longitud?: number;
   observaciones?: string;
   seccion?: string;
@@ -56,6 +57,7 @@ export interface DataRecord {
   fv_anios?: number;
   fv_meses?: number;
   fecha_instalacion?: Date;
+  fecha_mantenimiento?: Date;
   longitud?: number;
   observaciones?: string;
   seccion?: string;
@@ -100,6 +102,7 @@ export interface CreateRecordData {
   fv_anios?: number;
   fv_meses?: number;
   fecha_instalacion?: string;
+  fecha_mantenimiento?: string;
   longitud?: number;
   observaciones?: string;
   seccion?: string;

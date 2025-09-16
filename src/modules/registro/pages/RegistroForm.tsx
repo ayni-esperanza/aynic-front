@@ -292,6 +292,7 @@ export const RegistroForm: React.FC = () => {
     fv_anios: 0,
     fv_meses: 0,
     fecha_instalacion: "",
+    fecha_mantenimiento: "",
     longitud: "" as string | number,
     observaciones: "",
     seccion: "",
@@ -305,12 +306,18 @@ export const RegistroForm: React.FC = () => {
     anclaje_tipo: "", // Nuevo campo para el tipo de anclaje
   });
 
+  // Helper: parsear 'YYYY-MM-DD' como fecha local
+  const parseLocalDate = (value: string) => {
+    const [yy, mm, dd] = value.split('-').map((n) => Number(n));
+    return new Date(yy, (mm || 1) - 1, dd || 1);
+  };
+
   // Lógica automática de fecha de caducidad
   useEffect(() => {
     const { fecha_instalacion, fv_anios, fv_meses } = formData;
 
     if (fecha_instalacion && (Number(fv_anios) > 0 || Number(fv_meses) > 0)) {
-      const inst = new Date(fecha_instalacion);
+      const inst = parseLocalDate(fecha_instalacion);
       if (!isNaN(inst.getTime())) {
         try {
           const venc = new Date(inst);
@@ -342,9 +349,12 @@ export const RegistroForm: React.FC = () => {
               venc.setTime(fechaCorregida.getTime());
             }
 
-            // Validar que la fecha resultante sea válida
+            // Validar que la fecha resultante sea válida y formatear en hora local
             if (!isNaN(venc.getTime()) && venc.getFullYear() <= 9999) {
-              const fechaVenc = venc.toISOString().split("T")[0];
+              const yyyy = venc.getFullYear();
+              const mm = String(venc.getMonth() + 1).padStart(2, '0');
+              const dd = String(venc.getDate()).padStart(2, '0');
+              const fechaVenc = `${yyyy}-${mm}-${dd}`;
 
               if (formData.fecha_caducidad !== fechaVenc) {
                 setFormData((f) => ({
@@ -360,6 +370,27 @@ export const RegistroForm: React.FC = () => {
       }
     }
   }, [formData.fecha_instalacion, formData.fv_anios, formData.fv_meses]);
+
+  // Lógica automática de fecha de mantenimiento (+1 año desde instalación)
+  useEffect(() => {
+    const { fecha_instalacion } = formData;
+    if (fecha_instalacion) {
+      const inst = parseLocalDate(fecha_instalacion);
+      if (!isNaN(inst.getTime())) {
+        const mant = new Date(inst);
+        mant.setFullYear(mant.getFullYear() + 1);
+        const yyyy = mant.getFullYear();
+        const mm = String(mant.getMonth() + 1).padStart(2, '0');
+        const dd = String(mant.getDate()).padStart(2, '0');
+        const fechaMant = `${yyyy}-${mm}-${dd}`;
+        if (formData.fecha_mantenimiento !== fechaMant) {
+          setFormData((f) => ({ ...f, fecha_mantenimiento: fechaMant }));
+        }
+      }
+    } else if (formData.fecha_mantenimiento) {
+      setFormData((f) => ({ ...f, fecha_mantenimiento: "" }));
+    }
+  }, [formData.fecha_instalacion]);
 
   // Hook para crear registro con función estable
   const createRecordFunction = useCallback(
@@ -467,6 +498,7 @@ export const RegistroForm: React.FC = () => {
       fv_anios: formData.fv_anios,
       fv_meses: formData.fv_meses,
       fecha_instalacion: formData.fecha_instalacion,
+      fecha_mantenimiento: formData.fecha_mantenimiento as any,
       fecha_caducidad: formData.fecha_caducidad,
       longitud: Number(formData.longitud),
       observaciones: formData.observaciones || undefined,
@@ -977,6 +1009,12 @@ export const RegistroForm: React.FC = () => {
                       return hoy.toISOString().split('T')[0];
                     })()}
                     required
+                  />
+                  <Input
+                    label="Fecha de próximo Mantenimiento"
+                    type="date"
+                    value={formData.fecha_mantenimiento}
+                    readOnly
                   />
                   <Input
                     label="Fecha de Caducidad"
