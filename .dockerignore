@@ -28,8 +28,3 @@ Thumbs.db
 *.swp
 *.swo
 *~
-
-# Docker
-Dockerfile
-docker-compose.yml
-.dockerignore
