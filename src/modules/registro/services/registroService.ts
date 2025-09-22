@@ -41,6 +41,8 @@ export interface CreateRecordData {
   anclaje_tipo?: string;
   fecha_caducidad?: string;
   estado_actual?: string;
+  purchase_order_num?: string;
+  purchase_order_termino_referencias?: string;
 }
 
 export interface BackendRecord {
@@ -64,6 +66,7 @@ export interface BackendRecord {
   anclaje_tipo?: string;
   fecha_caducidad?: string;
   estado_actual?: string;
+  purchaseOrder?: { numero: string; termino_referencias?: string };
 }
 
 export interface BackendPaginatedRecords {
@@ -193,6 +196,8 @@ class RegistroService {
       estado_actual: this.mapBackendStatusToFrontend(
         backendRecord.estado_actual
       ),
+      purchase_order_num: backendRecord.purchaseOrder?.numero,
+      purchase_order_termino_referencias: backendRecord.purchaseOrder?.termino_referencias,
     };
   }
 
@@ -224,6 +229,8 @@ class RegistroService {
       estado_actual: frontendData.estado_actual ? this.mapFrontendStatusToBackend(
         frontendData.estado_actual
       ) : undefined,
+      purchase_order_num: frontendData.purchase_order_num || undefined,
+      purchase_order_termino_referencias: frontendData.purchase_order_termino_referencias || undefined,
     };
   }
 
@@ -386,6 +393,12 @@ class RegistroService {
         backendData.estado_actual = this.mapFrontendStatusToBackend(
           recordData.estado_actual
         );
+      }
+      if (recordData.purchase_order_num !== undefined) {
+        backendData.purchase_order_num = recordData.purchase_order_num;
+      }
+      if (recordData.purchase_order_termino_referencias !== undefined) {
+        backendData.purchase_order_termino_referencias = recordData.purchase_order_termino_referencias;
       }
 
       const response = await apiClient.patch<BackendRecord>(

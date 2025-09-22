@@ -304,6 +304,8 @@ export const RegistroForm: React.FC = () => {
     fecha_caducidad: "",
     estado_actual: "activo" as DataRecord["estado_actual"],
     anclaje_tipo: "", // Nuevo campo para el tipo de anclaje
+    purchase_order_num: "",
+    purchase_order_termino_referencias: "",
   });
 
   // Helper: parsear 'YYYY-MM-DD' como fecha local
@@ -510,6 +512,8 @@ export const RegistroForm: React.FC = () => {
       anclaje_equipos: formData.anclaje_equipos || undefined,
       anclaje_tipo: formData.anclaje_tipo || undefined, // Incluir anclaje_tipo
       estado_actual: formData.estado_actual,
+      purchase_order_num: formData.purchase_order_num || undefined,
+      purchase_order_termino_referencias: formData.purchase_order_termino_referencias || undefined,
     };
 
     if (!savedRecordId) {
@@ -833,6 +837,18 @@ export const RegistroForm: React.FC = () => {
                     onChange={(e) => handleChange("planta", e.target.value)}
                     error={errors.planta}
                     placeholder="Planta 1"
+                  />
+                  <Input
+                    label="Nº Orden de Compra"
+                    value={formData.purchase_order_num}
+                    onChange={(e) => handleChange("purchase_order_num", e.target.value)}
+                    placeholder="30484575478458"
+                  />
+                  <Input
+                    label="Término y Referencias (OC)"
+                    value={formData.purchase_order_termino_referencias}
+                    onChange={(e) => handleChange("purchase_order_termino_referencias", e.target.value)}
+                    placeholder="Términos y referencias de la OC"
                   />
                 </div>
               </div>

@@ -344,6 +344,31 @@ export const RegistroDetail: React.FC = () => {
           <div className="space-y-4 sm:space-y-6">
             <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
               <div className="space-y-3 sm:space-y-4">
+                {(registro as any).numero && (
+                  <div className="flex items-center p-3 sm:p-4 space-x-3 border border-emerald-200 bg-emerald-50 rounded-xl">
+                    <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-emerald-100 rounded-lg">
+                      <span className="text-sm sm:text-lg">🧾</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm font-medium text-emerald-600">Nº Orden de Compra</p>
+                      <p className="font-mono text-sm sm:text-lg font-bold text-emerald-900 truncate">
+                        {(registro as any).numero}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {(registro as any).termino_referencias && (
+                  <div className="p-3 sm:p-4 border border-emerald-200 bg-emerald-50 rounded-xl">
+                    <h4 className="mb-2 text-xs sm:text-sm font-semibold text-emerald-700">
+                      Término y Referencias (OC)
+                    </h4>
+                    <p className="text-sm sm:text-base text-emerald-900 whitespace-pre-line">
+                      {(registro as any).termino_referencias}
+                    </p>
+                  </div>
+                )}
+
                 <div className="flex items-center p-3 sm:p-4 space-x-3 border border-blue-200 bg-blue-50 rounded-xl">
                   <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-lg">
                     <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />

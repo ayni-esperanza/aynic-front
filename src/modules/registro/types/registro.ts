@@ -22,6 +22,7 @@ export interface BackendRecord {
   anclaje_tipo?: string;
   fecha_caducidad?: string;
   estado_actual?: string;
+  purchaseOrder?: { numero: string; termino_referencias?: string };
 }
 
 export interface BackendPaginatedRecords {
@@ -69,6 +70,8 @@ export interface DataRecord {
   anclaje_tipo?: string;
   fecha_caducidad?: Date;
   estado_actual?: string;
+  purchase_order_num?: string;
+  purchase_order_termino_referencias?: string;
   [key: string]: unknown;
 }
 
@@ -114,6 +117,8 @@ export interface CreateRecordData {
   anclaje_tipo?: string;
   fecha_caducidad?: string;
   estado_actual?: string;
+  purchase_order_num?: string;
+  purchase_order_termino_referencias?: string;
 }
 
 export interface UpdateRecordData extends Partial<CreateRecordData> {
