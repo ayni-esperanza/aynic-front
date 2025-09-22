@@ -67,6 +67,8 @@ export interface BackendRecord {
   fecha_caducidad?: string;
   estado_actual?: string;
   purchaseOrder?: { numero: string; termino_referencias?: string };
+  purchase_order_num?: string;
+  purchase_order_termino_referencias?: string;
 }
 
 export interface BackendPaginatedRecords {
@@ -196,8 +198,9 @@ class RegistroService {
       estado_actual: this.mapBackendStatusToFrontend(
         backendRecord.estado_actual
       ),
-      purchase_order_num: backendRecord.purchaseOrder?.numero,
-      purchase_order_termino_referencias: backendRecord.purchaseOrder?.termino_referencias,
+      purchase_order_num: backendRecord.purchaseOrder?.numero || undefined,
+      purchase_order_termino_referencias:
+        backendRecord.purchaseOrder?.termino_referencias || undefined,
     };
   }
 
@@ -226,11 +229,12 @@ class RegistroService {
       fecha_caducidad: frontendData.fecha_caducidad
         ? new Date(frontendData.fecha_caducidad).toISOString().split("T")[0]
         : undefined,
-      estado_actual: frontendData.estado_actual ? this.mapFrontendStatusToBackend(
-        frontendData.estado_actual
-      ) : undefined,
+      estado_actual: frontendData.estado_actual
+        ? this.mapFrontendStatusToBackend(frontendData.estado_actual)
+        : undefined,
       purchase_order_num: frontendData.purchase_order_num || undefined,
-      purchase_order_termino_referencias: frontendData.purchase_order_termino_referencias || undefined,
+      purchase_order_termino_referencias:
+        frontendData.purchase_order_termino_referencias || undefined,
     };
   }
 

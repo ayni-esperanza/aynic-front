@@ -23,6 +23,8 @@ export interface BackendRecord {
   fecha_caducidad?: string;
   estado_actual?: string;
   purchaseOrder?: { numero: string; termino_referencias?: string };
+  purchase_order_num?: string;
+  purchase_order_termino_referencias?: string;
 }
 
 export interface BackendPaginatedRecords {
