@@ -185,9 +185,6 @@ export const Login: React.FC = () => {
               {loading ? "Conectando..." : "Sistema en línea"}
             </span>
           </div>
-          <p className="mt-1 text-xs text-gray-400">
-            API: {import.meta.env.VITE_API_URL || "http://localhost:3000"}
-          </p>
         </div>
       </div>
 

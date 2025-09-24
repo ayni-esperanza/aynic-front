@@ -11,4 +11,14 @@ export const purchaseOrderService = {
   async getById(id: number): Promise<PurchaseOrder> {
     return await apiClient.get<PurchaseOrder>(`${BASE_URL}/${id}`);
   },
+
+  async delete(id: number): Promise<void> {
+    return await apiClient.delete<void>(`${BASE_URL}/${id}`);
+  },
+
+  async canDelete(id: number): Promise<{ canDelete: boolean }> {
+    return await apiClient.get<{ canDelete: boolean }>(
+      `${BASE_URL}/${id}/can-delete`
+    );
+  },
 };
