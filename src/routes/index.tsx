@@ -3,49 +3,45 @@ import { Routes, Route } from "react-router-dom";
 import { MainLayout } from "../layouts/MainLayout";
 import { ProtectedRoute } from "../shared/components/auth/ProtectedRoute";
 
-// Lazy loading de páginas principales
-const Dashboard = React.lazy(() =>
-  import("../pages/Dashboard").then((module) => ({
-    default: module.Dashboard,
-  }))
-);
-const Login = React.lazy(() =>
-  import("../pages/Login").then((module) => ({
-    default: module.Login,
-  }))
-);
+import { Dashboard } from "../pages/Dashboard";
+import { Login } from "../pages/Login";
 
-// Lazy loading de módulos con dynamic imports que transforman named exports a default
 const UsuariosModule = React.lazy(() =>
   import("../modules/usuarios").then((module) => ({
     default: module.UsuariosModule,
   }))
 );
+
 const RegistroModule = React.lazy(() =>
   import("../modules/registro").then((module) => ({
     default: module.RegistroModule,
   }))
 );
+
 const MaintenanceModule = React.lazy(() =>
   import("../modules/maintenance").then((module) => ({
     default: module.MaintenanceModule,
   }))
 );
+
 const MovementHistoryModule = React.lazy(() =>
   import("../modules/movement_history").then((module) => ({
     default: module.MovementHistoryModule,
   }))
 );
+
 const AccidentsModule = React.lazy(() =>
   import("../modules/accidents").then((module) => ({
     default: module.AccidentsModule,
   }))
 );
+
 const SolicitudesModule = React.lazy(() =>
   import("../modules/solicitudes").then((module) => ({
     default: module.SolicitudesModule,
   }))
 );
+
 const PurchaseOrdersModule = React.lazy(() =>
   import("../modules/purchase-orders").then((module) => ({
     default: module.PurchaseOrdersModule,
@@ -75,7 +71,7 @@ class ModuleErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Error en carga de módulo
+    console.error("Module loading error:", error, errorInfo);
   }
 
   render() {
@@ -122,17 +118,9 @@ class ModuleErrorBoundary extends React.Component<
 export const AppRoutes: React.FC = () => {
   return (
     <Routes>
-      {/* Ruta pública de login */}
-      <Route 
-        path="/login" 
-        element={
-          <Suspense fallback={<PageLoadingFallback />}>
-            <Login />
-          </Suspense>
-        } 
-      />
+      <Route path="/login" element={<Login />} />
 
-      {/* Ruta raíz - redirige al login si no está autenticado */}
+      {/* Rutas protegidas */}
       <Route
         path="/"
         element={
@@ -141,14 +129,7 @@ export const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         }
       >
-        <Route 
-          index 
-          element={
-            <Suspense fallback={<PageLoadingFallback />}>
-              <Dashboard />
-            </Suspense>
-          } 
-        />
+        <Route index element={<Dashboard />} />
 
         <Route
           path="usuarios/*"
