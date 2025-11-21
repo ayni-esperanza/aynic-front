@@ -21,27 +21,27 @@ import {
   Link,
   FileText,
 } from "lucide-react";
-import { DataTable } from '../../../shared/components/common/DataTable';
-import { Button } from '../../../shared/components/ui/Button';
-import { Badge } from '../../../shared/components/ui/Badge';
-import { Card } from '../../../shared/components/ui/Card';
-import { Input } from '../../../shared/components/ui/Input';
-import { Select } from '../../../shared/components/ui/Select';
-import { LoadingSpinner } from '../../../shared/components/ui/LoadingSpinner';
-import { useToast } from '../../../shared/components/ui/Toast';
-import { useApi } from '../../../shared/hooks/useApi';
+import { DataTable } from "../../../shared/components/common/DataTable";
+import { Button } from "../../../shared/components/ui/Button";
+import { Badge } from "../../../shared/components/ui/Badge";
+import { Card } from "../../../shared/components/ui/Card";
+import { Input } from "../../../shared/components/ui/Input";
+import { Select } from "../../../shared/components/ui/Select";
+import { LoadingSpinner } from "../../../shared/components/ui/LoadingSpinner";
+import { useToast } from "../../../shared/components/ui/Toast";
+import { useApi } from "../../../shared/hooks/useApi";
 import { registroService } from "../services/registroService";
 import {
   imageService,
   type ImageResponse,
-} from '../../../shared/services/imageService';
+} from "../../../shared/services/imageService";
 import { RelationshipModal } from "../components/RelationshipModal";
 import { formatDate, isAyniUser } from "../../../shared/utils";
 import { useAuthStore } from "../../../store/authStore";
 import { DeleteModal } from "../../solicitudes/components/DeleteModal";
-import { apiClient } from '../../../shared/services/apiClient';
+import { apiClient } from "../../../shared/services/apiClient";
 import { ReportsSection } from "../components/ReportsSection";
-import type { DataRecord } from "../types/registro";
+import type { DataRecord, RecordFilters } from "../types/registro";
 import type { TableColumn } from "../../../types";
 import { useRegistroData } from "../hooks/useRegistroData";
 
@@ -64,19 +64,21 @@ export const RegistroList: React.FC = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [viewMode, setViewMode] = useState<"table" | "grid">(() => {
     // Inicializar con la vista correcta desde el inicio
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const mobile = window.innerWidth < 768;
-      const savedViewMode = localStorage.getItem('registroViewMode') as "table" | "grid" | null;
-      
-      
+      const savedViewMode = localStorage.getItem("registroViewMode") as
+        | "table"
+        | "grid"
+        | null;
+
       // En móviles, siempre usar grid (cards) por defecto
       if (mobile) {
-        return 'grid';
+        return "grid";
       }
       // En desktop, usar la vista guardada o table por defecto
-      return savedViewMode || 'table';
+      return savedViewMode || "table";
     }
-    return 'table';
+    return "table";
   });
   const [showFilters, setShowFilters] = useState(false);
   const [showRelationshipModal, setShowRelationshipModal] = useState(false);
@@ -158,13 +160,10 @@ export const RegistroList: React.FC = () => {
   } = useApi(loadStatsFunction);
 
   // Hook para eliminar registro con función estable
-  const deleteRegistroFunction = useCallback(
-    async (...args: unknown[]) => {
-      const id = args[0] as string;
-      return registroService.deleteRecord(id);
-    },
-    []
-  );
+  const deleteRegistroFunction = useCallback(async (...args: unknown[]) => {
+    const id = args[0] as string;
+    return registroService.deleteRecord(id);
+  }, []);
 
   const { loading: deleting, execute: deleteRegistro } = useApi(
     deleteRegistroFunction,
@@ -249,22 +248,25 @@ export const RegistroList: React.FC = () => {
     const checkIsMobile = () => {
       const mobile = window.innerWidth < 768; // md breakpoint
       setIsMobile(mobile);
-      
+
       // Si cambia a móvil, cambiar a grid (cards)
       if (mobile) {
-        setViewMode('grid');
+        setViewMode("grid");
       } else {
         // Si cambia a desktop, usar la vista guardada o table por defecto
-        const savedViewMode = localStorage.getItem('registroViewMode') as "table" | "grid" | null;
-        const newViewMode = savedViewMode || 'table';
+        const savedViewMode = localStorage.getItem("registroViewMode") as
+          | "table"
+          | "grid"
+          | null;
+        const newViewMode = savedViewMode || "table";
         setViewMode(newViewMode);
       }
     };
 
     checkIsMobile();
-    window.addEventListener('resize', checkIsMobile);
-    
-    return () => window.removeEventListener('resize', checkIsMobile);
+    window.addEventListener("resize", checkIsMobile);
+
+    return () => window.removeEventListener("resize", checkIsMobile);
   }, []);
 
   // Cargar datos inicial solo una vez
@@ -274,7 +276,10 @@ export const RegistroList: React.FC = () => {
       const loadInitialData = async () => {
         try {
           // Restaurar filtros guardados
-          const savedFilters = localStorage.getItem('registroFilters');
+          const savedFilters = localStorage.getItem("registroFilters");
+
+          let initialFilters: RecordFilters;
+
           if (savedFilters) {
             const filters = JSON.parse(savedFilters);
             setAppliedFilters(filters);
@@ -289,33 +294,58 @@ export const RegistroList: React.FC = () => {
             setInstallDateFrom(filters.fecha_instalacion_desde || "");
             setInstallDateTo(filters.fecha_instalacion_hasta || "");
 
-            // Aplicar los filtros restaurados después de un delay
-            setTimeout(() => {
-              const params = buildParams(filters, 1);
-              updateFilters(params);
-            }, 100);
+            // Construir parámetros con filtros guardados
+            initialFilters = {
+              page: 1,
+              limit: 10,
+              codigo: filters.codigo || undefined,
+              codigo_placa: filters.codigo_placa || undefined,
+              equipo: filters.equipo || undefined,
+              ubicacion: filters.ubicacion || undefined,
+              cliente: filters.cliente || undefined,
+              area: filters.area || undefined,
+              estado_actual: filters.estado_actual || undefined,
+              anclaje_tipo: filters.anclaje_tipo || undefined,
+              fecha_instalacion_desde:
+                filters.fecha_instalacion_desde || undefined,
+              fecha_instalacion_hasta:
+                filters.fecha_instalacion_hasta || undefined,
+              sortBy: "fecha_instalacion",
+              sortOrder: "DESC",
+            };
+          } else {
+            // Si no hay filtros guardados, usar valores por defecto
+            initialFilters = {
+              page: 1,
+              limit: 10,
+              sortBy: "fecha_instalacion",
+              sortOrder: "DESC",
+            };
           }
 
+          // Cargar registros con filtros iniciales
+          updateFilters(initialFilters);
           await loadStats();
         } catch (error) {
-          // Error loading initial data
+          console.error("Error loading initial data:", error);
         }
       };
       loadInitialData();
     }
-  }, [buildParams, updateFilters, loadStats]); // Agregar dependencias necesarias
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Solo ejecutar una vez al montar
 
   // Guardar filtros en localStorage cuando cambien
   useEffect(() => {
     if (!isInitialLoadRef.current) {
-      localStorage.setItem('registroFilters', JSON.stringify(appliedFilters));
+      localStorage.setItem("registroFilters", JSON.stringify(appliedFilters));
     }
   }, [appliedFilters]);
 
   // Guardar vista seleccionada en localStorage (solo en desktop)
   useEffect(() => {
     if (!isMobile) {
-      localStorage.setItem('registroViewMode', viewMode);
+      localStorage.setItem("registroViewMode", viewMode);
     }
   }, [viewMode, isMobile]);
 
@@ -416,8 +446,9 @@ export const RegistroList: React.FC = () => {
           params.append("authorization_code", authorizationCode);
         }
 
-        const url = `/records/${recordToDelete.id}${params.toString() ? `?${params.toString()}` : ""
-          }`;
+        const url = `/records/${recordToDelete.id}${
+          params.toString() ? `?${params.toString()}` : ""
+        }`;
 
         await apiClient.delete(url);
 
@@ -439,13 +470,16 @@ export const RegistroList: React.FC = () => {
     setShowRelationshipModal(true);
   }, []);
 
-  const handleStatusCardClick = useCallback(async (status: string) => {
-    setStatusFilter(status);
-    // Aplicar el filtro inmediatamente
-    await fetchWith({ estado_actual: status }, 1);
-    // Scroll hacia arriba para mostrar los resultados filtrados
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [fetchWith]);
+  const handleStatusCardClick = useCallback(
+    async (status: string) => {
+      setStatusFilter(status);
+      // Aplicar el filtro inmediatamente
+      await fetchWith({ estado_actual: status }, 1);
+      // Scroll hacia arriba para mostrar los resultados filtrados
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    },
+    [fetchWith]
+  );
 
   const handleRelationshipSuccess = useCallback(() => {
     setShowRelationshipModal(false);
@@ -488,19 +522,19 @@ export const RegistroList: React.FC = () => {
 
   const getAnclajeConfig = useCallback((value: string) => {
     const configs = {
-      "anclaje_equipos": {
+      anclaje_equipos: {
         variant: "success" as const,
         color: "text-green-600",
       },
-      "anclaje_equipos_fijo": {
+      anclaje_equipos_fijo: {
         variant: "secondary" as const,
         color: "text-gray-600",
       },
-      "anclaje_equipos_movil": {
+      anclaje_equipos_movil: {
         variant: "warning" as const,
         color: "text-orange-600",
       },
-      "anclaje_equipos_fijo_movil": {
+      anclaje_equipos_fijo_movil: {
         variant: "info" as const,
         color: "text-blue-600",
       },
@@ -562,9 +596,10 @@ export const RegistroList: React.FC = () => {
               setInstallDateTo("");
               setAppliedFilters({});
               // Limpiar localStorage
-              localStorage.removeItem('registroFilters');
+              localStorage.removeItem("registroFilters");
               // Cargar todos los registros sin filtros
               try {
+                clearFilters();
                 await loadStats();
               } catch (error) {
                 // Error al limpiar filtros
@@ -663,12 +698,8 @@ export const RegistroList: React.FC = () => {
           if (!value) {
             return (
               <div className="text-sm">
-                <div className="font-medium text-gray-400">
-                  No registrada
-                </div>
-                <div className="text-xs text-gray-400">
-                  Sin fecha
-                </div>
+                <div className="font-medium text-gray-400">No registrada</div>
+                <div className="text-xs text-gray-400">Sin fecha</div>
               </div>
             );
           }
@@ -718,25 +749,66 @@ export const RegistroList: React.FC = () => {
         render: (value: any) => {
           if (!value) {
             return (
-              <span className="text-xs italic text-gray-400">No seleccionado</span>
+              <span className="text-xs italic text-gray-400">
+                No seleccionado
+              </span>
             );
           }
 
           const getAnclajeConfig = (tipo: string) => {
-            const configs: Record<string, { color: string; bgColor: string; icon: string }> = {
-              anclaje_terminal: { color: "text-blue-700", bgColor: "bg-blue-100", icon: "🔗" },
-              anclaje_intermedio: { color: "text-green-700", bgColor: "bg-green-100", icon: "🔗" },
-              anclaje_intermedio_basculante: { color: "text-purple-700", bgColor: "bg-purple-100", icon: "🔗" },
-              absorvedor_impacto: { color: "text-orange-700", bgColor: "bg-orange-100", icon: "🛡️" },
-              anclaje_superior: { color: "text-indigo-700", bgColor: "bg-indigo-100", icon: "⬆️" },
-              anclaje_inferior: { color: "text-teal-700", bgColor: "bg-teal-100", icon: "⬇️" },
-              anclaje_impacto: { color: "text-red-700", bgColor: "bg-red-100", icon: "🛡️" },
+            const configs: Record<
+              string,
+              { color: string; bgColor: string; icon: string }
+            > = {
+              anclaje_terminal: {
+                color: "text-blue-700",
+                bgColor: "bg-blue-100",
+                icon: "🔗",
+              },
+              anclaje_intermedio: {
+                color: "text-green-700",
+                bgColor: "bg-green-100",
+                icon: "🔗",
+              },
+              anclaje_intermedio_basculante: {
+                color: "text-purple-700",
+                bgColor: "bg-purple-100",
+                icon: "🔗",
+              },
+              absorvedor_impacto: {
+                color: "text-orange-700",
+                bgColor: "bg-orange-100",
+                icon: "🛡️",
+              },
+              anclaje_superior: {
+                color: "text-indigo-700",
+                bgColor: "bg-indigo-100",
+                icon: "⬆️",
+              },
+              anclaje_inferior: {
+                color: "text-teal-700",
+                bgColor: "bg-teal-100",
+                icon: "⬇️",
+              },
+              anclaje_impacto: {
+                color: "text-red-700",
+                bgColor: "bg-red-100",
+                icon: "🛡️",
+              },
             };
-            return configs[tipo] || { color: "text-gray-700", bgColor: "bg-gray-100", icon: "🔗" };
+            return (
+              configs[tipo] || {
+                color: "text-gray-700",
+                bgColor: "bg-gray-100",
+                icon: "🔗",
+              }
+            );
           };
 
           const config = getAnclajeConfig(value);
-          const label = value.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase());
+          const label = value
+            .replace(/_/g, " ")
+            .replace(/\b\w/g, (l: string) => l.toUpperCase());
 
           return (
             <span
@@ -797,12 +869,8 @@ export const RegistroList: React.FC = () => {
           if (!value) {
             return (
               <div className="text-sm">
-                <div className="font-medium text-gray-400">
-                  No registrada
-                </div>
-                <div className="text-xs text-gray-400">
-                  Sin fecha
-                </div>
+                <div className="font-medium text-gray-400">No registrada</div>
+                <div className="text-xs text-gray-400">Sin fecha</div>
               </div>
             );
           }
@@ -812,14 +880,16 @@ export const RegistroList: React.FC = () => {
           return (
             <div className="text-sm">
               <div
-                className={`font-medium ${isVencido ? "text-red-600" : "text-gray-900"
-                  }`}
+                className={`font-medium ${
+                  isVencido ? "text-red-600" : "text-gray-900"
+                }`}
               >
                 {formatDate(fecha)}
               </div>
               <div
-                className={`text-xs ${isVencido ? "text-red-500" : "text-gray-500"
-                  }`}
+                className={`text-xs ${
+                  isVencido ? "text-red-500" : "text-gray-500"
+                }`}
               >
                 {isVencido ? "Vencido" : "Programado"}
               </div>
@@ -853,13 +923,13 @@ export const RegistroList: React.FC = () => {
           const isAyni = isAyniUser(user?.empresa);
 
           return (
-            <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
+            <div className="flex flex-col gap-1 sm:flex-row sm:gap-2">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate(`detalle/${registro.id}`)}
                 icon={Eye}
-                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-xs sm:text-sm"
+                className="text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 sm:text-sm"
                 title="Ver detalles"
               >
                 <span className="hidden sm:inline">Ver</span>
@@ -869,7 +939,7 @@ export const RegistroList: React.FC = () => {
                 size="sm"
                 onClick={() => navigate(`editar/${registro.id}`)}
                 icon={Edit}
-                className="text-green-600 hover:text-green-700 hover:bg-green-50 text-xs sm:text-sm"
+                className="text-xs text-green-600 hover:text-green-700 hover:bg-green-50 sm:text-sm"
                 title="Editar registro"
                 disabled={!isAyni}
               >
@@ -880,7 +950,7 @@ export const RegistroList: React.FC = () => {
                 size="sm"
                 onClick={() => handleCreateDerivadas(registro)}
                 icon={Link}
-                className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 text-xs sm:text-sm"
+                className="text-xs text-blue-500 hover:text-blue-700 hover:bg-blue-50 sm:text-sm"
                 title="Crear Líneas Derivadas"
               >
                 <span className="hidden sm:inline">Derivadas</span>
@@ -890,7 +960,7 @@ export const RegistroList: React.FC = () => {
                 size="sm"
                 onClick={() => handleDeleteRegistro(registro)}
                 icon={Trash2}
-                className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs sm:text-sm"
+                className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50 sm:text-sm"
                 title="Eliminar registro"
                 disabled={deleting || !isAyni}
               >
@@ -901,166 +971,199 @@ export const RegistroList: React.FC = () => {
         },
       },
     ],
-    [navigate, deleting, handleDeleteRegistro, getEstadoConfig, recordImages, user]
+    [
+      navigate,
+      deleting,
+      handleDeleteRegistro,
+      getEstadoConfig,
+      recordImages,
+      user,
+    ]
   );
 
   // Vista en cuadrícula (actualizada para mostrar empresa y área)
   const GridView = () => {
     const isAyni = isAyniUser(user?.empresa);
-    
+
     return (
       <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
         {registros.map((registro) => {
           const estadoConfig = getEstadoConfig(registro.estado_actual);
           const hasImage = recordImages.has(registro.id);
-        return (
-          <Card
-            key={registro.id}
-            className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-[#18D043] relative w-full max-w-sm mx-auto"
-          >
-            {hasImage && (
-              <div className="absolute z-10 top-2 right-2">
-                <div className="flex items-center justify-center w-8 h-8 bg-orange-500 rounded-full shadow-lg">
-                  <Camera className="w-4 h-4 text-white" />
+          return (
+            <Card
+              key={registro.id}
+              className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-[#18D043] relative w-full max-w-sm mx-auto"
+            >
+              {hasImage && (
+                <div className="absolute z-10 top-2 right-2">
+                  <div className="flex items-center justify-center w-8 h-8 bg-orange-500 rounded-full shadow-lg">
+                    <Camera className="w-4 h-4 text-white" />
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            <div className="p-3 sm:p-4 lg:p-6">
-              <div className="flex items-center justify-between mb-2 sm:mb-3 lg:mb-4">
-                <div className="flex items-center space-x-2 sm:space-x-3">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-lg sm:rounded-xl flex items-center justify-center shadow-md">
-                    <span className="text-xs sm:text-sm lg:text-base font-bold text-white">
-                      {registro.codigo.slice(-2)}
-                    </span>
+              <div className="p-3 sm:p-4 lg:p-6">
+                <div className="flex items-center justify-between mb-2 sm:mb-3 lg:mb-4">
+                  <div className="flex items-center space-x-2 sm:space-x-3">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-lg sm:rounded-xl flex items-center justify-center shadow-md">
+                      <span className="text-xs font-bold text-white sm:text-sm lg:text-base">
+                        {registro.codigo.slice(-2)}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-semibold text-gray-900 truncate sm:text-base">
+                        {registro.codigo}
+                      </h3>
+                      <p className="text-xs text-gray-500 truncate sm:text-sm">
+                        {registro.cliente}
+                      </p>
+                    </div>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-sm sm:text-base font-semibold text-gray-900 truncate">
-                      {registro.codigo}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-gray-500 truncate">{registro.cliente}</p>
-                  </div>
-                </div>
-                <Badge variant={estadoConfig.variant} size="sm" className="flex-shrink-0">
-                  {!registro.estado_actual || registro.estado_actual === "undefined" || registro.estado_actual === "null"
-                    ? "No registrado"
-                    : registro.estado_actual === "por_vencer"
+                  <Badge
+                    variant={estadoConfig.variant}
+                    size="sm"
+                    className="flex-shrink-0"
+                  >
+                    {!registro.estado_actual ||
+                    registro.estado_actual === "undefined" ||
+                    registro.estado_actual === "null"
+                      ? "No registrado"
+                      : registro.estado_actual === "por_vencer"
                       ? "Por Vencer"
                       : registro.estado_actual}
-                </Badge>
-              </div>
+                  </Badge>
+                </div>
 
-              <div className="mb-2 sm:mb-3 lg:mb-4 space-y-1.5 sm:space-y-2 lg:space-y-3">
-                {registro.codigo_placa && (
+                <div className="mb-2 sm:mb-3 lg:mb-4 space-y-1.5 sm:space-y-2 lg:space-y-3">
+                  {registro.codigo_placa && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500 sm:text-sm">
+                        Código Placa:
+                      </span>
+                      <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                        {registro.codigo_placa}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between">
-                    <span className="text-xs sm:text-sm text-gray-500">Código Placa:</span>
-                    <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                      {registro.codigo_placa}
+                    <span className="text-xs text-gray-500 sm:text-sm">
+                      Área:
+                    </span>
+                    <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                      {registro.area}
                     </span>
                   </div>
-                )}
-                <div className="flex items-center justify-between">
-                  <span className="text-xs sm:text-sm text-gray-500">Área:</span>
-                  <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                    {registro.area}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs sm:text-sm text-gray-500">Equipo:</span>
-                  <span className="text-xs sm:text-sm font-medium text-gray-900 truncate ml-2 max-w-20 sm:max-w-32">
-                    {registro.equipo}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs sm:text-sm text-gray-500">Tipo:</span>
-                  <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    {registro.tipo_linea}
-                  </span>
-                </div>
-                {registro.anclaje_tipo && (
                   <div className="flex items-center justify-between">
-                    <span className="text-xs sm:text-sm text-gray-500">Anclaje:</span>
-                    <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      {registro.anclaje_tipo.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                    <span className="text-xs text-gray-500 sm:text-sm">
+                      Equipo:
+                    </span>
+                    <span className="ml-2 text-xs font-medium text-gray-900 truncate sm:text-sm max-w-20 sm:max-w-32">
+                      {registro.equipo}
                     </span>
                   </div>
-                )}
-                <div className="flex items-center justify-between">
-                  <span className="text-xs sm:text-sm text-gray-500">Longitud:</span>
-                  <span className="text-xs sm:text-sm font-mono bg-gray-100 px-1.5 sm:px-2 py-0.5 rounded">
-                    {registro.longitud}m
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs sm:text-sm text-gray-500">Ubicación:</span>
-                  <span
-                    className="text-xs sm:text-sm text-gray-900 truncate max-w-20 sm:max-w-32"
-                    title={registro.ubicacion}
-                  >
-                    {registro.ubicacion}
-                  </span>
-                </div>
-                {hasImage && (
                   <div className="flex items-center justify-between">
-                    <span className="text-xs sm:text-sm text-gray-500">Imagen:</span>
-                    <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                      Disponible
+                    <span className="text-xs text-gray-500 sm:text-sm">
+                      Tipo:
+                    </span>
+                    <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {registro.tipo_linea}
                     </span>
                   </div>
-                )}
-              </div>
+                  {registro.anclaje_tipo && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500 sm:text-sm">
+                        Anclaje:
+                      </span>
+                      <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        {registro.anclaje_tipo
+                          .replace(/_/g, " ")
+                          .replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-500 sm:text-sm">
+                      Longitud:
+                    </span>
+                    <span className="text-xs sm:text-sm font-mono bg-gray-100 px-1.5 sm:px-2 py-0.5 rounded">
+                      {registro.longitud}m
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-500 sm:text-sm">
+                      Ubicación:
+                    </span>
+                    <span
+                      className="text-xs text-gray-900 truncate sm:text-sm max-w-20 sm:max-w-32"
+                      title={registro.ubicacion}
+                    >
+                      {registro.ubicacion}
+                    </span>
+                  </div>
+                  {hasImage && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500 sm:text-sm">
+                        Imagen:
+                      </span>
+                      <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                        Disponible
+                      </span>
+                    </div>
+                  )}
+                </div>
 
-              <div className="pt-2 sm:pt-3 border-t border-gray-100">
-                <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate(`detalle/${registro.id}`)}
-                    icon={Eye}
-                    className="w-full text-blue-600 border-blue-600 hover:bg-blue-600 hover:text-white font-bold text-xs sm:text-sm justify-center transition-all duration-200"
-                    title="Ver detalles"
-                  >
-                    <span className="hidden sm:inline ml-1">Ver</span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate(`editar/${registro.id}`)}
-                    icon={Edit}
-                    className="w-full text-green-600 border-green-600 hover:bg-green-600 hover:text-white font-bold text-xs sm:text-sm justify-center transition-all duration-200"
-                    disabled={!isAyni}
-                    title="Editar registro"
-                  >
-                    <span className="hidden sm:inline ml-1">Editar</span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleCreateDerivadas(registro)}
-                    icon={Link}
-                    className="w-full text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white font-bold text-xs sm:text-sm justify-center transition-all duration-200"
-                    title="Crear líneas derivadas"
-                  >
-                    <span className="hidden sm:inline ml-1">Derivadas</span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDeleteRegistro(registro)}
-                    icon={Trash2}
-                    className="w-full text-red-600 border-red-600 hover:bg-red-600 hover:text-white font-bold text-xs sm:text-sm justify-center transition-all duration-200"
-                    disabled={deleting || !isAyni}
-                    title="Eliminar registro"
-                  >
-                    <span className="hidden sm:inline ml-1">Eliminar</span>
-                  </Button>
+                <div className="pt-2 border-t border-gray-100 sm:pt-3">
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate(`detalle/${registro.id}`)}
+                      icon={Eye}
+                      className="justify-center w-full text-xs font-bold text-blue-600 transition-all duration-200 border-blue-600 hover:bg-blue-600 hover:text-white sm:text-sm"
+                      title="Ver detalles"
+                    >
+                      <span className="hidden ml-1 sm:inline">Ver</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate(`editar/${registro.id}`)}
+                      icon={Edit}
+                      className="justify-center w-full text-xs font-bold text-green-600 transition-all duration-200 border-green-600 hover:bg-green-600 hover:text-white sm:text-sm"
+                      disabled={!isAyni}
+                      title="Editar registro"
+                    >
+                      <span className="hidden ml-1 sm:inline">Editar</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleCreateDerivadas(registro)}
+                      icon={Link}
+                      className="justify-center w-full text-xs font-bold text-blue-500 transition-all duration-200 border-blue-500 hover:bg-blue-500 hover:text-white sm:text-sm"
+                      title="Crear líneas derivadas"
+                    >
+                      <span className="hidden ml-1 sm:inline">Derivadas</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteRegistro(registro)}
+                      icon={Trash2}
+                      className="justify-center w-full text-xs font-bold text-red-600 transition-all duration-200 border-red-600 hover:bg-red-600 hover:text-white sm:text-sm"
+                      disabled={deleting || !isAyni}
+                      title="Eliminar registro"
+                    >
+                      <span className="hidden ml-1 sm:inline">Eliminar</span>
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </Card>
-        );
-      })}
-    </div>
+            </Card>
+          );
+        })}
+      </div>
     );
   };
 
@@ -1093,18 +1196,18 @@ export const RegistroList: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6 max-w-full">
+    <div className="max-w-full space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
         <div className="flex items-center space-x-3 sm:space-x-4">
           <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-xl flex items-center justify-center shadow-lg">
-            <span className="text-lg sm:text-xl text-white">📊</span>
+            <span className="text-lg text-white sm:text-xl">📊</span>
           </div>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text">
+            <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text">
               Gestión de Registros
             </h1>
-            <p className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2 text-sm sm:text-base text-gray-600">
+            <p className="flex flex-col space-y-1 text-sm text-gray-600 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-2 sm:text-base">
               <span>Administra todos los registros del sistema</span>
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#18D043]/10 text-[#16a34a] w-fit">
                 {pagination.totalItems} registros
@@ -1119,7 +1222,7 @@ export const RegistroList: React.FC = () => {
               variant="outline"
               icon={RefreshCw}
               loading={loading}
-              className="flex-1 sm:flex-none border-gray-300 hover:bg-gray-50 text-sm"
+              className="flex-1 text-sm border-gray-300 sm:flex-none hover:bg-gray-50"
             >
               <span className="hidden sm:inline">Actualizar</span>
               <span className="sm:hidden">Actualizar</span>
@@ -1128,10 +1231,11 @@ export const RegistroList: React.FC = () => {
               onClick={() => setShowReports(!showReports)}
               variant="outline"
               icon={FileText}
-              className={`flex-1 sm:flex-none text-sm ${showReports
+              className={`flex-1 sm:flex-none text-sm ${
+                showReports
                   ? "bg-orange-500 text-white border-orange-500"
                   : "border-orange-300 text-orange-600 hover:bg-orange-50"
-                }`}
+              }`}
             >
               <span className="hidden sm:inline">Reportes</span>
               <span className="sm:hidden">Reportes</span>
@@ -1150,11 +1254,13 @@ export const RegistroList: React.FC = () => {
 
       {/* Estadísticas rápidas */}
       <div className="flex justify-center">
-        <div className="flex flex-wrap justify-center gap-3 sm:gap-4 max-w-4xl">
-          <Card className="h-20 w-40 sm:w-44 md:w-48 border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
+        <div className="flex flex-wrap justify-center max-w-4xl gap-3 sm:gap-4">
+          <Card className="w-40 h-20 border-blue-200 sm:w-44 md:w-48 bg-gradient-to-br from-blue-50 to-blue-100">
             <div className="flex items-center justify-between h-full p-3 sm:p-4">
               <div className="flex-1 min-w-0">
-                <p className="text-xs sm:text-sm font-medium text-blue-600 truncate">Total</p>
+                <p className="text-xs font-medium text-blue-600 truncate sm:text-sm">
+                  Total
+                </p>
                 <div className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-900 min-h-[1.2rem] sm:min-h-[1.4rem] lg:min-h-[1.6rem] flex items-center">
                   {loadingStats ? (
                     <LoadingSpinner size="sm" />
@@ -1163,18 +1269,22 @@ export const RegistroList: React.FC = () => {
                   )}
                 </div>
               </div>
-              <div className="text-lg sm:text-xl lg:text-2xl flex-shrink-0 ml-2">📊</div>
+              <div className="flex-shrink-0 ml-2 text-lg sm:text-xl lg:text-2xl">
+                📊
+              </div>
             </div>
           </Card>
 
-          <div 
-            className="cursor-pointer hover:shadow-md transition-shadow duration-200"
-            onClick={() => handleStatusCardClick('activo')}
+          <div
+            className="transition-shadow duration-200 cursor-pointer hover:shadow-md"
+            onClick={() => handleStatusCardClick("activo")}
           >
-            <Card className="h-20 w-40 sm:w-44 md:w-48 border-green-200 bg-gradient-to-br from-green-50 to-green-100">
+            <Card className="w-40 h-20 border-green-200 sm:w-44 md:w-48 bg-gradient-to-br from-green-50 to-green-100">
               <div className="flex items-center justify-between h-full p-3 sm:p-4">
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs sm:text-sm font-medium text-green-600 truncate">Activos</p>
+                  <p className="text-xs font-medium text-green-600 truncate sm:text-sm">
+                    Activos
+                  </p>
                   <div className="text-lg sm:text-xl lg:text-2xl font-bold text-green-900 min-h-[1.2rem] sm:min-h-[1.4rem] lg:min-h-[1.6rem] flex items-center">
                     {loadingStats ? (
                       <LoadingSpinner size="sm" />
@@ -1183,19 +1293,23 @@ export const RegistroList: React.FC = () => {
                     )}
                   </div>
                 </div>
-                <div className="text-lg sm:text-xl lg:text-2xl flex-shrink-0 ml-2">🟢</div>
+                <div className="flex-shrink-0 ml-2 text-lg sm:text-xl lg:text-2xl">
+                  🟢
+                </div>
               </div>
             </Card>
           </div>
 
-          <div 
-            className="cursor-pointer hover:shadow-md transition-shadow duration-200"
-            onClick={() => handleStatusCardClick('por_vencer')}
+          <div
+            className="transition-shadow duration-200 cursor-pointer hover:shadow-md"
+            onClick={() => handleStatusCardClick("por_vencer")}
           >
-            <Card className="h-20 w-40 sm:w-44 md:w-48 border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100">
+            <Card className="w-40 h-20 border-yellow-200 sm:w-44 md:w-48 bg-gradient-to-br from-yellow-50 to-yellow-100">
               <div className="flex items-center justify-between h-full p-3 sm:p-4">
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs sm:text-sm font-medium text-yellow-600 truncate">Por Vencer</p>
+                  <p className="text-xs font-medium text-yellow-600 truncate sm:text-sm">
+                    Por Vencer
+                  </p>
                   <div className="text-lg sm:text-xl lg:text-2xl font-bold text-yellow-900 min-h-[1.2rem] sm:min-h-[1.4rem] lg:min-h-[1.6rem] flex items-center">
                     {loadingStats ? (
                       <LoadingSpinner size="sm" />
@@ -1204,19 +1318,23 @@ export const RegistroList: React.FC = () => {
                     )}
                   </div>
                 </div>
-                <div className="text-lg sm:text-xl lg:text-2xl flex-shrink-0 ml-2">🟡</div>
+                <div className="flex-shrink-0 ml-2 text-lg sm:text-xl lg:text-2xl">
+                  🟡
+                </div>
               </div>
             </Card>
           </div>
 
-          <div 
-            className="cursor-pointer hover:shadow-md transition-shadow duration-200"
-            onClick={() => handleStatusCardClick('vencido')}
+          <div
+            className="transition-shadow duration-200 cursor-pointer hover:shadow-md"
+            onClick={() => handleStatusCardClick("vencido")}
           >
-            <Card className="h-20 w-40 sm:w-44 md:w-48 border-red-200 bg-gradient-to-br from-red-50 to-red-100">
+            <Card className="w-40 h-20 border-red-200 sm:w-44 md:w-48 bg-gradient-to-br from-red-50 to-red-100">
               <div className="flex items-center justify-between h-full p-3 sm:p-4">
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs sm:text-sm font-medium text-red-600 truncate">Vencidos</p>
+                  <p className="text-xs font-medium text-red-600 truncate sm:text-sm">
+                    Vencidos
+                  </p>
                   <div className="text-lg sm:text-xl lg:text-2xl font-bold text-red-900 min-h-[1.2rem] sm:min-h-[1.4rem] lg:min-h-[1.6rem] flex items-center">
                     {loadingStats ? (
                       <LoadingSpinner size="sm" />
@@ -1225,19 +1343,21 @@ export const RegistroList: React.FC = () => {
                     )}
                   </div>
                 </div>
-                <div className="text-lg sm:text-xl lg:text-2xl flex-shrink-0 ml-2">🔴</div>
+                <div className="flex-shrink-0 ml-2 text-lg sm:text-xl lg:text-2xl">
+                  🔴
+                </div>
               </div>
             </Card>
           </div>
 
-          <div 
-            className="cursor-pointer hover:shadow-md transition-shadow duration-200"
-            onClick={() => handleStatusCardClick('mantenimiento')}
+          <div
+            className="transition-shadow duration-200 cursor-pointer hover:shadow-md"
+            onClick={() => handleStatusCardClick("mantenimiento")}
           >
-            <Card className="h-20 w-44 sm:w-48 md:w-60 border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100">
+            <Card className="h-20 border-orange-200 w-44 sm:w-48 md:w-60 bg-gradient-to-br from-orange-50 to-orange-100">
               <div className="flex items-center justify-between h-full p-3 sm:p-4">
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs sm:text-sm font-medium text-orange-600 truncate">
+                  <p className="text-xs font-medium text-orange-600 truncate sm:text-sm">
                     Mantenimiento
                   </p>
                   <div className="text-lg sm:text-xl lg:text-2xl font-bold text-orange-900 min-h-[1.2rem] sm:min-h-[1.4rem] lg:min-h-[1.6rem] flex items-center">
@@ -1248,7 +1368,9 @@ export const RegistroList: React.FC = () => {
                     )}
                   </div>
                 </div>
-                <div className="text-lg sm:text-xl lg:text-2xl flex-shrink-0 ml-2">🔧</div>
+                <div className="flex-shrink-0 ml-2 text-lg sm:text-xl lg:text-2xl">
+                  🔧
+                </div>
               </div>
             </Card>
           </div>
@@ -1378,22 +1500,24 @@ export const RegistroList: React.FC = () => {
                 size="sm"
                 onClick={() => setShowFilters((v) => !v)}
                 icon={showFilters ? SlidersHorizontal : Filter}
-                className={`w-full sm:w-auto ${showFilters
+                className={`w-full sm:w-auto ${
+                  showFilters
                     ? "bg-[#18D043] text-white border-[#18D043]"
                     : "border-gray-300"
-                  }`}
+                }`}
               >
                 <span className="hidden sm:inline">Filtros</span>
                 <span className="sm:hidden">Filtros</span>
               </Button>
-              <div className="flex p-1 bg-white border border-gray-300 rounded-lg w-full sm:w-auto">
+              <div className="flex w-full p-1 bg-white border border-gray-300 rounded-lg sm:w-auto">
                 <button
                   type="button"
                   onClick={() => setViewMode("table")}
-                  className={`flex-1 sm:flex-none p-2 rounded ${viewMode === "table"
-                    ? "bg-[#18D043] text-white"
-                    : "text-gray-600 hover:bg-gray-100"
-                    }`}
+                  className={`flex-1 sm:flex-none p-2 rounded ${
+                    viewMode === "table"
+                      ? "bg-[#18D043] text-white"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
                   aria-pressed={viewMode === "table"}
                   aria-label="Vista tabla"
                 >
@@ -1402,10 +1526,11 @@ export const RegistroList: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setViewMode("grid")}
-                  className={`flex-1 sm:flex-none p-2 rounded ${viewMode === "grid"
-                    ? "bg-[#18D043] text-white"
-                    : "text-gray-600 hover:bg-gray-100"
-                    }`}
+                  className={`flex-1 sm:flex-none p-2 rounded ${
+                    viewMode === "grid"
+                      ? "bg-[#18D043] text-white"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
                   aria-pressed={viewMode === "grid"}
                   aria-label="Vista tarjetas"
                 >
@@ -1559,9 +1684,18 @@ export const RegistroList: React.FC = () => {
                     options={[
                       { value: "", label: "Todos los tipos" },
                       { value: "anclaje_terminal", label: "Anclaje Terminal" },
-                      { value: "anclaje_intermedio", label: "Anclaje Intermedio" },
-                      { value: "anclaje_intermedio_basculante", label: "Anclaje Intermedio Basculante" },
-                      { value: "absorvedor_impacto", label: "Absorbedor Impacto" },
+                      {
+                        value: "anclaje_intermedio",
+                        label: "Anclaje Intermedio",
+                      },
+                      {
+                        value: "anclaje_intermedio_basculante",
+                        label: "Anclaje Intermedio Basculante",
+                      },
+                      {
+                        value: "absorvedor_impacto",
+                        label: "Absorbedor Impacto",
+                      },
                       { value: "anclaje_superior", label: "Anclaje Superior" },
                       { value: "anclaje_inferior", label: "Anclaje Inferior" },
                       { value: "anclaje_impacto", label: "Anclaje Impacto" },
@@ -1613,35 +1747,36 @@ export const RegistroList: React.FC = () => {
                     statusFilter ||
                     installDateFrom ||
                     installDateTo) && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        className="h-10 text-gray-600 hover:text-gray-800"
-                        onClick={async () => {
-                          setSearchTerm("");
-                          setCodigoPlacaFilter("");
-                          setEquipoFilter("");
-                          setUbicacionFilter("");
-                          setEmpresaFilter("");
-                          setAreaFilter("");
-                          setStatusFilter("");
-                          setAnclajeTipoFilter("");
-                          setInstallDateFrom("");
-                          setInstallDateTo("");
-                          setAppliedFilters({});
-                          // Limpiar localStorage
-                          localStorage.removeItem('registroFilters');
-                          // Cargar todos los registros sin filtros
-                          try {
-                            await loadStats();
-                          } catch (error) {
-                            // Error al limpiar filtros
-                          }
-                        }}
-                      >
-                        Limpiar
-                      </Button>
-                    )}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="h-10 text-gray-600 hover:text-gray-800"
+                      onClick={async () => {
+                        setSearchTerm("");
+                        setCodigoPlacaFilter("");
+                        setEquipoFilter("");
+                        setUbicacionFilter("");
+                        setEmpresaFilter("");
+                        setAreaFilter("");
+                        setStatusFilter("");
+                        setAnclajeTipoFilter("");
+                        setInstallDateFrom("");
+                        setInstallDateTo("");
+                        setAppliedFilters({});
+                        // Limpiar localStorage
+                        localStorage.removeItem("registroFilters");
+                        // Cargar todos los registros sin filtros
+                        try {
+                          clearFilters();
+                          await loadStats();
+                        } catch (error) {
+                          // Error al limpiar filtros
+                        }
+                      }}
+                    >
+                      Limpiar
+                    </Button>
+                  )}
                 </div>
               </form>
             </div>
@@ -1699,12 +1834,12 @@ export const RegistroList: React.FC = () => {
                 <GridView />
                 {/* Paginación para vista grid */}
                 {pagination.totalPages > 1 && (
-                  <div className="flex flex-col sm:flex-row items-center justify-between mt-6 space-y-4 sm:space-y-0">
-                    <div className="text-xs sm:text-sm text-gray-700 text-center sm:text-left">
+                  <div className="flex flex-col items-center justify-between mt-6 space-y-4 sm:flex-row sm:space-y-0">
+                    <div className="text-xs text-center text-gray-700 sm:text-sm sm:text-left">
                       Mostrando{" "}
                       {Math.min(
                         (pagination.currentPage - 1) * pagination.itemsPerPage +
-                        1,
+                          1,
                         pagination.totalItems
                       )}{" "}
                       a{" "}
@@ -1714,53 +1849,58 @@ export const RegistroList: React.FC = () => {
                       )}{" "}
                       de {pagination.totalItems} registros
                     </div>
-                    
+
                     {/* Paginación responsive */}
                     <div className="flex items-center space-x-1 sm:space-x-2">
                       {/* Botón anterior */}
                       <button
-                        onClick={() => handlePageChange(pagination.currentPage - 1)}
+                        onClick={() =>
+                          handlePageChange(pagination.currentPage - 1)
+                        }
                         disabled={pagination.currentPage === 1}
-                        className="px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 hover:bg-gray-100"
+                        className="px-2 py-2 text-xs font-medium text-gray-700 transition-colors rounded-md sm:px-3 sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
                       >
                         ←
                       </button>
-                      
+
                       {/* Números de página - responsive */}
                       {(() => {
                         const currentPage = pagination.currentPage;
                         const totalPages = pagination.totalPages;
                         const isMobile = window.innerWidth < 768;
-                        
+
                         if (isMobile) {
                           // En móviles: mostrar solo página actual y algunas adyacentes
                           const startPage = Math.max(1, currentPage - 1);
                           const endPage = Math.min(totalPages, currentPage + 1);
                           const pages = [];
-                          
+
                           if (startPage > 1) {
                             pages.push(1);
-                            if (startPage > 2) pages.push('...');
+                            if (startPage > 2) pages.push("...");
                           }
-                          
+
                           for (let i = startPage; i <= endPage; i++) {
                             pages.push(i);
                           }
-                          
+
                           if (endPage < totalPages) {
-                            if (endPage < totalPages - 1) pages.push('...');
+                            if (endPage < totalPages - 1) pages.push("...");
                             pages.push(totalPages);
                           }
-                          
+
                           return pages.map((page, index) => (
                             <button
                               key={index}
-                              onClick={() => typeof page === 'number' && handlePageChange(page)}
-                              disabled={page === '...'}
+                              onClick={() =>
+                                typeof page === "number" &&
+                                handlePageChange(page)
+                              }
+                              disabled={page === "..."}
                               className={`px-2 py-2 text-xs font-medium rounded-md transition-colors ${
                                 page === currentPage
                                   ? "bg-[#18D043] text-white"
-                                  : page === '...'
+                                  : page === "..."
                                   ? "text-gray-400 cursor-default"
                                   : "text-gray-700 hover:bg-gray-100"
                               }`}
@@ -1788,12 +1928,16 @@ export const RegistroList: React.FC = () => {
                           ));
                         }
                       })()}
-                      
+
                       {/* Botón siguiente */}
                       <button
-                        onClick={() => handlePageChange(pagination.currentPage + 1)}
-                        disabled={pagination.currentPage === pagination.totalPages}
-                        className="px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 hover:bg-gray-100"
+                        onClick={() =>
+                          handlePageChange(pagination.currentPage + 1)
+                        }
+                        disabled={
+                          pagination.currentPage === pagination.totalPages
+                        }
+                        className="px-2 py-2 text-xs font-medium text-gray-700 transition-colors rounded-md sm:px-3 sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
                       >
                         →
                       </button>
