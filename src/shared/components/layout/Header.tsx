@@ -14,9 +14,12 @@ import {
   FileText,
   Menu,
 } from "lucide-react";
-import { useAuthStore } from "../../../store/authStore";
+import { useAuth } from "../../hooks/useAuth";
 import { useApi } from "../../../shared/hooks/useApi";
-import { alertService, type Alert } from "../../../shared/services/alertService";
+import {
+  alertService,
+  type Alert,
+} from "../../../shared/services/alertService";
 import { Badge } from "../ui/Badge";
 import { Button } from "../ui/Button";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
@@ -27,9 +30,12 @@ interface HeaderProps {
   isMobile?: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onMenuClick, isMobile = false }) => {
+export const Header: React.FC<HeaderProps> = ({
+  onMenuClick,
+  isMobile = false,
+}) => {
   const navigate = useNavigate();
-  const { user, logout } = useAuthStore();
+  const { user, logout, isAdmin } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -78,7 +84,6 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, isMobile = false })
     logout();
     navigate("/login");
   };
-
 
   useEffect(() => {
     mountedRef.current = true;
@@ -156,9 +161,6 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, isMobile = false })
     setShowNotifications(false);
   };
 
-  // Determinar si mostrar opción de solicitudes (solo para administradores)
-  const isAdmin = user?.rol === "admin";
-
   return (
     <header className="px-3 sm:px-6 py-3 sm:py-4 bg-white border-b border-gray-200 shadow-sm">
       <div className="flex items-center justify-between">
@@ -177,11 +179,17 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, isMobile = false })
 
           <div className="flex items-center space-x-2 sm:space-x-3">
             <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-lg flex items-center justify-center shadow-sm">
-              <span className="text-xs sm:text-sm font-bold text-white">⚡</span>
+              <span className="text-xs sm:text-sm font-bold text-white">
+                ⚡
+              </span>
             </div>
             <div className="hidden sm:block">
-              <h2 className="text-lg sm:text-xl font-bold text-gray-900">AyniLine</h2>
-              <p className="text-xs sm:text-sm text-gray-500">Sistema de Gestión</p>
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900">
+                AyniLine
+              </h2>
+              <p className="text-xs sm:text-sm text-gray-500">
+                Sistema de Gestión
+              </p>
             </div>
             <div className="block sm:hidden">
               <h2 className="text-base font-bold text-gray-900">AyniLine</h2>
@@ -252,7 +260,9 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, isMobile = false })
                   {loadingAlerts ? (
                     <div className="flex items-center justify-center p-4 sm:p-6">
                       <LoadingSpinner size="sm" className="mr-2 sm:mr-3" />
-                      <span className="text-sm sm:text-base text-gray-600">Cargando alertas...</span>
+                      <span className="text-sm sm:text-base text-gray-600">
+                        Cargando alertas...
+                      </span>
                     </div>
                   ) : alerts.length === 0 ? (
                     <div className="p-4 sm:p-6 text-center">
@@ -285,13 +295,15 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, isMobile = false })
                                       alert.prioridad === "critical"
                                         ? "danger"
                                         : alert.prioridad === "high"
-                                          ? "warning"
-                                          : "secondary"
+                                        ? "warning"
+                                        : "secondary"
                                     }
                                     size="sm"
                                   >
                                     <span className="text-xs">
-                                      {alert.tipo.replace("_", " ").toUpperCase()}
+                                      {alert.tipo
+                                        .replace("_", " ")
+                                        .toUpperCase()}
                                     </span>
                                   </Badge>
                                   <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-red-500 rounded-full animate-pulse"></div>
@@ -306,11 +318,15 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, isMobile = false })
                                 <div className="flex flex-col sm:flex-row sm:items-center mb-2 space-y-1 sm:space-y-0 sm:space-x-3 text-xs text-gray-500">
                                   <span className="flex items-center">
                                     <span className="mr-1">📋</span>
-                                    <span className="truncate">{alert.record.codigo}</span>
+                                    <span className="truncate">
+                                      {alert.record.codigo}
+                                    </span>
                                   </span>
                                   <span className="flex items-center">
                                     <span className="mr-1">👤</span>
-                                    <span className="truncate">{alert.record.cliente}</span>
+                                    <span className="truncate">
+                                      {alert.record.cliente}
+                                    </span>
                                   </span>
                                 </div>
                               )}
@@ -330,7 +346,10 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, isMobile = false })
                                     className="h-5 sm:h-6 px-1.5 sm:px-2 py-1 text-xs"
                                     title="Marcar como leída"
                                   >
-                                    <Check size={10} className="sm:w-3 sm:h-3" />
+                                    <Check
+                                      size={10}
+                                      className="sm:w-3 sm:h-3"
+                                    />
                                   </Button>
 
                                   {alert.record && (
@@ -343,7 +362,10 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, isMobile = false })
                                       className="h-5 sm:h-6 px-1.5 sm:px-2 py-1 text-xs"
                                       title="Ver registro"
                                     >
-                                      <ExternalLink size={10} className="sm:w-3 sm:h-3" />
+                                      <ExternalLink
+                                        size={10}
+                                        className="sm:w-3 sm:h-3"
+                                      />
                                     </Button>
                                   )}
                                 </div>
@@ -364,7 +386,9 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, isMobile = false })
                       onClick={handleViewDashboard}
                       className="w-full text-[#16a34a] hover:text-[#15803d] font-medium text-xs sm:text-sm"
                     >
-                      <span className="hidden sm:inline">Ver todas las alertas en el dashboard</span>
+                      <span className="hidden sm:inline">
+                        Ver todas las alertas en el dashboard
+                      </span>
                       <span className="sm:hidden">Ver dashboard</span>
                     </Button>
                   </div>
@@ -395,8 +419,9 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, isMobile = false })
               </div>
               <ChevronDown
                 size={16}
-                className={`text-gray-400 transition-transform duration-200 ${showUserMenu ? "rotate-180" : ""
-                  }`}
+                className={`text-gray-400 transition-transform duration-200 ${
+                  showUserMenu ? "rotate-180" : ""
+                }`}
               />
             </button>
 

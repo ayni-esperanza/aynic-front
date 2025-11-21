@@ -36,8 +36,9 @@ import {
   type ImageResponse,
 } from "../../../shared/services/imageService";
 import { RelationshipModal } from "../components/RelationshipModal";
-import { formatDate, isAyniUser } from "../../../shared/utils";
-import { useAuthStore } from "../../../store/authStore";
+import { formatDate } from "../../../shared/utils/formatters";
+import { isAyniUser } from "../../../shared/utils/permissions";
+import { useAuth } from "../../../shared/hooks/useAuth";
 import { DeleteModal } from "../../solicitudes/components/DeleteModal";
 import { apiClient } from "../../../shared/services/apiClient";
 import { ReportsSection } from "../components/ReportsSection";
@@ -48,7 +49,7 @@ import { useRegistroData } from "../hooks/useRegistroData";
 export const RegistroList: React.FC = () => {
   const navigate = useNavigate();
   const { success, error: showError } = useToast();
-  const { user } = useAuthStore();
+  const { user } = useAuth();
 
   // Estados para filtros y vista
   const [searchTerm, setSearchTerm] = useState("");
@@ -920,7 +921,7 @@ export const RegistroList: React.FC = () => {
         label: "Acciones",
         render: (_: any, registro: DataRecord) => {
           // Verificar si el usuario es de AYNI (case-insensitive)
-          const isAyni = isAyniUser(user?.empresa);
+          const isAyni = isAyniUser(user);
 
           return (
             <div className="flex flex-col gap-1 sm:flex-row sm:gap-2">
@@ -983,7 +984,7 @@ export const RegistroList: React.FC = () => {
 
   // Vista en cuadrícula (actualizada para mostrar empresa y área)
   const GridView = () => {
-    const isAyni = isAyniUser(user?.empresa);
+    const isAyni = isAyniUser(user);
 
     return (
       <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">

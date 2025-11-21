@@ -2,6 +2,7 @@ import React, { Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import { MainLayout } from "../layouts/MainLayout";
 import { ProtectedRoute } from "../shared/components/auth/ProtectedRoute";
+import { ROLES } from "../shared/constants/roles";
 
 import { Dashboard } from "../pages/Dashboard";
 import { Login } from "../pages/Login";
@@ -134,7 +135,7 @@ export const AppRoutes: React.FC = () => {
         <Route
           path="usuarios/*"
           element={
-            <ProtectedRoute requiredRoles={["admin", "supervisor"]}>
+            <ProtectedRoute requiredRoles={[ROLES.ADMIN, ROLES.SUPERVISOR]}>
               <ModuleErrorBoundary>
                 <Suspense fallback={<PageLoadingFallback />}>
                   <UsuariosModule />
@@ -192,7 +193,7 @@ export const AppRoutes: React.FC = () => {
         <Route
           path="solicitudes/*"
           element={
-            <ProtectedRoute requiredRoles={["admin"]}>
+            <ProtectedRoute requiredRoles={[ROLES.ADMIN]}>
               <ModuleErrorBoundary>
                 <Suspense fallback={<PageLoadingFallback />}>
                   <SolicitudesModule />
