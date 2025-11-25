@@ -1068,12 +1068,12 @@ export const RegistroList: React.FC = () => {
       </div>
 
       {/* Estadísticas rápidas */}
-      <div className="grid gap-4 items-stretch [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
-        <Card className="h-full border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
-          <div className="flex items-center justify-between h-full p-4">
-            <div>
-              <p className="text-sm font-medium text-blue-600">Total</p>
-              <div className="text-2xl font-bold text-blue-900 min-h-[1.6rem] flex items-center">
+      <div className="grid grid-cols-5 gap-3">
+        <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
+          <div className="flex items-center justify-between p-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-medium text-blue-600 truncate">Total</p>
+              <div className="text-xl font-bold text-blue-900 flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
@@ -1081,15 +1081,15 @@ export const RegistroList: React.FC = () => {
                 )}
               </div>
             </div>
-            <div className="text-2xl">📊</div>
+            <div className="text-xl flex-shrink-0">📊</div>
           </div>
         </Card>
 
-        <Card className="h-full border-green-200 bg-gradient-to-br from-green-50 to-green-100">
-          <div className="flex items-center justify-between h-full p-4">
-            <div>
-              <p className="text-sm font-medium text-green-600">Activos</p>
-              <div className="text-2xl font-bold text-green-900 min-h-[1.6rem] flex items-center">
+        <Card className="border-green-200 bg-gradient-to-br from-green-50 to-green-100">
+          <div className="flex items-center justify-between p-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-medium text-green-600 truncate">Activos</p>
+              <div className="text-xl font-bold text-green-900 flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
@@ -1097,15 +1097,15 @@ export const RegistroList: React.FC = () => {
                 )}
               </div>
             </div>
-            <div className="text-2xl">🟢</div>
+            <div className="text-xl flex-shrink-0">🟢</div>
           </div>
         </Card>
 
-        <Card className="h-full border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100">
-          <div className="flex items-center justify-between h-full p-4">
-            <div>
-              <p className="text-sm font-medium text-yellow-600">Por Vencer</p>
-              <div className="text-2xl font-bold text-yellow-900 min-h-[1.6rem] flex items-center">
+        <Card className="border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100">
+          <div className="flex items-center justify-between p-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-medium text-yellow-600 truncate">Por Vencer</p>
+              <div className="text-xl font-bold text-yellow-900 flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
@@ -1113,15 +1113,15 @@ export const RegistroList: React.FC = () => {
                 )}
               </div>
             </div>
-            <div className="text-2xl">🟡</div>
+            <div className="text-xl flex-shrink-0">🟡</div>
           </div>
         </Card>
 
-        <Card className="h-full border-red-200 bg-gradient-to-br from-red-50 to-red-100">
-          <div className="flex items-center justify-between h-full p-4">
-            <div>
-              <p className="text-sm font-medium text-red-600">Vencidos</p>
-              <div className="text-2xl font-bold text-red-900 min-h-[1.6rem] flex items-center">
+        <Card className="border-red-200 bg-gradient-to-br from-red-50 to-red-100">
+          <div className="flex items-center justify-between p-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-medium text-red-600 truncate">Vencidos</p>
+              <div className="text-xl font-bold text-red-900 flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
@@ -1129,17 +1129,17 @@ export const RegistroList: React.FC = () => {
                 )}
               </div>
             </div>
-            <div className="text-2xl">🔴</div>
+            <div className="text-xl flex-shrink-0">🔴</div>
           </div>
         </Card>
 
-        <Card className="h-full border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100">
-          <div className="flex items-center justify-between h-full p-4">
-            <div>
-              <p className="text-sm font-medium text-orange-600">
+        <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100">
+          <div className="flex items-center justify-between p-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-medium text-orange-600 truncate">
                 Mantenimiento
               </p>
-              <div className="text-2xl font-bold text-orange-900 min-h-[1.6rem] flex items-center">
+              <div className="text-xl font-bold text-orange-900 flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
@@ -1147,7 +1147,7 @@ export const RegistroList: React.FC = () => {
                 )}
               </div>
             </div>
-            <div className="text-2xl">🔧</div>
+            <div className="text-xl flex-shrink-0">🔧</div>
           </div>
         </Card>
       </div>
@@ -1157,118 +1157,89 @@ export const RegistroList: React.FC = () => {
 
       {/* Controles y filtros */}
       <Card className="border border-gray-200 shadow-sm bg-gradient-to-r from-gray-50 to-white">
-        <div className="p-6">
-          {/* Top bar: 5 inputs con label + botones */}
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            {/* 5 filtros alineados */}
-            <div className="flex-1">
-              <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
-                {/* Código */}
-                <div className="relative">
-                  <label
-                    htmlFor="f-codigo"
-                    className="block mb-1 text-xs font-semibold text-gray-700"
-                  >
-                    Código
-                  </label>
-                  <div className="relative">
-                    <Search
-                      className="absolute text-gray-400 -translate-y-1/2 left-3 top-1/2"
-                      size={18}
-                      aria-hidden
-                    />
-                    <Input
-                      id="f-codigo"
-                      placeholder="Buscar por código..."
-                      value={searchTerm}
-                      onChange={handleTextFilterChange("codigo", setSearchTerm)}
-                      className="h-10 pl-9 border-gray-300 focus:border-[#18D043] focus:ring-[#18D043]/20"
-                    />
-                  </div>
-                </div>
+        <div className="p-4">
+          {/* Top bar: filtros + botones en una sola fila */}
+          <div className="flex items-center gap-2">
+            {/* Código */}
+            <div className="flex-1 min-w-0">
+              <div className="relative">
+                <Search
+                  className="absolute text-gray-400 -translate-y-1/2 left-2 top-1/2"
+                  size={16}
+                  aria-hidden
+                />
+                <Input
+                  id="f-codigo"
+                  placeholder="Código..."
+                  value={searchTerm}
+                  onChange={handleTextFilterChange("codigo", setSearchTerm)}
+                  className="h-9 pl-8 text-sm border-gray-300 focus:border-[#18D043] focus:ring-[#18D043]/20"
+                />
+              </div>
+            </div>
 
-                {/* Código Placa */}
-                <div className="relative">
-                  <label
-                    htmlFor="f-codigo-placa"
-                    className="block mb-1 text-xs font-semibold text-gray-700"
-                  >
-                    Código Placa
-                  </label>
-                  <div className="relative">
-                    <Search
-                      className="absolute text-gray-400 -translate-y-1/2 left-3 top-1/2"
-                      size={18}
-                      aria-hidden
-                    />
-                    <Input
-                      id="f-codigo-placa"
-                      placeholder="Buscar por código placa..."
-                      value={codigoPlacaFilter}
-                      onChange={handleTextFilterChange(
-                        "codigo_placa",
-                        setCodigoPlacaFilter
-                      )}
-                      className="h-10 pl-9 border-gray-300 focus:border-[#18D043] focus:ring-[#18D043]/20"
-                    />
-                  </div>
-                </div>
+            {/* Código Placa */}
+            <div className="flex-1 min-w-0">
+              <div className="relative">
+                <Search
+                  className="absolute text-gray-400 -translate-y-1/2 left-2 top-1/2"
+                  size={16}
+                  aria-hidden
+                />
+                <Input
+                  id="f-codigo-placa"
+                  placeholder="Código placa..."
+                  value={codigoPlacaFilter}
+                  onChange={handleTextFilterChange(
+                    "codigo_placa",
+                    setCodigoPlacaFilter
+                  )}
+                  className="h-9 pl-8 text-sm border-gray-300 focus:border-[#18D043] focus:ring-[#18D043]/20"
+                />
+              </div>
+            </div>
 
-                {/* Empresa */}
-                <div className="relative">
-                  <label
-                    htmlFor="f-empresa"
-                    className="block mb-1 text-xs font-semibold text-gray-700"
-                  >
-                    Empresa
-                  </label>
-                  <div className="relative">
-                    <Search
-                      className="absolute text-gray-400 -translate-y-1/2 left-3 top-1/2"
-                      size={18}
-                      aria-hidden
-                    />
-                    <Input
-                      id="f-empresa"
-                      placeholder="Buscar por empresa..."
-                      value={empresaFilter}
-                      onChange={handleTextFilterChange(
-                        "empresa",
-                        setEmpresaFilter
-                      )}
-                      className="h-10 pl-9 border-gray-300 focus:border-[#18D043] focus:ring-[#18D043]/20"
-                    />
-                  </div>
-                </div>
+            {/* Empresa */}
+            <div className="flex-1 min-w-0">
+              <div className="relative">
+                <Search
+                  className="absolute text-gray-400 -translate-y-1/2 left-2 top-1/2"
+                  size={16}
+                  aria-hidden
+                />
+                <Input
+                  id="f-empresa"
+                  placeholder="Empresa..."
+                  value={empresaFilter}
+                  onChange={handleTextFilterChange(
+                    "empresa",
+                    setEmpresaFilter
+                  )}
+                  className="h-9 pl-8 text-sm border-gray-300 focus:border-[#18D043] focus:ring-[#18D043]/20"
+                />
+              </div>
+            </div>
 
-                {/* Área */}
-                <div className="relative">
-                  <label
-                    htmlFor="f-area"
-                    className="block mb-1 text-xs font-semibold text-gray-700"
-                  >
-                    Área
-                  </label>
-                  <div className="relative">
-                    <Search
-                      className="absolute text-gray-400 -translate-y-1/2 left-3 top-1/2"
-                      size={18}
-                      aria-hidden
-                    />
-                    <Input
-                      id="f-area"
-                      placeholder="Buscar por área..."
-                      value={areaFilter}
-                      onChange={handleTextFilterChange("area", setAreaFilter)}
-                      className="h-10 pl-9 border-gray-300 focus:border-[#18D043] focus:ring-[#18D043]/20"
-                    />
-                  </div>
-                </div>
+            {/* Área */}
+            <div className="flex-1 min-w-0">
+              <div className="relative">
+                <Search
+                  className="absolute text-gray-400 -translate-y-1/2 left-2 top-1/2"
+                  size={16}
+                  aria-hidden
+                />
+                <Input
+                  id="f-area"
+                  placeholder="Área..."
+                  value={areaFilter}
+                  onChange={handleTextFilterChange("area", setAreaFilter)}
+                  className="h-9 pl-8 text-sm border-gray-300 focus:border-[#18D043] focus:ring-[#18D043]/20"
+                />
               </div>
             </div>
 
             {/* Botonera derecha */}
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <Button
                 type="button"
                 variant="outline"
@@ -1277,17 +1248,17 @@ export const RegistroList: React.FC = () => {
                 icon={showFilters ? SlidersHorizontal : Filter}
                 className={
                   showFilters
-                    ? "bg-[#18D043] text-white border-[#18D043]"
-                    : "border-gray-300"
+                    ? "bg-[#18D043] text-white border-[#18D043] h-9"
+                    : "border-gray-300 h-9"
                 }
               >
                 Filtros
               </Button>
-              <div className="flex p-1 bg-white border border-gray-300 rounded-lg">
+              <div className="flex p-0.5 bg-white border border-gray-300 rounded-lg">
                 <button
                   type="button"
                   onClick={() => setViewMode("table")}
-                  className={`p-2 rounded ${viewMode === "table"
+                  className={`p-1.5 rounded ${viewMode === "table"
                     ? "bg-[#18D043] text-white"
                     : "text-gray-600 hover:bg-gray-100"
                     }`}
@@ -1299,7 +1270,7 @@ export const RegistroList: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setViewMode("grid")}
-                  className={`p-2 rounded ${viewMode === "grid"
+                  className={`p-1.5 rounded ${viewMode === "grid"
                     ? "bg-[#18D043] text-white"
                     : "text-gray-600 hover:bg-gray-100"
                     }`}
