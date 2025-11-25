@@ -127,50 +127,47 @@ const AlertMetricCard: React.FC<{
     <Card
       className={`${colors.bg} ${colors.border} ${
         onClick
-          ? "cursor-pointer hover:shadow-lg transform hover:scale-105"
+          ? "cursor-pointer hover:shadow-md"
           : ""
       } transition-all duration-200`}
       onClick={onClick}
     >
-      <div className="flex items-center justify-between p-6">
-        <div className="flex-1">
-          <div className={`text-sm font-medium ${colors.icon}`}>{title}</div>
-          <div className="flex items-center mt-2">
-            {loading ? (
-              <LoadingSpinner size="sm" className="mr-2" />
-            ) : (
-              <div className={`text-3xl font-bold ${colors.text}`}>
+      <div className="flex items-center justify-between p-4">
+        <div className="flex-1 min-w-0">
+          <div className={`text-xs font-medium ${colors.icon} mb-1`}>{title}</div>
+          {loading ? (
+            <LoadingSpinner size="sm" />
+          ) : (
+            <>
+              <div className={`text-2xl font-bold ${colors.text} mb-1`}>
                 {typeof value === "number" ? value.toLocaleString() : value}
               </div>
-            )}
-          </div>
-          {description && (
-            <div className="mt-1 text-xs text-gray-600">{description}</div>
-          )}
-          {trend && (
-            <div className="flex items-center mt-2">
-              <span
-                className={`text-sm font-medium flex items-center ${
-                  trend.positive ? "text-green-600" : "text-red-600"
-                }`}
-              >
-                {trend.positive ? (
-                  <TrendingUp size={14} className="mr-1" />
-                ) : (
-                  <TrendingDown size={14} className="mr-1" />
-                )}
-                {trend.value}
-              </span>
-              <span className="ml-1 text-xs text-gray-500">
-                vs periodo anterior
-              </span>
-            </div>
+              {description && (
+                <div className="text-[10px] text-gray-600 mb-1">{description}</div>
+              )}
+              {trend && (
+                <div className="flex items-center">
+                  <span
+                    className={`text-[10px] font-medium flex items-center ${
+                      trend.positive ? "text-green-600" : "text-red-600"
+                    }`}
+                  >
+                    {trend.positive ? (
+                      <TrendingUp size={10} className="mr-0.5" />
+                    ) : (
+                      <TrendingDown size={10} className="mr-0.5" />
+                    )}
+                    {trend.value}
+                  </span>
+                </div>
+              )}
+            </>
           )}
         </div>
         <div
-          className={`w-12 h-12 ${colors.iconBg} rounded-xl flex items-center justify-center shadow-sm`}
+          className={`w-10 h-10 ${colors.iconBg} rounded-lg flex items-center justify-center flex-shrink-0`}
         >
-          <Icon className={`w-6 h-6 ${colors.icon}`} />
+          <Icon className={`w-5 h-5 ${colors.icon}`} />
         </div>
       </div>
     </Card>
@@ -580,7 +577,7 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* Métricas Principales de Alertas */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <AlertMetricCard
           title="Total Alertas"
           value={alertStats?.total || 0}
