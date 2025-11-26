@@ -95,25 +95,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
   return (
     <div
       className={`bg-white border-r border-gray-200 transition-all duration-300 flex flex-col shadow-lg ${
-        isCollapsed ? "w-16" : "w-64"
+        isCollapsed ? "w-16" : "w-56"
       }`}
     >
       {/* Header compacto */}
-      <div className="flex items-center justify-between p-3 border-b border-gray-200">
+      <div className="flex items-center justify-between p-2.5 border-b border-gray-200">
         {!isCollapsed ? (
           <>
-            <div className="flex items-center space-x-2">
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg overflow-hidden">
-                <img
-                  src={logoAyni}
-                  alt="Ayni Logo"
-                  className="object-contain w-full h-full"
-                />
-              </div>
-              <h1 className="text-lg font-bold text-gray-900">
-                AyniLine
-              </h1>
-            </div>
+            <h1 className="text-base font-bold text-gray-900">
+              AyniLine
+            </h1>
             <button
               onClick={onToggle}
               className="p-1.5 transition-all duration-200 rounded-lg hover:bg-gray-100 group"
@@ -126,39 +117,43 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
             </button>
           </>
         ) : (
-          <div className="flex flex-col items-center w-full space-y-2">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg overflow-hidden">
-              <img
-                src={logoAyni}
-                alt="Ayni Logo"
-                className="object-contain w-full h-full"
-              />
-            </div>
-            <button
-              onClick={onToggle}
-              className="p-1.5 transition-all duration-200 rounded-lg hover:bg-gray-100 group"
-              title="Expandir sidebar"
-            >
-              <ChevronRight
-                size={18}
-                className="text-gray-600 group-hover:text-[#16a34a] transition-colors duration-200"
-              />
-            </button>
-          </div>
+          <button
+            onClick={onToggle}
+            className="p-1.5 transition-all duration-200 rounded-lg hover:bg-gray-100 group mx-auto"
+            title="Expandir sidebar"
+          >
+            <ChevronRight
+              size={18}
+              className="text-gray-600 group-hover:text-[#16a34a] transition-colors duration-200"
+            />
+          </button>
         )}
       </div>
+      
+      {/* Logo debajo del botón cuando está colapsado */}
+      {isCollapsed && (
+        <div className="flex items-center justify-center p-2 border-b border-gray-100">
+          <div className="flex items-center justify-center w-10 h-10 rounded-lg overflow-hidden">
+            <img
+              src={logoAyni}
+              alt="Ayni Logo"
+              className="object-contain w-full h-full"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Navigation principal */}
-      <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
+      <nav className="flex-1 p-1.5 space-y-1 overflow-y-auto">
         <div className="space-y-0.5">
-          {menuItems.map((item, index) => {
+          {menuItems.map((item) => {
             const Icon = item.icon;
             return (
               <NavLink
                 key={item.path}
                 to={item.path}
                 className={({ isActive }) =>
-                  `group flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 ${
+                  `group flex items-center px-2.5 py-2 rounded-lg transition-all duration-200 ${
                     isActive
                       ? `${item.activeColor} text-white shadow-md`
                       : `text-gray-700 ${item.hoverColor}`
@@ -169,9 +164,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
                 {({ isActive }) => (
                   <>
                     {/* Icono */}
-                    <div className={`${isCollapsed ? "" : "mr-3"}`}>
+                    <div className={`${isCollapsed ? "" : "mr-2.5"}`}>
                       <Icon
-                        size={20}
+                        size={18}
                         className={`transition-all duration-200 ${
                           isActive ? "text-white" : item.color
                         }`}
@@ -198,7 +193,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
 
       {/* Versión del sistema (solo expandido) */}
       {!isCollapsed && (
-        <div className="px-3 py-2 border-t border-gray-200">
+        <div className="px-2.5 py-1.5 border-t border-gray-200">
           <div className="text-center">
             <p className="text-xs text-gray-400">v1.0.0</p>
           </div>

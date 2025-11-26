@@ -132,21 +132,21 @@ const AlertMetricCard: React.FC<{
       } transition-all duration-200`}
       onClick={onClick}
     >
-      <div className="flex items-center justify-between p-4">
+      <div className="flex items-center justify-between p-3">
         <div className="flex-1 min-w-0">
-          <div className={`text-xs font-medium ${colors.icon} mb-1`}>{title}</div>
+          <div className={`text-xs font-medium ${colors.icon} mb-0.5`}>{title}</div>
           {loading ? (
             <LoadingSpinner size="sm" />
           ) : (
             <>
-              <div className={`text-2xl font-bold ${colors.text} mb-1`}>
+              <div className={`text-xl font-bold ${colors.text}`}>
                 {typeof value === "number" ? value.toLocaleString() : value}
               </div>
               {description && (
-                <div className="text-[10px] text-gray-600 mb-1">{description}</div>
+                <div className="text-[10px] text-gray-600">{description}</div>
               )}
               {trend && (
-                <div className="flex items-center">
+                <div className="flex items-center mt-0.5">
                   <span
                     className={`text-[10px] font-medium flex items-center ${
                       trend.positive ? "text-green-600" : "text-red-600"
@@ -165,9 +165,9 @@ const AlertMetricCard: React.FC<{
           )}
         </div>
         <div
-          className={`w-10 h-10 ${colors.iconBg} rounded-lg flex items-center justify-center flex-shrink-0`}
+          className={`w-9 h-9 ${colors.iconBg} rounded-lg flex items-center justify-center flex-shrink-0`}
         >
-          <Icon className={`w-5 h-5 ${colors.icon}`} />
+          <Icon className={`w-4 h-4 ${colors.icon}`} />
         </div>
       </div>
     </Card>
@@ -623,8 +623,8 @@ export const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         {/* Distribución de Alertas por Tipo */}
         <Card>
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-6">
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-4">
               <h3 className="flex items-center text-lg font-semibold text-gray-900">
                 <PieChart className="w-5 h-5 mr-2 text-purple-600" />
                 Distribución por Tipo
@@ -637,11 +637,11 @@ export const Dashboard: React.FC = () => {
             </div>
 
             {loading ? (
-              <div className="flex items-center justify-center h-48">
+              <div className="flex items-center justify-center h-40">
                 <LoadingSpinner size="lg" />
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {alertStats?.porTipo.map((item) => {
                   const percentage =
                     alertStats.total > 0
@@ -702,8 +702,8 @@ export const Dashboard: React.FC = () => {
                 })}
 
                 {(!alertStats?.porTipo || alertStats.porTipo.length === 0) && (
-                  <div className="flex flex-col items-center justify-center h-32 text-center">
-                    <Bell className="w-8 h-8 mb-2 text-gray-300" />
+                  <div className="flex flex-col items-center justify-center h-24 text-center">
+                    <Bell className="w-7 h-7 mb-2 text-gray-300" />
                     <p className="text-sm text-gray-500">
                       No hay alertas por tipo
                     </p>
@@ -716,8 +716,8 @@ export const Dashboard: React.FC = () => {
 
         {/* Distribución de Alertas por Prioridad */}
         <Card>
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-6">
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-4">
               <h3 className="flex items-center text-lg font-semibold text-gray-900">
                 <BarChart3 className="w-5 h-5 mr-2 text-blue-600" />
                 Distribución por Prioridad
@@ -730,11 +730,11 @@ export const Dashboard: React.FC = () => {
             </div>
 
             {loading ? (
-              <div className="flex items-center justify-center h-48">
+              <div className="flex items-center justify-center h-40">
                 <LoadingSpinner size="lg" />
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {alertStats?.porPrioridad.map((item) => {
                   const percentage =
                     alertStats.total > 0
@@ -801,8 +801,8 @@ export const Dashboard: React.FC = () => {
 
                 {(!alertStats?.porPrioridad ||
                   alertStats.porPrioridad.length === 0) && (
-                  <div className="flex flex-col items-center justify-center h-32 text-center">
-                    <BarChart3 className="w-8 h-8 mb-2 text-gray-300" />
+                  <div className="flex flex-col items-center justify-center h-24 text-center">
+                    <BarChart3 className="w-7 h-7 mb-2 text-gray-300" />
                     <p className="text-sm text-gray-500">
                       No hay alertas por prioridad
                     </p>
