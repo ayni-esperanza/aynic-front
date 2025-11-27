@@ -617,11 +617,11 @@ export const HistorialList: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="flex items-center space-x-2 text-2xl font-bold text-gray-900">
+        <h1 className="flex items-center space-x-2 text-2xl font-bold text-gray-900 dark:text-white">
           <History className="w-8 h-8 text-[#18D043]" />
           <span>Historial de Movimientos</span>
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-400">
           Registro completo y detallado de todas las acciones realizadas en las
           líneas de vida
         </p>
@@ -632,14 +632,14 @@ export const HistorialList: React.FC = () => {
         <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
           <Card>
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Activity className="w-6 h-6 text-blue-600" />
+              <div className="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
+                <Activity className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-600">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                   Total Movimientos
                 </p>
-                <p className="text-2xl font-semibold text-gray-900">
+                <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                   {statistics.total}
                 </p>
               </div>
@@ -648,12 +648,12 @@ export const HistorialList: React.FC = () => {
 
           <Card>
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <Calendar className="w-6 h-6 text-green-600" />
+              <div className="p-2 bg-green-100 dark:bg-green-900/40 rounded-lg">
+                <Calendar className="w-6 h-6 text-green-600 dark:text-green-400" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-600">Hoy</p>
-                <p className="text-2xl font-semibold text-gray-900">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Hoy</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                   {statistics.today}
                 </p>
               </div>
@@ -662,12 +662,12 @@ export const HistorialList: React.FC = () => {
 
           <Card>
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Activity className="w-6 h-6 text-purple-600" />
+              <div className="p-2 bg-purple-100 dark:bg-purple-900/40 rounded-lg">
+                <Activity className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-600">Esta Semana</p>
-                <p className="text-2xl font-semibold text-gray-900">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Esta Semana</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                   {statistics.thisWeek}
                 </p>
               </div>
@@ -676,14 +676,14 @@ export const HistorialList: React.FC = () => {
 
           <Card>
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <Users className="w-6 h-6 text-orange-600" />
+              <div className="p-2 bg-orange-100 dark:bg-orange-900/40 rounded-lg">
+                <Users className="w-6 h-6 text-orange-600 dark:text-orange-400" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-600">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                   Usuarios Activos
                 </p>
-                <p className="text-2xl font-semibold text-gray-900">
+                <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                   {statistics.activeUsers}
                 </p>
               </div>
@@ -801,7 +801,7 @@ export const HistorialList: React.FC = () => {
       {/* Lista de movimientos */}
       <Card padding="lg">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="flex items-center space-x-2 text-lg font-semibold text-gray-900">
+          <h2 className="flex items-center space-x-2 text-lg font-semibold text-gray-900 dark:text-white">
             <Activity className="w-5 h-5 text-[#18D043]" />
             <span>Registro de Actividades</span>
           </h2>
@@ -837,14 +837,14 @@ export const HistorialList: React.FC = () => {
 
         {!loading && !error && movements.length === 0 && (
           <div className="flex flex-col items-center justify-center h-64 space-y-4">
-            <div className="flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full">
+            <div className="flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full">
               <span className="text-2xl">📄</span>
             </div>
             <div className="text-center">
-              <p className="mb-2 text-lg font-medium text-gray-900">
+              <p className="mb-2 text-lg font-medium text-gray-900 dark:text-white">
                 No hay movimientos registrados
               </p>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 No se encontraron registros que coincidan con los criterios de
                 búsqueda.
               </p>
@@ -869,20 +869,6 @@ export const HistorialList: React.FC = () => {
           </>
         )}
       </Card>
-
-      {/* Info pie */}
-      <div className="flex items-center justify-center">
-        <div className="flex items-center px-4 py-2 space-x-4 text-xs text-gray-500 rounded-full bg-gray-50">
-          <div className="flex items-center space-x-1">
-            <div className="w-2 h-2 bg-[#18D043] rounded-full"></div>
-            <span>Datos en tiempo real</span>
-          </div>
-          <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
-          <div className="flex items-center space-x-1">
-            <span>Última actualización: {new Date().toLocaleTimeString()}</span>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

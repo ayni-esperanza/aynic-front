@@ -75,12 +75,12 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-4 bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="flex items-center justify-center min-h-screen p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       <div className="w-full max-w-md">
         {/* Logo y Header */}
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center mb-6">
-            <div className="flex items-center justify-center w-20 h-20 bg-white shadow-lg rounded-2xl">
+            <div className="flex items-center justify-center w-20 h-20 bg-white dark:bg-gray-800 shadow-lg rounded-2xl">
               <img
                 src={logoAyni}
                 alt="Logo Ayni"
@@ -89,16 +89,16 @@ export const Login: React.FC = () => {
               />
             </div>
           </div>
-          <h1 className="mb-2 text-3xl font-bold text-gray-900">
+          <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
             Bienvenido a AyniLine
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             Ingresa tus credenciales para acceder al sistema
           </p>
         </div>
 
         {/* Formulario de Login */}
-        <Card className="bg-white border-0 shadow-xl">
+        <Card className="bg-white dark:bg-gray-800 border-0 shadow-xl">
           <form onSubmit={handleSubmit} className="p-8 space-y-6">
             {/* Error general de la API */}
             {error && (

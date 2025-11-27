@@ -6,3 +6,14 @@
 input[type="password"]::-ms-reveal {
   display: none;
 }
+
+/* Estilos base para modo oscuro */
+@layer base {
+  :root {
+    color-scheme: light dark;
+  }
+  
+  .dark {
+    color-scheme: dark;
+  }
+}

@@ -5,7 +5,6 @@ import {
   Edit,
   Mail,
   Phone,
-  Calendar,
   Shield,
   Building,
   User as UserIcon,

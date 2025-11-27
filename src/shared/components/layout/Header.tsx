@@ -8,13 +8,15 @@ import {
   LogOut,
   AlertTriangle,
   Clock,
-  Calendar,
   Check,
   ExternalLink,
   BellRing,
   FileText,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { useAuthStore } from "../../../store/authStore";
+import { useThemeStore } from "../../../store/themeStore";
 import { useApi } from "../../../shared/hooks/useApi";
 import { alertService, type Alert } from "../../../shared/services/alertService";
 import { Badge } from "../ui/Badge";
@@ -25,6 +27,7 @@ import { formatDateTime } from "../../../shared/utils/formatters";
 export const Header: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
+  const { theme, toggleTheme } = useThemeStore();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -182,7 +185,7 @@ export const Header: React.FC = () => {
   const isAdmin = user?.rol === "admin";
 
   return (
-    <header className="px-6 py-4 bg-white border-b border-gray-200 shadow-sm">
+    <header className="px-6 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm transition-colors duration-200">
       <div className="flex items-center justify-between">
         {/* Logo/Título del sistema (izquierda) */}
         <div className="flex items-center space-x-4">
@@ -191,19 +194,32 @@ export const Header: React.FC = () => {
               <span className="text-sm font-bold text-white">⚡</span>
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-900">AyniLine</h2>
-              <p className="text-xs text-gray-500">Sistema de Gestión</p>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">AyniLine</h2>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Sistema de Gestión</p>
             </div>
           </div>
         </div>
 
         {/* Área derecha con notificaciones y usuario */}
         <div className="flex items-center space-x-4">
+          {/* Botón de cambio de tema */}
+          <button
+            onClick={toggleTheme}
+            className="p-2 text-gray-400 dark:text-gray-300 transition-all duration-200 rounded-lg hover:text-gray-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+            title={theme === 'light' ? 'Activar modo oscuro' : 'Activar modo claro'}
+          >
+            {theme === 'light' ? (
+              <Moon size={20} className="transition-transform duration-200 group-hover:scale-110" />
+            ) : (
+              <Sun size={20} className="transition-transform duration-200 group-hover:scale-110" />
+            )}
+          </button>
+
           {/* Notificaciones de Alertas */}
           <div className="relative" ref={notificationRef}>
             <button
               onClick={() => setShowNotifications(!showNotifications)}
-              className="relative p-2 text-gray-400 transition-all duration-200 rounded-lg hover:text-gray-600 hover:bg-gray-100 group"
+              className="relative p-2 text-gray-400 dark:text-gray-300 transition-all duration-200 rounded-lg hover:text-gray-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
               title="Alertas del sistema"
             >
               {unreadCount > 0 ? (
@@ -229,11 +245,11 @@ export const Header: React.FC = () => {
 
             {/* Dropdown de alertas */}
             {showNotifications && (
-              <div className="absolute right-0 z-50 mt-2 duration-200 transform bg-white border border-gray-200 shadow-xl w-96 rounded-xl animate-in slide-in-from-top-2">
-                <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-[#18D043]/5 to-green-50">
+              <div className="absolute right-0 z-50 mt-2 duration-200 transform bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl w-96 rounded-xl animate-in slide-in-from-top-2">
+                <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-[#18D043]/5 to-green-50 dark:from-[#18D043]/10 dark:to-gray-700">
                   <div className="flex items-center justify-between">
-                    <h3 className="flex items-center text-lg font-semibold text-gray-900">
-                      <AlertTriangle className="w-5 h-5 mr-2 text-[#16a34a]" />
+                    <h3 className="flex items-center text-lg font-semibold text-gray-900 dark:text-white">
+                      <AlertTriangle className="w-5 h-5 mr-2 text-[#16a34a] dark:text-[#18D043]" />
                       Alertas Activas
                     </h3>
                     {alerts.length > 0 && (
@@ -248,7 +264,7 @@ export const Header: React.FC = () => {
                     )}
                   </div>
                   {unreadCount > 0 && (
-                    <p className="mt-1 text-sm text-gray-600">
+                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
                       {unreadCount} alerta{unreadCount !== 1 ? "s" : ""} sin
                       revisar
                     </p>
@@ -259,24 +275,24 @@ export const Header: React.FC = () => {
                   {loadingAlerts ? (
                     <div className="flex items-center justify-center p-6">
                       <LoadingSpinner size="sm" className="mr-3" />
-                      <span className="text-gray-600">Cargando alertas...</span>
+                      <span className="text-gray-600 dark:text-gray-300">Cargando alertas...</span>
                     </div>
                   ) : alerts.length === 0 ? (
                     <div className="p-6 text-center">
-                      <Bell className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                      <p className="font-medium text-gray-500">
+                      <Bell className="w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
+                      <p className="font-medium text-gray-500 dark:text-gray-400">
                         No hay alertas pendientes
                       </p>
-                      <p className="mt-1 text-sm text-gray-400">
+                      <p className="mt-1 text-sm text-gray-400 dark:text-gray-500">
                         Todas las alertas han sido revisadas
                       </p>
                     </div>
                   ) : (
-                    <div className="divide-y divide-gray-100">
+                    <div className="divide-y divide-gray-100 dark:divide-gray-700">
                       {alerts.map((alert) => (
                         <div
                           key={alert.id}
-                          className={`p-4 border-l-4 transition-all duration-200 cursor-pointer hover:bg-gray-50 ${getNotificationColor(
+                          className={`p-4 border-l-4 transition-all duration-200 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 ${getNotificationColor(
                             alert
                           )}`}
                         >
@@ -303,19 +319,19 @@ export const Header: React.FC = () => {
                                 </div>
                               </div>
 
-                              <p className="mb-1 text-sm font-medium text-gray-900 line-clamp-2">
+                              <p className="mb-1 text-sm font-medium text-gray-900 dark:text-white line-clamp-2">
                                 {alert.mensaje}
                               </p>
 
                               {alert.record && (
-                                <div className="flex items-center mb-2 space-x-3 text-xs text-gray-500">
+                                <div className="flex items-center mb-2 space-x-3 text-xs text-gray-500 dark:text-gray-400">
                                   <span>📋 {alert.record.codigo}</span>
                                   <span>👤 {alert.record.cliente}</span>
                                 </div>
                               )}
 
                               <div className="flex items-center justify-between">
-                                <span className="text-xs text-gray-500">
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
                                   {formatDateTime(alert.fecha_creada)}
                                 </span>
 
@@ -356,12 +372,12 @@ export const Header: React.FC = () => {
                 </div>
 
                 {alerts.length > 0 && (
-                  <div className="p-3 border-t border-gray-100 bg-gray-50">
+                  <div className="p-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={handleViewDashboard}
-                      className="w-full text-[#16a34a] hover:text-[#15803d] font-medium"
+                      className="w-full text-[#16a34a] dark:text-[#18D043] hover:text-[#15803d] dark:hover:text-[#16a34a] font-medium"
                     >
                       Ver todas las alertas en el dashboard
                     </Button>
@@ -372,28 +388,28 @@ export const Header: React.FC = () => {
           </div>
 
           {/* Separador */}
-          <div className="w-px h-6 bg-gray-300"></div>
+          <div className="w-px h-6 bg-gray-300 dark:bg-gray-600"></div>
 
           {/* Menú de usuario */}
           <div className="relative" ref={userMenuRef}>
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center p-2 space-x-3 transition-all duration-200 rounded-lg hover:bg-gray-100 group"
+              className="flex items-center p-2 space-x-3 transition-all duration-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 group"
             >
               <div className="w-9 h-9 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-full flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow duration-200">
                 <User size={18} className="text-white" />
               </div>
               <div className="hidden text-left md:block">
-                <p className="text-sm font-semibold text-gray-900">
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">
                   {user?.nombre || "Usuario Sistema"}
                 </p>
-                <p className="text-xs text-gray-500 capitalize">
+                <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
                   {user?.rol || "Usuario"}
                 </p>
               </div>
               <ChevronDown
                 size={16}
-                className={`text-gray-400 transition-transform duration-200 ${
+                className={`text-gray-400 dark:text-gray-500 transition-transform duration-200 ${
                   showUserMenu ? "rotate-180" : ""
                 }`}
               />
@@ -401,23 +417,23 @@ export const Header: React.FC = () => {
 
             {/* Dropdown de usuario */}
             {showUserMenu && (
-              <div className="absolute right-0 z-50 w-64 mt-2 duration-200 transform bg-white border border-gray-200 shadow-xl rounded-xl animate-in slide-in-from-top-2">
+              <div className="absolute right-0 z-50 w-64 mt-2 duration-200 transform bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl rounded-xl animate-in slide-in-from-top-2">
                 {/* Header del perfil */}
-                <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-[#18D043]/5 to-green-50">
+                <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-[#18D043]/5 to-green-50 dark:from-[#18D043]/10 dark:to-gray-700">
                   <div className="flex items-center space-x-3">
                     <div className="w-12 h-12 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-full flex items-center justify-center shadow-md">
                       <User size={20} className="text-white" />
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">
+                      <p className="font-semibold text-gray-900 dark:text-white">
                         {user?.nombre || "Usuario Sistema"}
                       </p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         {user?.email || "usuario@sistema.com"}
                       </p>
                       <div className="flex items-center mt-1 space-x-1">
                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span className="text-xs font-medium text-green-600">
+                        <span className="text-xs font-medium text-green-600 dark:text-green-400">
                           En línea
                         </span>
                       </div>
@@ -427,13 +443,13 @@ export const Header: React.FC = () => {
 
                 {/* Opciones del menú */}
                 <div className="py-2">
-                  <button className="flex items-center w-full px-4 py-3 space-x-3 text-gray-700 transition-colors duration-200 hover:bg-gray-50">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50">
-                      <User size={16} className="text-blue-600" />
+                  <button className="flex items-center w-full px-4 py-3 space-x-3 text-gray-700 dark:text-gray-300 transition-colors duration-200 hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/30">
+                      <User size={16} className="text-blue-600 dark:text-blue-400" />
                     </div>
                     <div className="text-left">
                       <p className="text-sm font-medium">Mi Perfil</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         Ver y editar información
                       </p>
                     </div>
@@ -446,14 +462,14 @@ export const Header: React.FC = () => {
                         navigate("/solicitudes");
                         setShowUserMenu(false);
                       }}
-                      className="flex items-center w-full px-4 py-3 space-x-3 text-gray-700 transition-colors duration-200 hover:bg-gray-50"
+                      className="flex items-center w-full px-4 py-3 space-x-3 text-gray-700 dark:text-gray-300 transition-colors duration-200 hover:bg-gray-50 dark:hover:bg-gray-700"
                     >
-                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-orange-50">
-                        <FileText size={16} className="text-orange-600" />
+                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-900/30">
+                        <FileText size={16} className="text-orange-600 dark:text-orange-400" />
                       </div>
                       <div className="text-left">
                         <p className="text-sm font-medium">Solicitudes</p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
                           Gestionar autorizaciones
                         </p>
                       </div>
@@ -462,30 +478,30 @@ export const Header: React.FC = () => {
 
                   {/* Mostrar "Configuración" solo para usuarios no-admin */}
                   {!isAdmin && (
-                    <button className="flex items-center w-full px-4 py-3 space-x-3 text-gray-700 transition-colors duration-200 hover:bg-gray-50">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-50">
-                        <Settings size={16} className="text-purple-600" />
+                    <button className="flex items-center w-full px-4 py-3 space-x-3 text-gray-700 dark:text-gray-300 transition-colors duration-200 hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-900/30">
+                        <Settings size={16} className="text-purple-600 dark:text-purple-400" />
                       </div>
                       <div className="text-left">
                         <p className="text-sm font-medium">Configuración</p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
                           Ajustes del sistema
                         </p>
                       </div>
                     </button>
                   )}
 
-                  <div className="pt-2 mt-2 border-t border-gray-100">
+                  <div className="pt-2 mt-2 border-t border-gray-100 dark:border-gray-700">
                     <button
                       onClick={handleLogout}
-                      className="flex items-center w-full px-4 py-3 space-x-3 text-red-600 transition-colors duration-200 hover:bg-red-50"
+                      className="flex items-center w-full px-4 py-3 space-x-3 text-red-600 dark:text-red-400 transition-colors duration-200 hover:bg-red-50 dark:hover:bg-red-900/20"
                     >
-                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-red-50">
-                        <LogOut size={16} className="text-red-600" />
+                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 dark:bg-red-900/30">
+                        <LogOut size={16} className="text-red-600 dark:text-red-400" />
                       </div>
                       <div className="text-left">
                         <p className="text-sm font-medium">Cerrar Sesión</p>
-                        <p className="text-xs text-red-400">
+                        <p className="text-xs text-red-400 dark:text-red-500">
                           Salir del sistema
                         </p>
                       </div>

@@ -40,8 +40,8 @@ const TableRow = <T extends Record<string, unknown>>({
 }) => (
   <tr
     key={index}
-    className={`transition-all duration-200 hover:bg-gradient-to-r hover:from-[#18D043]/5 hover:to-green-50 hover:shadow-sm group ${
-      isEven ? "bg-gray-50/50" : "bg-white"
+    className={`transition-all duration-200 hover:bg-gradient-to-r hover:from-[#18D043]/5 hover:to-green-50 dark:hover:to-green-900/20 hover:shadow-sm group ${
+      isEven ? "bg-gray-50/50 dark:bg-gray-800/30" : "bg-white dark:bg-gray-800"
     }`}
   >
     {columns.map((column, colIndex) => {
@@ -50,7 +50,7 @@ const TableRow = <T extends Record<string, unknown>>({
           <td
             key={String(column.key)}
             className={`px-6 py-4 text-sm whitespace-nowrap transition-all duration-200 group-hover:scale-[1.02] ${
-              colIndex === 0 ? "font-medium text-gray-900" : "text-gray-700"
+              colIndex === 0 ? "font-medium text-gray-900 dark:text-white" : "text-gray-700 dark:text-gray-300"
             } ${column.width ? String(column.width) : ""}`}
           >
             {column.render
@@ -63,7 +63,7 @@ const TableRow = <T extends Record<string, unknown>>({
         return (
           <td
             key={String(column.key)}
-            className="px-6 py-4 text-sm text-gray-900 whitespace-nowrap"
+            className="px-6 py-4 text-sm text-gray-900 dark:text-white whitespace-nowrap"
           >
             <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-800 bg-red-100 rounded-full">
               Error
@@ -268,7 +268,7 @@ export const DataTable = <T extends Record<string, unknown>>({
   return (
     <div className="space-y-6">
       {/* Tabla con header sticky */}
-      <div className="overflow-hidden bg-white border border-gray-200 shadow-sm rounded-xl">
+      <div className="overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-xl">
         {/* Scroll horizontal si hace falta */}
         <div className="overflow-x-auto">
           {/* Scroll vertical del body */}
@@ -280,8 +280,8 @@ export const DataTable = <T extends Record<string, unknown>>({
             }}
           >
             {/* table-fixed evita desajustes al aparecer el scrollbar vertical */}
-            <table className="min-w-full divide-y divide-gray-200 table-fixed">
-              <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
+              <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600">
                 <tr>
                   {columns.map((column) => {
                     const isSorted = localSortBy === (column.key as keyof T);
@@ -295,12 +295,12 @@ export const DataTable = <T extends Record<string, unknown>>({
                           stickyHeader
                             ? "sticky [top:var(--header-offset)] z-10"
                             : "",
-                          "bg-gradient-to-r from-gray-50 to-gray-100",
-                          "px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider",
-                          "border-r border-gray-200 last:border-r-0 shadow-sm",
+                          "bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600",
+                          "px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider",
+                          "border-r border-gray-200 dark:border-gray-600 last:border-r-0 shadow-sm",
                           column.width ? String(column.width) : "",
                           column.sortable
-                            ? "cursor-pointer hover:bg-gray-200 transition-colors duration-200 group"
+                            ? "cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200 group"
                             : "",
                         ].join(" ")}
                         onClick={() =>
@@ -308,7 +308,7 @@ export const DataTable = <T extends Record<string, unknown>>({
                         }
                       >
                         <div className="flex items-center space-x-2">
-                          <span className={isSorted ? "text-[#16a34a]" : ""}>
+                          <span className={isSorted ? "text-[#16a34a] dark:text-[#18D043]" : ""}>
                             {column.label}
                           </span>
                           {column.sortable && (
@@ -340,7 +340,7 @@ export const DataTable = <T extends Record<string, unknown>>({
                 </tr>
               </thead>
 
-              <tbody className="bg-white divide-y divide-gray-100">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
                 {tableRows}
               </tbody>
             </table>
@@ -349,22 +349,22 @@ export const DataTable = <T extends Record<string, unknown>>({
       </div>
 
       {/* Paginación */}
-      <div className="flex flex-col items-center justify-between px-6 py-4 space-y-4 bg-white border border-gray-200 shadow-sm sm:flex-row sm:space-y-0 rounded-xl">
+      <div className="flex flex-col items-center justify-between px-6 py-4 space-y-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm sm:flex-row sm:space-y-0 rounded-xl">
         <div className="flex items-center space-x-4">
-          <div className="px-3 py-2 text-sm text-gray-700 rounded-lg bg-gray-50">
+          <div className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300 rounded-lg bg-gray-50 dark:bg-gray-700">
             <span className="font-medium">
               {paginationInfo.start} - {paginationInfo.end}
             </span>
-            <span className="text-gray-500"> de </span>
+            <span className="text-gray-500 dark:text-gray-400"> de </span>
             <span className="font-medium">{paginationInfo.total}</span>
-            <span className="text-gray-500"> registros</span>
+            <span className="text-gray-500 dark:text-gray-400"> registros</span>
           </div>
 
           {totalPages > 1 && (
-            <div className="px-3 py-2 text-sm text-gray-500 rounded-lg bg-blue-50">
+            <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400 rounded-lg bg-blue-50 dark:bg-blue-900/30">
               Página{" "}
-              <span className="font-medium text-blue-600">{currentPage}</span>{" "}
-              de <span className="font-medium text-blue-600">{totalPages}</span>
+              <span className="font-medium text-blue-600 dark:text-blue-400">{currentPage}</span>{" "}
+              de <span className="font-medium text-blue-600 dark:text-blue-400">{totalPages}</span>
             </div>
           )}
         </div>
@@ -378,7 +378,7 @@ export const DataTable = <T extends Record<string, unknown>>({
               onClick={() => onPageChange(currentPage - 1)}
               disabled={currentPage === 1}
               icon={ChevronLeft}
-              className="border-gray-300 hover:border-[#18D043] hover:text-[#18D043] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              className="border-gray-300 dark:border-gray-600 hover:border-[#18D043] hover:text-[#18D043] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
               Anterior
             </Button>
@@ -397,26 +397,12 @@ export const DataTable = <T extends Record<string, unknown>>({
               disabled={currentPage === totalPages}
               icon={ChevronRight}
               iconPosition="right"
-              className="border-gray-300 hover:border-[#18D043] hover:text-[#18D043] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              className="border-gray-300 dark:border-gray-600 hover:border-[#18D043] hover:text-[#18D043] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
               Siguiente
             </Button>
           </div>
         )}
-      </div>
-
-      {/* Info pie */}
-      <div className="flex items-center justify-center">
-        <div className="flex items-center px-4 py-2 space-x-4 text-xs text-gray-500 rounded-full bg-gray-50">
-          <div className="flex items-center space-x-1">
-            <div className="w-2 h-2 bg-[#18D043] rounded-full"></div>
-            <span>Datos actualizados</span>
-          </div>
-          <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
-          <div className="flex items-center space-x-1">
-            <span>Mostrando resultados en tiempo real</span>
-          </div>
-        </div>
       </div>
     </div>
   );

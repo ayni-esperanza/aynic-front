@@ -1,5 +1,5 @@
 import React from "react";
-import { Users, Shield, UserCheck, UserX } from "lucide-react";
+import { Users, Shield, UserCheck } from "lucide-react";
 import { Card } from '../../../shared/components/ui/Card';
 import type { User } from "../types";
 
@@ -60,39 +60,39 @@ export const UserStats: React.FC<UserStatsProps> = ({ users, loading = false }) 
 
   const colorClasses = {
     blue: {
-      bg: "bg-blue-50",
-      border: "border-blue-200",
-      icon: "text-blue-600",
-      iconBg: "bg-blue-100",
-      text: "text-blue-900",
+      bg: "bg-blue-50 dark:bg-blue-900/20",
+      border: "border-blue-200 dark:border-blue-800",
+      icon: "text-blue-600 dark:text-blue-400",
+      iconBg: "bg-blue-100 dark:bg-blue-900/40",
+      text: "text-blue-900 dark:text-blue-100",
     },
     red: {
-      bg: "bg-red-50",
-      border: "border-red-200",
-      icon: "text-red-600",
-      iconBg: "bg-red-100",
-      text: "text-red-900",
+      bg: "bg-red-50 dark:bg-red-900/20",
+      border: "border-red-200 dark:border-red-800",
+      icon: "text-red-600 dark:text-red-400",
+      iconBg: "bg-red-100 dark:bg-red-900/40",
+      text: "text-red-900 dark:text-red-100",
     },
     purple: {
-      bg: "bg-purple-50",
-      border: "border-purple-200",
-      icon: "text-purple-600",
-      iconBg: "bg-purple-100",
-      text: "text-purple-900",
+      bg: "bg-purple-50 dark:bg-purple-900/20",
+      border: "border-purple-200 dark:border-purple-800",
+      icon: "text-purple-600 dark:text-purple-400",
+      iconBg: "bg-purple-100 dark:bg-purple-900/40",
+      text: "text-purple-900 dark:text-purple-100",
     },
     green: {
-      bg: "bg-green-50",
-      border: "border-green-200",
-      icon: "text-green-600",
-      iconBg: "bg-green-100",
-      text: "text-green-900",
+      bg: "bg-green-50 dark:bg-green-900/20",
+      border: "border-green-200 dark:border-green-800",
+      icon: "text-green-600 dark:text-green-400",
+      iconBg: "bg-green-100 dark:bg-green-900/40",
+      text: "text-green-900 dark:text-green-100",
     },
   };
 
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        {statCards.map((stat, index) => (
+        {statCards.map((_stat, index) => (
           <Card key={index} className="p-6">
             <div className="animate-pulse">
               <div className="flex items-center justify-between">
@@ -128,7 +128,7 @@ export const UserStats: React.FC<UserStatsProps> = ({ users, loading = false }) 
                 <div className={`text-3xl font-bold ${colors.text} mt-2`}>
                   {stat.value.toLocaleString()}
                 </div>
-                <div className="text-xs text-gray-600 mt-1">
+                <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                   {stat.description}
                 </div>
               </div>

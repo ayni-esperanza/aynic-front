@@ -18,9 +18,9 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   };
 
   const colorClasses = {
-    primary: "border-[#18D043] border-t-transparent",
-    white: "border-white border-t-transparent",
-    gray: "border-gray-300 border-t-transparent",
+    primary: "border-[#18D043] border-t-transparent dark:border-[#18D043] dark:border-t-transparent",
+    white: "border-white border-t-transparent dark:border-gray-200 dark:border-t-transparent",
+    gray: "border-gray-300 border-t-transparent dark:border-gray-600 dark:border-t-transparent",
   };
 
   return (

@@ -20,7 +20,7 @@ export const Input: React.FC<InputProps> = ({
   return (
     <div className="space-y-2">
       {label && (
-        <label className="block text-sm font-semibold text-gray-700">
+        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
           {label}
           {props.required && <span className="ml-1 text-red-500">*</span>}
         </label>
@@ -28,18 +28,20 @@ export const Input: React.FC<InputProps> = ({
       <div className="relative">
         {Icon && iconPosition === "left" && (
           <Icon
-            className="absolute text-gray-400 transform -translate-y-1/2 left-3 top-1/2"
+            className="absolute text-gray-400 dark:text-gray-500 transform -translate-y-1/2 left-3 top-1/2"
             size={20}
           />
         )}
         <input
           className={`
             w-full px-4 py-3 border-2 rounded-xl transition-all duration-200 font-medium
+            bg-white dark:bg-gray-800 text-gray-900 dark:text-white
             focus:outline-none focus:ring-2 focus:ring-[#18D043]/20 focus:border-[#18D043]
+            dark:focus:ring-[#18D043]/30 dark:focus:border-[#18D043]
             ${
               error
-                ? "border-red-300 focus:border-red-500 focus:ring-red-500/20"
-                : "border-gray-200 hover:border-gray-300"
+                ? "border-red-300 dark:border-red-600 focus:border-red-500 focus:ring-red-500/20"
+                : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
             }
             ${Icon && iconPosition === "left" ? "pl-11" : ""}
             ${Icon && iconPosition === "right" ? "pr-11" : ""}
@@ -49,19 +51,19 @@ export const Input: React.FC<InputProps> = ({
         />
         {Icon && iconPosition === "right" && (
           <Icon
-            className="absolute text-gray-400 transform -translate-y-1/2 right-3 top-1/2"
+            className="absolute text-gray-400 dark:text-gray-500 transform -translate-y-1/2 right-3 top-1/2"
             size={20}
           />
         )}
       </div>
       {error && (
-        <p className="flex items-center space-x-1 text-sm text-red-600">
+        <p className="flex items-center space-x-1 text-sm text-red-600 dark:text-red-400">
           <span className="text-red-500">⚠️</span>
           <span>{error}</span>
         </p>
       )}
       {helperText && !error && (
-        <p className="flex items-center space-x-1 text-sm text-gray-500">
+        <p className="flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
           <span className="text-gray-400">💡</span>
           <span>{helperText}</span>
         </p>

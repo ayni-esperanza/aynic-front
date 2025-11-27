@@ -64,60 +64,60 @@ const AlertMetricCard: React.FC<{
 }) => {
   const colorClasses = {
     blue: {
-      bg: "bg-gradient-to-br from-blue-50 to-blue-100",
-      border: "border-blue-200",
-      icon: "text-blue-600",
-      iconBg: "bg-blue-100",
-      text: "text-blue-900",
-      trend: "text-blue-600",
+      bg: "bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20",
+      border: "border-blue-200 dark:border-blue-800",
+      icon: "text-blue-600 dark:text-blue-400",
+      iconBg: "bg-blue-100 dark:bg-blue-900/30",
+      text: "text-blue-900 dark:text-blue-100",
+      trend: "text-blue-600 dark:text-blue-400",
     },
     green: {
-      bg: "bg-gradient-to-br from-green-50 to-emerald-100",
-      border: "border-green-200",
-      icon: "text-green-600",
-      iconBg: "bg-green-100",
-      text: "text-green-900",
-      trend: "text-green-600",
+      bg: "bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/20 dark:to-emerald-800/20",
+      border: "border-green-200 dark:border-green-800",
+      icon: "text-green-600 dark:text-green-400",
+      iconBg: "bg-green-100 dark:bg-green-900/30",
+      text: "text-green-900 dark:text-green-100",
+      trend: "text-green-600 dark:text-green-400",
     },
     yellow: {
-      bg: "bg-gradient-to-br from-yellow-50 to-amber-100",
-      border: "border-yellow-200",
-      icon: "text-yellow-600",
-      iconBg: "bg-yellow-100",
-      text: "text-yellow-900",
-      trend: "text-yellow-600",
+      bg: "bg-gradient-to-br from-yellow-50 to-amber-100 dark:from-yellow-900/20 dark:to-amber-800/20",
+      border: "border-yellow-200 dark:border-yellow-800",
+      icon: "text-yellow-600 dark:text-yellow-400",
+      iconBg: "bg-yellow-100 dark:bg-yellow-900/30",
+      text: "text-yellow-900 dark:text-yellow-100",
+      trend: "text-yellow-600 dark:text-yellow-400",
     },
     red: {
-      bg: "bg-gradient-to-br from-red-50 to-pink-100",
-      border: "border-red-200",
-      icon: "text-red-600",
-      iconBg: "bg-red-100",
-      text: "text-red-900",
-      trend: "text-red-600",
+      bg: "bg-gradient-to-br from-red-50 to-pink-100 dark:from-red-900/20 dark:to-pink-800/20",
+      border: "border-red-200 dark:border-red-800",
+      icon: "text-red-600 dark:text-red-400",
+      iconBg: "bg-red-100 dark:bg-red-900/30",
+      text: "text-red-900 dark:text-red-100",
+      trend: "text-red-600 dark:text-red-400",
     },
     purple: {
-      bg: "bg-gradient-to-br from-purple-50 to-violet-100",
-      border: "border-purple-200",
-      icon: "text-purple-600",
-      iconBg: "bg-purple-100",
-      text: "text-purple-900",
-      trend: "text-purple-600",
+      bg: "bg-gradient-to-br from-purple-50 to-violet-100 dark:from-purple-900/20 dark:to-violet-800/20",
+      border: "border-purple-200 dark:border-purple-800",
+      icon: "text-purple-600 dark:text-purple-400",
+      iconBg: "bg-purple-100 dark:bg-purple-900/30",
+      text: "text-purple-900 dark:text-purple-100",
+      trend: "text-purple-600 dark:text-purple-400",
     },
     indigo: {
-      bg: "bg-gradient-to-br from-indigo-50 to-blue-100",
-      border: "border-indigo-200",
-      icon: "text-indigo-600",
-      iconBg: "bg-indigo-100",
-      text: "text-indigo-900",
-      trend: "text-indigo-600",
+      bg: "bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-indigo-900/20 dark:to-blue-800/20",
+      border: "border-indigo-200 dark:border-indigo-800",
+      icon: "text-indigo-600 dark:text-indigo-400",
+      iconBg: "bg-indigo-100 dark:bg-indigo-900/30",
+      text: "text-indigo-900 dark:text-indigo-100",
+      trend: "text-indigo-600 dark:text-indigo-400",
     },
     orange: {
-      bg: "bg-gradient-to-br from-orange-50 to-amber-100",
-      border: "border-orange-200",
-      icon: "text-orange-600",
-      iconBg: "bg-orange-100",
-      text: "text-orange-900",
-      trend: "text-orange-600",
+      bg: "bg-gradient-to-br from-orange-50 to-amber-100 dark:from-orange-900/20 dark:to-amber-800/20",
+      border: "border-orange-200 dark:border-orange-800",
+      icon: "text-orange-600 dark:text-orange-400",
+      iconBg: "bg-orange-100 dark:bg-orange-900/30",
+      text: "text-orange-900 dark:text-orange-100",
+      trend: "text-orange-600 dark:text-orange-400",
     },
   };
 
@@ -143,7 +143,7 @@ const AlertMetricCard: React.FC<{
                 {typeof value === "number" ? value.toLocaleString() : value}
               </div>
               {description && (
-                <div className="text-[10px] text-gray-600">{description}</div>
+                <div className="text-[10px] text-gray-600 dark:text-gray-400">{description}</div>
               )}
               {trend && (
                 <div className="flex items-center mt-0.5">
@@ -186,30 +186,30 @@ const AlertItem: React.FC<{
       low: {
         variant: "secondary" as const,
         icon: CheckCircle,
-        color: "text-gray-600",
-        bgColor: "bg-gray-50",
-        borderColor: "border-gray-200",
+        color: "text-gray-600 dark:text-gray-400",
+        bgColor: "bg-gray-50 dark:bg-gray-800",
+        borderColor: "border-gray-200 dark:border-gray-700",
       },
       medium: {
         variant: "primary" as const,
         icon: Clock,
-        color: "text-blue-600",
-        bgColor: "bg-blue-50",
-        borderColor: "border-blue-200",
+        color: "text-blue-600 dark:text-blue-400",
+        bgColor: "bg-blue-50 dark:bg-blue-900/20",
+        borderColor: "border-blue-200 dark:border-blue-800",
       },
       high: {
         variant: "warning" as const,
         icon: AlertTriangle,
-        color: "text-yellow-600",
-        bgColor: "bg-yellow-50",
-        borderColor: "border-yellow-200",
+        color: "text-yellow-600 dark:text-yellow-400",
+        bgColor: "bg-yellow-50 dark:bg-yellow-900/20",
+        borderColor: "border-yellow-200 dark:border-yellow-800",
       },
       critical: {
         variant: "danger" as const,
         icon: AlertCircle,
-        color: "text-red-600",
-        bgColor: "bg-red-50",
-        borderColor: "border-red-200",
+        color: "text-red-600 dark:text-red-400",
+        bgColor: "bg-red-50 dark:bg-red-900/20",
+        borderColor: "border-red-200 dark:border-red-800",
       },
     };
     return configs[priority];
@@ -261,19 +261,19 @@ const AlertItem: React.FC<{
             </div>
 
             {alert.record && (
-              <div className="p-2 mb-2 bg-white border border-gray-100 rounded-lg">
+              <div className="p-2 mb-2 bg-white dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-lg">
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="flex items-center space-x-1">
-                    <Database size={12} className="text-gray-400" />
-                    <span className="text-gray-600">Código:</span>
-                    <span className="font-medium text-gray-900">
+                    <Database size={12} className="text-gray-400 dark:text-gray-500" />
+                    <span className="text-gray-600 dark:text-gray-400">Código:</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
                       {alert.record.codigo}
                     </span>
                   </div>
                   <div className="flex items-center space-x-1">
-                    <Users size={12} className="text-gray-400" />
-                    <span className="text-gray-600">Cliente:</span>
-                    <span className="font-medium text-gray-900">
+                    <Users size={12} className="text-gray-400 dark:text-gray-500" />
+                    <span className="text-gray-600 dark:text-gray-400">Cliente:</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
                       {alert.record.cliente}
                     </span>
                   </div>
@@ -282,7 +282,7 @@ const AlertItem: React.FC<{
             )}
 
             <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-gray-500 dark:text-gray-400">
                 {formatDateTime(alert.fecha_creada)}
               </span>
 
@@ -295,7 +295,7 @@ const AlertItem: React.FC<{
                       e.stopPropagation();
                       onMarkAsRead(alert.id);
                     }}
-                    className="text-xs hover:bg-green-50 hover:text-green-700"
+                    className="text-xs hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-700 dark:hover:text-green-400"
                   >
                     <Check size={12} className="mr-1" />
                     Marcar leída
@@ -310,7 +310,7 @@ const AlertItem: React.FC<{
                       e.stopPropagation();
                       onViewRecord(alert.record!.id);
                     }}
-                    className="text-xs hover:bg-blue-50 hover:text-blue-700"
+                    className="text-xs hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-400"
                   >
                     <ExternalLink size={12} className="mr-1" />
                     Ver registro
@@ -540,13 +540,13 @@ export const Dashboard: React.FC = () => {
             <BellRing className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
               Dashboard de Control
             </h1>
-            <div className="flex items-center space-x-2 text-gray-600">
+            <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
               <span>Monitoreo en tiempo real de alertas y registros</span>
               {alertStats && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#18D043]/10 text-[#16a34a]">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#18D043]/10 dark:bg-[#18D043]/20 text-[#16a34a] dark:text-[#18D043]">
                   <span className="inline-block w-2 h-2 mr-1 bg-[#18D043] rounded-full animate-pulse"></span>
                   {alertStats.noLeidas} alertas activas
                 </span>
@@ -561,7 +561,7 @@ export const Dashboard: React.FC = () => {
             variant="outline"
             icon={RefreshCw}
             loading={refreshing}
-            className="border-gray-300 hover:bg-gray-50"
+            className="border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             Actualizar
           </Button>
@@ -569,7 +569,7 @@ export const Dashboard: React.FC = () => {
             onClick={handleGenerateAlerts}
             variant="outline"
             icon={Zap}
-            className="border-[#18D043] text-[#18D043] hover:bg-[#18D043] hover:text-white"
+            className="border-[#18D043] text-[#18D043] hover:bg-[#18D043] hover:text-white dark:border-[#18D043] dark:text-[#18D043]"
           >
             Generar Alertas
           </Button>
@@ -625,12 +625,12 @@ export const Dashboard: React.FC = () => {
         <Card>
           <div className="p-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="flex items-center text-lg font-semibold text-gray-900">
-                <PieChart className="w-5 h-5 mr-2 text-purple-600" />
+              <h3 className="flex items-center text-lg font-semibold text-gray-900 dark:text-white">
+                <PieChart className="w-5 h-5 mr-2 text-purple-600 dark:text-purple-400" />
                 Distribución por Tipo
               </h3>
               {alertStats && (
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-gray-500 dark:text-gray-400">
                   Total: {alertStats.total}
                 </span>
               )}
@@ -681,7 +681,7 @@ export const Dashboard: React.FC = () => {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-medium text-gray-700 capitalize">
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">
                             {item.tipo.replace("_", " ")}
                           </span>
                           <span
@@ -703,8 +703,8 @@ export const Dashboard: React.FC = () => {
 
                 {(!alertStats?.porTipo || alertStats.porTipo.length === 0) && (
                   <div className="flex flex-col items-center justify-center h-24 text-center">
-                    <Bell className="w-7 h-7 mb-2 text-gray-300" />
-                    <p className="text-sm text-gray-500">
+                    <Bell className="w-7 h-7 mb-2 text-gray-300 dark:text-gray-600" />
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       No hay alertas por tipo
                     </p>
                   </div>
@@ -718,12 +718,12 @@ export const Dashboard: React.FC = () => {
         <Card>
           <div className="p-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="flex items-center text-lg font-semibold text-gray-900">
-                <BarChart3 className="w-5 h-5 mr-2 text-blue-600" />
+              <h3 className="flex items-center text-lg font-semibold text-gray-900 dark:text-white">
+                <BarChart3 className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
                 Distribución por Prioridad
               </h3>
               {alertStats && (
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-gray-500 dark:text-gray-400">
                   No leídas: {alertStats.noLeidas}
                 </span>
               )}
@@ -779,7 +779,7 @@ export const Dashboard: React.FC = () => {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-medium text-gray-700 capitalize">
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">
                             {item.prioridad}
                           </span>
                           <span
@@ -788,7 +788,7 @@ export const Dashboard: React.FC = () => {
                             {item.count} ({percentage}%)
                           </span>
                         </div>
-                        <div className="w-full h-2 bg-gray-200 rounded-full">
+                        <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
                           <div
                             className={`h-2 rounded-full ${color.bg} transition-all duration-300`}
                             style={{ width: `${percentage}%` }}
@@ -802,8 +802,8 @@ export const Dashboard: React.FC = () => {
                 {(!alertStats?.porPrioridad ||
                   alertStats.porPrioridad.length === 0) && (
                   <div className="flex flex-col items-center justify-center h-24 text-center">
-                    <BarChart3 className="w-7 h-7 mb-2 text-gray-300" />
-                    <p className="text-sm text-gray-500">
+                    <BarChart3 className="w-7 h-7 mb-2 text-gray-300 dark:text-gray-600" />
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       No hay alertas por prioridad
                     </p>
                   </div>
@@ -816,11 +816,11 @@ export const Dashboard: React.FC = () => {
 
       {/* Alertas Críticas */}
       {alertStats?.criticas && alertStats.criticas.length > 0 && (
-        <Card className="border-red-200 bg-gradient-to-r from-red-50 to-pink-50">
+        <Card className="border-red-200 dark:border-red-800 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20">
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="flex items-center text-lg font-semibold text-red-900">
-                <AlertTriangle className="w-5 h-5 mr-2 text-red-600" />
+              <h3 className="flex items-center text-lg font-semibold text-red-900 dark:text-red-100">
+                <AlertTriangle className="w-5 h-5 mr-2 text-red-600 dark:text-red-400" />
                 Alertas Críticas Activas
                 <Badge variant="danger" className="ml-2">
                   {alertStats.criticas.length}
@@ -830,7 +830,7 @@ export const Dashboard: React.FC = () => {
                 size="sm"
                 variant="outline"
                 onClick={handleMarkAllAsRead}
-                className="text-red-600 border-red-300 hover:bg-red-50"
+                className="text-red-600 dark:text-red-400 border-red-300 dark:border-red-700 hover:bg-red-50 dark:hover:bg-red-900/30"
               >
                 Marcar todas como leídas
               </Button>
@@ -852,7 +852,7 @@ export const Dashboard: React.FC = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-red-600 hover:text-red-700"
+                    className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
                   >
                     Ver todas las alertas críticas ({alertStats.criticas.length}
                     )
@@ -869,7 +869,7 @@ export const Dashboard: React.FC = () => {
       <Card>
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="flex items-center text-xl font-semibold text-gray-900">
+            <h3 className="flex items-center text-xl font-semibold text-gray-900 dark:text-white">
               <Bell className="w-6 h-6 mr-2 text-[#18D043]" />
               Centro de Gestión de Alertas
               {alertStats && (
@@ -885,7 +885,7 @@ export const Dashboard: React.FC = () => {
                 variant="ghost"
                 onClick={handleMarkAllAsRead}
                 disabled={!alertStats?.noLeidas}
-                className="text-gray-600 hover:text-gray-800"
+                className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
               >
                 <Check size={16} className="mr-1" />
                 Marcar todas leídas
@@ -894,10 +894,10 @@ export const Dashboard: React.FC = () => {
           </div>
 
           {/* Filtros de Alertas */}
-          <div className="flex flex-wrap items-center gap-4 p-4 mb-6 rounded-lg bg-gray-50">
+          <div className="flex flex-wrap items-center gap-4 p-4 mb-6 rounded-lg bg-gray-50 dark:bg-gray-800">
             <div className="flex items-center space-x-2">
-              <Filter size={16} className="text-gray-500" />
-              <span className="text-sm font-medium text-gray-700">
+              <Filter size={16} className="text-gray-500 dark:text-gray-400" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Filtros:
               </span>
             </div>
@@ -962,7 +962,7 @@ export const Dashboard: React.FC = () => {
                 onClick={() =>
                   setAlertFilters({ tipo: "", prioridad: "", leida: "" })
                 }
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
               >
                 <X size={16} className="mr-1" />
                 Limpiar filtros
@@ -974,26 +974,26 @@ export const Dashboard: React.FC = () => {
           {(alertFilters.tipo ||
             alertFilters.prioridad ||
             alertFilters.leida !== "") && (
-            <div className="flex items-center justify-between p-3 mb-4 border border-blue-200 rounded-lg bg-blue-50">
+            <div className="flex items-center justify-between p-3 mb-4 border border-blue-200 dark:border-blue-800 rounded-lg bg-blue-50 dark:bg-blue-900/20">
               <div className="flex items-center space-x-2">
-                <Activity size={16} className="text-blue-600" />
-                <span className="text-sm font-medium text-blue-800">
+                <Activity size={16} className="text-blue-600 dark:text-blue-400" />
+                <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
                   Filtros aplicados: {filteredAlerts.length} alertas encontradas
                 </span>
               </div>
-              <div className="flex items-center space-x-4 text-xs text-blue-600">
+              <div className="flex items-center space-x-4 text-xs text-blue-600 dark:text-blue-400">
                 {alertFilters.tipo && (
-                  <span className="px-2 py-1 bg-white rounded-md">
+                  <span className="px-2 py-1 bg-white dark:bg-gray-700 rounded-md">
                     Tipo: {alertFilters.tipo.replace("_", " ")}
                   </span>
                 )}
                 {alertFilters.prioridad && (
-                  <span className="px-2 py-1 bg-white rounded-md">
+                  <span className="px-2 py-1 bg-white dark:bg-gray-700 rounded-md">
                     Prioridad: {alertFilters.prioridad}
                   </span>
                 )}
                 {alertFilters.leida !== "" && (
-                  <span className="px-2 py-1 bg-white rounded-md">
+                  <span className="px-2 py-1 bg-white dark:bg-gray-700 rounded-md">
                     Estado: {alertFilters.leida ? "Leídas" : "No leídas"}
                   </span>
                 )}
@@ -1005,17 +1005,17 @@ export const Dashboard: React.FC = () => {
           {loading ? (
             <div className="flex items-center justify-center h-48">
               <LoadingSpinner size="lg" />
-              <span className="ml-3 text-gray-600">Cargando alertas...</span>
+              <span className="ml-3 text-gray-600 dark:text-gray-400">Cargando alertas...</span>
             </div>
           ) : filteredAlerts.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-48 text-center">
-              <div className="flex items-center justify-center w-16 h-16 mb-4 bg-gray-100 rounded-full">
-                <Bell className="w-8 h-8 text-gray-400" />
+              <div className="flex items-center justify-center w-16 h-16 mb-4 bg-gray-100 dark:bg-gray-800 rounded-full">
+                <Bell className="w-8 h-8 text-gray-400 dark:text-gray-500" />
               </div>
-              <h4 className="mb-2 text-lg font-medium text-gray-900">
+              <h4 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">
                 {alertStats?.total === 0 ? "No hay alertas" : "Sin resultados"}
               </h4>
-              <p className="max-w-sm text-gray-600">
+              <p className="max-w-sm text-gray-600 dark:text-gray-400">
                 {alertStats?.total === 0
                   ? 'No se han generado alertas todavía. Haz clic en "Generar Alertas" para crear nuevas alertas.'
                   : "No hay alertas que coincidan con los filtros seleccionados. Prueba ajustando los criterios de búsqueda."}
@@ -1036,32 +1036,32 @@ export const Dashboard: React.FC = () => {
             <>
               {/* Resumen de alertas filtradas */}
               <div className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-4">
-                <div className="p-3 text-center border border-gray-200 rounded-lg bg-gray-50">
-                  <div className="text-lg font-bold text-gray-900">
+                <div className="p-3 text-center border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800">
+                  <div className="text-lg font-bold text-gray-900 dark:text-white">
                     {filteredAlerts.length}
                   </div>
-                  <div className="text-xs text-gray-600">Total mostradas</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400">Total mostradas</div>
                 </div>
-                <div className="p-3 text-center border border-red-200 rounded-lg bg-red-50">
-                  <div className="text-lg font-bold text-red-900">
+                <div className="p-3 text-center border border-red-200 dark:border-red-800 rounded-lg bg-red-50 dark:bg-red-900/20">
+                  <div className="text-lg font-bold text-red-900 dark:text-red-100">
                     {
                       filteredAlerts.filter((a) => a.prioridad === "critical")
                         .length
                     }
                   </div>
-                  <div className="text-xs text-red-600">Críticas</div>
+                  <div className="text-xs text-red-600 dark:text-red-400">Críticas</div>
                 </div>
-                <div className="p-3 text-center border border-orange-200 rounded-lg bg-orange-50">
-                  <div className="text-lg font-bold text-orange-900">
+                <div className="p-3 text-center border border-orange-200 dark:border-orange-800 rounded-lg bg-orange-50 dark:bg-orange-900/20">
+                  <div className="text-lg font-bold text-orange-900 dark:text-orange-100">
                     {filteredAlerts.filter((a) => !a.leida).length}
                   </div>
-                  <div className="text-xs text-orange-600">No leídas</div>
+                  <div className="text-xs text-orange-600 dark:text-orange-400">No leídas</div>
                 </div>
-                <div className="p-3 text-center border border-green-200 rounded-lg bg-green-50">
-                  <div className="text-lg font-bold text-green-900">
+                <div className="p-3 text-center border border-green-200 dark:border-green-800 rounded-lg bg-green-50 dark:bg-green-900/20">
+                  <div className="text-lg font-bold text-green-900 dark:text-green-100">
                     {filteredAlerts.filter((a) => a.leida).length}
                   </div>
-                  <div className="text-xs text-green-600">Procesadas</div>
+                  <div className="text-xs text-green-600 dark:text-green-400">Procesadas</div>
                 </div>
               </div>
 
@@ -1079,8 +1079,8 @@ export const Dashboard: React.FC = () => {
 
               {/* Paginación */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-between pt-6 mt-6 border-t border-gray-200">
-                  <div className="text-sm text-gray-600">
+                <div className="flex items-center justify-between pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
                     Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, filteredAlerts.length)} de {filteredAlerts.length} alertas
                   </div>
                   
@@ -1126,8 +1126,8 @@ export const Dashboard: React.FC = () => {
 
               {/* Acciones masivas */}
               {filteredAlerts.some((alert) => !alert.leida) && (
-                <div className="flex items-center justify-between pt-4 mt-6 border-t border-gray-200">
-                  <div className="text-sm text-gray-600">
+                <div className="flex items-center justify-between pt-4 mt-6 border-t border-gray-200 dark:border-gray-700">
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
                     {filteredAlerts.filter((a) => !a.leida).length} alertas sin
                     leer en la vista actual
                   </div>
@@ -1136,7 +1136,7 @@ export const Dashboard: React.FC = () => {
                       size="sm"
                       variant="outline"
                       onClick={handleMarkAllAsRead}
-                      className="text-green-600 border-green-300 hover:bg-green-50"
+                      className="text-green-600 dark:text-green-400 border-green-300 dark:border-green-700 hover:bg-green-50 dark:hover:bg-green-900/30"
                     >
                       <Check size={16} className="mr-1" />
                       Marcar todas como leídas
@@ -1145,7 +1145,7 @@ export const Dashboard: React.FC = () => {
                       size="sm"
                       variant="outline"
                       onClick={() => navigate("/registro")}
-                      className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                      className="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/30"
                     >
                       <Database size={16} className="mr-1" />
                       Ver registros

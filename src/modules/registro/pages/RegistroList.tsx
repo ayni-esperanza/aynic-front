@@ -470,7 +470,7 @@ export const RegistroList: React.FC = () => {
           <span className="text-3xl">🔍</span>
         </div>
         <div className="max-w-md text-center">
-          <h3 className="mb-3 text-xl font-semibold text-gray-900">
+          <h3 className="mb-3 text-xl font-semibold text-gray-900 dark:text-white">
             No se encontró ningún registro
           </h3>
           {hasActiveFilters ? (
@@ -545,7 +545,7 @@ export const RegistroList: React.FC = () => {
               )}
             </div>
             <div>
-              <div className="font-semibold text-gray-900">{String(value)}</div>
+              <div className="font-semibold text-gray-900 dark:text-white">{String(value)}</div>
               {recordImages.has(registro.id) && (
                 <div className="text-xs text-orange-600">Con imagen</div>
               )}
@@ -621,7 +621,7 @@ export const RegistroList: React.FC = () => {
 
           return (
             <div className="text-sm">
-              <div className="font-medium text-gray-900">
+              <div className="font-medium text-gray-900 dark:text-white">
                 {formatDate(value as Date)}
               </div>
               <div className="text-xs text-gray-500">Instalado</div>
@@ -758,7 +758,7 @@ export const RegistroList: React.FC = () => {
           return (
             <div className="text-sm">
               <div
-                className={`font-medium ${isVencido ? "text-red-600" : "text-gray-900"
+                className={`font-medium ${isVencido ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-white"
                   }`}
               >
                 {formatDate(fecha)}
@@ -878,7 +878,7 @@ export const RegistroList: React.FC = () => {
                     </span>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">
+                    <h3 className="font-semibold text-gray-900 dark:text-white">
                       {registro.codigo}
                     </h3>
                     <p className="text-sm text-gray-500">{registro.cliente}</p>
@@ -896,7 +896,7 @@ export const RegistroList: React.FC = () => {
               <div className="mb-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-500">Empresa:</span>
-                  <span className="text-sm font-medium text-gray-900">
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">
                     {registro.cliente}
                   </span>
                 </div>
@@ -916,7 +916,7 @@ export const RegistroList: React.FC = () => {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-500">Equipo:</span>
-                  <span className="text-sm font-medium text-gray-900">
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">
                     {registro.equipo}
                   </span>
                 </div>
@@ -943,7 +943,7 @@ export const RegistroList: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-500">Ubicación:</span>
                   <span
-                    className="text-sm text-gray-900 truncate max-w-32"
+                    className="text-sm text-gray-900 dark:text-white truncate max-w-32"
                     title={registro.ubicacion}
                   >
                     {registro.ubicacion}
@@ -1005,7 +1005,7 @@ export const RegistroList: React.FC = () => {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="mb-4 text-red-600">Error</div>
-          <p className="font-medium text-gray-900">Error al cargar registros</p>
+          <p className="font-medium text-gray-900 dark:text-white">Error al cargar registros</p>
           <p className="mb-4 text-gray-600">{apiError}</p>
           <Button onClick={refreshDataCallback} icon={RefreshCw}>
             Reintentar
@@ -1024,12 +1024,12 @@ export const RegistroList: React.FC = () => {
             <span className="text-xl text-white">📊</span>
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
               Gestión de Registros
             </h1>
-            <p className="flex items-center space-x-2 text-gray-600">
+            <p className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
               <span>Administra todos los registros del sistema</span>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#18D043]/10 text-[#16a34a]">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#18D043]/10 dark:bg-[#18D043]/20 text-[#16a34a] dark:text-[#18D043]">
                 {pagination.totalItems} registros
               </span>
             </p>
@@ -1041,7 +1041,7 @@ export const RegistroList: React.FC = () => {
             variant="outline"
             icon={RefreshCw}
             loading={loading}
-            className="border-gray-300 hover:bg-gray-50"
+            className="border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             Actualizar
           </Button>
@@ -1052,7 +1052,7 @@ export const RegistroList: React.FC = () => {
             className={
               showReports
                 ? "bg-orange-500 text-white border-orange-500"
-                : "border-orange-300 text-orange-600 hover:bg-orange-50"
+                : "border-orange-300 dark:border-orange-700 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30"
             }
           >
             Reportes
@@ -1069,11 +1069,11 @@ export const RegistroList: React.FC = () => {
 
       {/* Estadísticas rápidas */}
       <div className="grid grid-cols-5 gap-3">
-        <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
+        <Card className="border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-800/40">
           <div className="flex items-center justify-between p-3">
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-blue-600 truncate">Total</p>
-              <div className="text-xl font-bold text-blue-900 flex items-center">
+              <p className="text-xs font-medium text-blue-600 dark:text-blue-400 truncate">Total</p>
+              <div className="text-xl font-bold text-blue-900 dark:text-blue-100 flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
@@ -1085,11 +1085,11 @@ export const RegistroList: React.FC = () => {
           </div>
         </Card>
 
-        <Card className="border-green-200 bg-gradient-to-br from-green-50 to-green-100">
+        <Card className="border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/40 dark:to-green-800/40">
           <div className="flex items-center justify-between p-3">
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-green-600 truncate">Activos</p>
-              <div className="text-xl font-bold text-green-900 flex items-center">
+              <p className="text-xs font-medium text-green-600 dark:text-green-400 truncate">Activos</p>
+              <div className="text-xl font-bold text-green-900 dark:text-green-100 flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
@@ -1101,11 +1101,11 @@ export const RegistroList: React.FC = () => {
           </div>
         </Card>
 
-        <Card className="border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100">
+        <Card className="border-yellow-200 dark:border-yellow-800 bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/40 dark:to-yellow-800/40">
           <div className="flex items-center justify-between p-3">
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-yellow-600 truncate">Por Vencer</p>
-              <div className="text-xl font-bold text-yellow-900 flex items-center">
+              <p className="text-xs font-medium text-yellow-600 dark:text-yellow-400 truncate">Por Vencer</p>
+              <div className="text-xl font-bold text-yellow-900 dark:text-yellow-100 flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
@@ -1117,11 +1117,11 @@ export const RegistroList: React.FC = () => {
           </div>
         </Card>
 
-        <Card className="border-red-200 bg-gradient-to-br from-red-50 to-red-100">
+        <Card className="border-red-200 dark:border-red-800 bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/40 dark:to-red-800/40">
           <div className="flex items-center justify-between p-3">
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-red-600 truncate">Vencidos</p>
-              <div className="text-xl font-bold text-red-900 flex items-center">
+              <p className="text-xs font-medium text-red-600 dark:text-red-400 truncate">Vencidos</p>
+              <div className="text-xl font-bold text-red-900 dark:text-red-100 flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
@@ -1133,13 +1133,13 @@ export const RegistroList: React.FC = () => {
           </div>
         </Card>
 
-        <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100">
+        <Card className="border-orange-200 dark:border-orange-800 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/40 dark:to-orange-800/40">
           <div className="flex items-center justify-between p-3">
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-orange-600 truncate">
+              <p className="text-xs font-medium text-orange-600 dark:text-orange-400 truncate">
                 Mantenimiento
               </p>
-              <div className="text-xl font-bold text-orange-900 flex items-center">
+              <div className="text-xl font-bold text-orange-900 dark:text-orange-100 flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
@@ -1156,7 +1156,7 @@ export const RegistroList: React.FC = () => {
       {showReports && <ReportsSection />}
 
       {/* Controles y filtros */}
-      <Card className="border border-gray-200 shadow-sm bg-gradient-to-r from-gray-50 to-white">
+      <Card className="border border-gray-200 dark:border-gray-700 shadow-sm bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-800">
         <div className="p-4">
           {/* Top bar: filtros + botones en una sola fila */}
           <div className="flex items-center gap-2">
@@ -1173,7 +1173,7 @@ export const RegistroList: React.FC = () => {
                   placeholder="Código..."
                   value={searchTerm}
                   onChange={handleTextFilterChange("codigo", setSearchTerm)}
-                  className="h-9 pl-8 text-sm border-gray-300 focus:border-[#18D043] focus:ring-[#18D043]/20"
+                  className="h-9 pl-8 text-sm border-gray-300 dark:border-gray-600 focus:border-[#18D043] focus:ring-[#18D043]/20"
                 />
               </div>
             </div>
@@ -1194,7 +1194,7 @@ export const RegistroList: React.FC = () => {
                     "codigo_placa",
                     setCodigoPlacaFilter
                   )}
-                  className="h-9 pl-8 text-sm border-gray-300 focus:border-[#18D043] focus:ring-[#18D043]/20"
+                  className="h-9 pl-8 text-sm border-gray-300 dark:border-gray-600 focus:border-[#18D043] focus:ring-[#18D043]/20"
                 />
               </div>
             </div>
@@ -1215,7 +1215,7 @@ export const RegistroList: React.FC = () => {
                     "empresa",
                     setEmpresaFilter
                   )}
-                  className="h-9 pl-8 text-sm border-gray-300 focus:border-[#18D043] focus:ring-[#18D043]/20"
+                  className="h-9 pl-8 text-sm border-gray-300 dark:border-gray-600 focus:border-[#18D043] focus:ring-[#18D043]/20"
                 />
               </div>
             </div>
@@ -1233,7 +1233,7 @@ export const RegistroList: React.FC = () => {
                   placeholder="Área..."
                   value={areaFilter}
                   onChange={handleTextFilterChange("area", setAreaFilter)}
-                  className="h-9 pl-8 text-sm border-gray-300 focus:border-[#18D043] focus:ring-[#18D043]/20"
+                  className="h-9 pl-8 text-sm border-gray-300 dark:border-gray-600 focus:border-[#18D043] focus:ring-[#18D043]/20"
                 />
               </div>
             </div>
@@ -1249,18 +1249,18 @@ export const RegistroList: React.FC = () => {
                 className={
                   showFilters
                     ? "bg-[#18D043] text-white border-[#18D043] h-9"
-                    : "border-gray-300 h-9"
+                    : "border-gray-300 dark:border-gray-600 h-9"
                 }
               >
                 Filtros
               </Button>
-              <div className="flex p-0.5 bg-white border border-gray-300 rounded-lg">
+              <div className="flex p-0.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg">
                 <button
                   type="button"
                   onClick={() => setViewMode("table")}
                   className={`p-1.5 rounded ${viewMode === "table"
                     ? "bg-[#18D043] text-white"
-                    : "text-gray-600 hover:bg-gray-100"
+                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                     }`}
                   aria-pressed={viewMode === "table"}
                   aria-label="Vista tabla"
@@ -1272,7 +1272,7 @@ export const RegistroList: React.FC = () => {
                   onClick={() => setViewMode("grid")}
                   className={`p-1.5 rounded ${viewMode === "grid"
                     ? "bg-[#18D043] text-white"
-                    : "text-gray-600 hover:bg-gray-100"
+                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                     }`}
                   aria-pressed={viewMode === "grid"}
                   aria-label="Vista tarjetas"
@@ -1285,7 +1285,7 @@ export const RegistroList: React.FC = () => {
           {/* Indicador de filtros activos */}
           {Object.values(appliedFilters).some(Boolean) && (
             <div className="flex flex-wrap items-center gap-2 mt-3">
-              <span className="mr-1 text-xs font-semibold text-gray-600">
+              <span className="mr-1 text-xs font-semibold text-gray-600 dark:text-gray-300">
                 Filtros activos:
               </span>
 
@@ -1330,12 +1330,12 @@ export const RegistroList: React.FC = () => {
                       // aplica removiendo solo ese filtro y vuelve a página 1
                       fetchWith({ [key]: undefined } as any, 1);
                     }}
-                    className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                    className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50"
                     title={`${label}: ${val}`}
                   >
                     <span className="font-medium">{label}:</span>
                     <span className="truncate max-w-[140px]">{display}</span>
-                    <span className="ml-1 rounded-full bg-emerald-600/10 px-1.5">
+                    <span className="ml-1 rounded-full bg-emerald-600/10 dark:bg-emerald-400/20 px-1.5">
                       ✕
                     </span>
                   </button>
@@ -1345,7 +1345,7 @@ export const RegistroList: React.FC = () => {
           )}
           {/* Panel de filtros */}
           {showFilters && (
-            <div className="pt-4 mt-4 border-t border-gray-200">
+            <div className="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -1367,7 +1367,7 @@ export const RegistroList: React.FC = () => {
               >
                 {/* Estado */}
                 <div className="md:col-span-3">
-                  <label className="block mb-1 text-xs font-semibold text-gray-700">
+                  <label className="block mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
                     Estado
                   </label>
                   <Select
@@ -1386,7 +1386,7 @@ export const RegistroList: React.FC = () => {
 
                 {/* Equipo */}
                 <div className="md:col-span-4">
-                  <label className="block mb-1 text-xs font-semibold text-gray-700">
+                  <label className="block mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
                     Equipo
                   </label>
                   <Input
@@ -1396,13 +1396,13 @@ export const RegistroList: React.FC = () => {
                       "equipo",
                       setEquipoFilter
                     )}
-                    className="h-10 border-gray-300"
+                    className="h-10 border-gray-300 dark:border-gray-600"
                   />
                 </div>
 
                 {/* Ubicación */}
                 <div className="md:col-span-4">
-                  <label className="block mb-1 text-xs font-semibold text-gray-700">
+                  <label className="block mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
                     Ubicación
                   </label>
                   <Input
@@ -1412,13 +1412,13 @@ export const RegistroList: React.FC = () => {
                       "ubicacion",
                       setUbicacionFilter
                     )}
-                    className="h-10 border-gray-300"
+                    className="h-10 border-gray-300 dark:border-gray-600"
                   />
                 </div>
 
                 {/* Tipo de Anclaje */}
                 <div className="md:col-span-4">
-                  <label className="block mb-1 text-xs font-semibold text-gray-700">
+                  <label className="block mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
                     Tipo de Anclaje
                   </label>
                   <Select
@@ -1439,27 +1439,27 @@ export const RegistroList: React.FC = () => {
 
                 {/* Fechas */}
                 <div className="md:col-span-4">
-                  <label className="block mb-1 text-xs font-semibold text-gray-700">
+                  <label className="block mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
                     Fecha instalación (desde)
                   </label>
                   <Input
                     type="date"
                     value={installDateFrom}
                     onChange={(e) => setInstallDateFrom(e.target.value)}
-                    className="h-10 border-gray-300"
+                    className="h-10 border-gray-300 dark:border-gray-600"
                     max={installDateTo || undefined}
                   />
                 </div>
 
                 <div className="md:col-span-4">
-                  <label className="block mb-1 text-xs font-semibold text-gray-700">
+                  <label className="block mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
                     Fecha instalación (hasta)
                   </label>
                   <Input
                     type="date"
                     value={installDateTo}
                     onChange={(e) => setInstallDateTo(e.target.value)}
-                    className="h-10 border-gray-300"
+                    className="h-10 border-gray-300 dark:border-gray-600"
                     min={installDateFrom || undefined}
                   />
                 </div>
@@ -1484,7 +1484,7 @@ export const RegistroList: React.FC = () => {
                       <Button
                         type="button"
                         variant="ghost"
-                        className="h-10 text-gray-600 hover:text-gray-800"
+                        className="h-10 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
                         onClick={async () => {
                           setSearchTerm("");
                           setCodigoPlacaFilter("");
@@ -1518,7 +1518,7 @@ export const RegistroList: React.FC = () => {
       </Card>
 
       {/* Contenido principal */}
-      <Card className="bg-white border-0 shadow-lg">
+      <Card className="border-0 shadow-lg">
         {viewMode === "table" ? (
           <div className="p-6">
             {loading && registros.length === 0 ? (

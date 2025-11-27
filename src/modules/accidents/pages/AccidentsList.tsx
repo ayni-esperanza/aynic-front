@@ -255,7 +255,7 @@ export const AccidentsList: React.FC = () => {
       sortable: false,
       render: (value, record) => (
         <div>
-          <div className="font-medium text-gray-900">
+          <div className="font-medium text-gray-900 dark:text-white">
             {record.lineaVida?.codigo || `ID: ${record.linea_vida_id}`}
           </div>
           {record.lineaVida?.cliente && (
@@ -349,10 +349,10 @@ export const AccidentsList: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Gestión de Accidentes
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             Administra todos los reportes de incidentes del sistema
           </p>
         </div>

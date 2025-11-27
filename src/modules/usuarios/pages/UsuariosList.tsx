@@ -7,7 +7,7 @@ import { Badge } from '../../../shared/components/ui/Badge';
 import { Card } from '../../../shared/components/ui/Card';
 import { LoadingSpinner } from '../../../shared/components/ui/LoadingSpinner';
 import { useToast } from '../../../shared/components/ui/Toast';
-import { formatDateTime } from "../../../shared/utils/formatters";
+
 import type { TableColumn } from "../../../types";
 import { useUserData } from "../hooks";
 import { UserFilters, UserStats } from "../components";
@@ -60,8 +60,8 @@ export const UsuariosList: React.FC = () => {
               </span>
             </div>
             <div>
-              <div className="font-semibold text-gray-900">{String(value)}</div>
-              <div className="text-sm text-gray-500">{user.nombre}</div>
+              <div className="font-semibold text-gray-900 dark:text-white">{String(value)}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">{user.nombre}</div>
             </div>
           </div>
         ),
@@ -72,10 +72,10 @@ export const UsuariosList: React.FC = () => {
         sortable: true,
         render: (value: any) => (
           <div className="flex items-center space-x-2">
-            <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full">
-              <span className="text-sm font-semibold text-blue-600">@</span>
+            <div className="flex items-center justify-center w-8 h-8 bg-blue-100 dark:bg-blue-900/40 rounded-full">
+              <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">@</span>
             </div>
-            <span className="font-medium text-gray-900">{String(value)}</span>
+            <span className="font-medium text-gray-900 dark:text-white">{String(value)}</span>
           </div>
         ),
       },
@@ -86,7 +86,7 @@ export const UsuariosList: React.FC = () => {
         render: (value: any) => (
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-[#18D043] rounded-full"></div>
-            <span className="font-medium text-gray-900">{String(value)}</span>
+            <span className="font-medium text-gray-900 dark:text-white">{String(value)}</span>
           </div>
         ),
       },
@@ -95,7 +95,7 @@ export const UsuariosList: React.FC = () => {
         label: "Cargo",
         render: (value: any) =>
           value ? (
-            <span className="inline-flex items-center px-2 py-1 text-sm text-purple-800 bg-purple-100 rounded-md">
+            <span className="inline-flex items-center px-2 py-1 text-sm text-purple-800 dark:text-purple-200 bg-purple-100 dark:bg-purple-900/40 rounded-md">
               {String(value)}
             </span>
           ) : (
@@ -107,7 +107,7 @@ export const UsuariosList: React.FC = () => {
         label: "Teléfono",
         render: (value: any) =>
           value ? (
-            <span className="inline-flex items-center px-2 py-1 font-mono text-sm text-gray-800 bg-gray-100 rounded-md">
+            <span className="inline-flex items-center px-2 py-1 font-mono text-sm text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded-md">
               {String(value)}
             </span>
           ) : (
@@ -138,7 +138,7 @@ export const UsuariosList: React.FC = () => {
         label: "Apellidos",
         render: (value: any) =>
           value ? (
-            <span className="text-gray-900">{String(value)}</span>
+            <span className="text-gray-900 dark:text-white">{String(value)}</span>
           ) : (
             <span className="text-sm text-gray-400">-</span>
           ),
@@ -229,8 +229,8 @@ export const UsuariosList: React.FC = () => {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="mb-4 text-red-600">⚠️</div>
-          <p className="font-medium text-gray-900">Error al cargar usuarios</p>
-          <p className="mb-4 text-gray-600">{apiError}</p>
+          <p className="font-medium text-gray-900 dark:text-white">Error al cargar usuarios</p>
+          <p className="mb-4 text-gray-600 dark:text-gray-400">{apiError}</p>
           <Button onClick={refreshData} icon={RefreshCw}>
             Reintentar
           </Button>
@@ -248,12 +248,12 @@ export const UsuariosList: React.FC = () => {
             <span className="text-xl text-white">👥</span>
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
               Gestión de Usuarios
             </h1>
-            <p className="flex items-center space-x-2 text-gray-600">
+            <p className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
               <span>Administra los usuarios del sistema</span>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#18D043]/10 text-[#16a34a]">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#18D043]/10 dark:bg-[#18D043]/20 text-[#16a34a] dark:text-[#18D043]">
                 {totalItems} usuarios
               </span>
             </p>
@@ -265,7 +265,7 @@ export const UsuariosList: React.FC = () => {
             variant="outline"
             icon={RefreshCw}
             loading={loading}
-            className="border-gray-300 hover:bg-gray-50"
+            className="border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             Actualizar
           </Button>
@@ -290,7 +290,7 @@ export const UsuariosList: React.FC = () => {
       />
 
       {/* Users Table */}
-      <Card className="bg-white border-0 shadow-lg">
+      <Card className="border-0 shadow-lg">
         <div className="p-6">
           <DataTable
             data={paginatedUsers}
