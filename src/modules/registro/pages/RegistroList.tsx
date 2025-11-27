@@ -20,6 +20,7 @@ import {
   Camera,
   Link,
   FileText,
+  X,
 } from "lucide-react";
 import { DataTable } from '../../../shared/components/common/DataTable';
 import { Button } from '../../../shared/components/ui/Button';
@@ -31,16 +32,14 @@ import { LoadingSpinner } from '../../../shared/components/ui/LoadingSpinner';
 import { useToast } from '../../../shared/components/ui/Toast';
 import { useApi } from '../../../shared/hooks/useApi';
 import { registroService } from "../services/registroService";
-import {
-  imageService,
-  type ImageResponse,
-} from '../../../shared/services/imageService';
+import type { ImageResponse } from '../../../shared/services/imageService';
 import { RelationshipModal } from "../components/RelationshipModal";
 import { formatDate } from "../../../shared/utils/formatters";
 import { useAuthStore } from "../../../store/authStore";
 import { DeleteModal } from "../../solicitudes/components/DeleteModal";
 import { apiClient } from '../../../shared/services/apiClient';
 import { ReportsSection } from "../components/ReportsSection";
+import { RegistroForm } from "./RegistroForm";
 import type { DataRecord } from "../types/registro";
 import type { TableColumn } from "../../../types";
 import { useRegistroData } from "../hooks/useRegistroData";
@@ -68,6 +67,7 @@ export const RegistroList: React.FC = () => {
     useState<DataRecord | null>(null);
 
   const [showReports, setShowReports] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   type AppliedFilters = {
     codigo?: string;
@@ -106,6 +106,7 @@ export const RegistroList: React.FC = () => {
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState<DataRecord | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const debounceRefs = useRef<Record<string, any>>({
     codigo: null,
@@ -123,10 +124,8 @@ export const RegistroList: React.FC = () => {
     loading,
     apiError,
     updateFilters,
-    clearFilters,
     refreshData,
     handlePageChange,
-    handleSort,
   } = useRegistroData();
 
   // Hook para estadísticas con función estable
@@ -140,28 +139,6 @@ export const RegistroList: React.FC = () => {
     loading: loadingStats,
     execute: loadStats,
   } = useApi(loadStatsFunction);
-
-  // Hook para eliminar registro con función estable
-  const deleteRegistroFunction = useCallback(
-    async (...args: unknown[]) => {
-      const id = args[0] as string;
-      return registroService.deleteRecord(id);
-    },
-    []
-  );
-
-  const { loading: deleting, execute: deleteRegistro } = useApi(
-    deleteRegistroFunction,
-    {
-      onSuccess: () => {
-        success("Registro eliminado exitosamente");
-        refreshData();
-      },
-      onError: (error) => {
-        showError("Error al eliminar registro", error);
-      },
-    }
-  );
 
   const buildParams = useCallback(
     (overrides?: Partial<AppliedFilters>, page?: number) => {
@@ -204,29 +181,6 @@ export const RegistroList: React.FC = () => {
     },
     [buildParams, updateFilters, loadStats, pagination.currentPage]
   );
-
-  // Función para cargar imágenes de los registros
-  const loadImagesForRecords = useCallback(async (records: DataRecord[]) => {
-    const imagePromises = records.map(async (record) => {
-      try {
-        const image = await imageService.getRecordImage(record.id);
-        return { recordId: record.id, image };
-      } catch (error) {
-        return { recordId: record.id, image: null };
-      }
-    });
-
-    const imageResults = await Promise.all(imagePromises);
-    const newImageMap = new Map<string, ImageResponse>();
-
-    imageResults.forEach(({ recordId, image }) => {
-      if (image) {
-        newImageMap.set(recordId, image);
-      }
-    });
-
-    setRecordImages(newImageMap);
-  }, []);
 
   // Cargar datos inicial solo una vez
   useEffect(() => {
@@ -297,6 +251,11 @@ export const RegistroList: React.FC = () => {
     }
   }, [fetchWith, pagination.currentPage]);
 
+  const handleCloseCreateModal = useCallback(() => {
+    setShowCreateModal(false);
+    refreshDataCallback();
+  }, [refreshDataCallback]);
+
   const handleTextFilterChange = useCallback(
     (field: string, setter: (v: string) => void) =>
       (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -347,7 +306,7 @@ export const RegistroList: React.FC = () => {
   );
 
   const handleExpandedFilterChange = useCallback(
-    (field: string, setter: (v: string) => void) =>
+    (setter: (v: string) => void) =>
       (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setter(value);
@@ -364,6 +323,7 @@ export const RegistroList: React.FC = () => {
     async (authorizationCode?: string) => {
       if (!recordToDelete) return;
 
+      setDeleting(true);
       try {
         const params = new URLSearchParams();
         if (authorizationCode) {
@@ -383,6 +343,8 @@ export const RegistroList: React.FC = () => {
         const errorMessage =
           error instanceof Error ? error.message : "Error al eliminar registro";
         showError("Error al eliminar registro", errorMessage);
+      } finally {
+        setDeleting(false);
       }
     },
     [recordToDelete, success, showError, refreshData]
@@ -430,35 +392,6 @@ export const RegistroList: React.FC = () => {
       };
     }
     return configs[estado as keyof typeof configs] || configs.inactivo;
-  }, []);
-
-  const getAnclajeConfig = useCallback((value: string) => {
-    const configs = {
-      "anclaje_equipos": {
-        variant: "success" as const,
-        color: "text-green-600",
-      },
-      "anclaje_equipos_fijo": {
-        variant: "secondary" as const,
-        color: "text-gray-600",
-      },
-      "anclaje_equipos_movil": {
-        variant: "warning" as const,
-        color: "text-orange-600",
-      },
-      "anclaje_equipos_fijo_movil": {
-        variant: "info" as const,
-        color: "text-blue-600",
-      },
-    };
-    // Si no hay anclaje o es inválido, retornar configuración para "no registrado"
-    if (!value || value === "undefined" || value === "null") {
-      return {
-        variant: "secondary" as const,
-        color: "text-gray-500",
-      };
-    }
-    return configs[value as keyof typeof configs] || configs.anclaje_equipos;
   }, []);
 
   const NoResultsMessage = () => {
@@ -1049,7 +982,7 @@ export const RegistroList: React.FC = () => {
             Reportes
           </Button>
           <Button
-            onClick={() => navigate("nuevo")}
+            onClick={() => setShowCreateModal(true)}
             icon={Plus}
             className="bg-gradient-to-r from-[#18D043] to-[#16a34a] hover:from-[#16a34a] hover:to-[#15803d] shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
           >
@@ -1384,7 +1317,6 @@ export const RegistroList: React.FC = () => {
                     placeholder="Buscar por equipo..."
                     value={equipoFilter}
                     onChange={handleExpandedFilterChange(
-                      "equipo",
                       setEquipoFilter
                     )}
                     className="h-10 border-gray-300 dark:border-gray-600"
@@ -1400,7 +1332,6 @@ export const RegistroList: React.FC = () => {
                     placeholder="Buscar por ubicación..."
                     value={ubicacionFilter}
                     onChange={handleExpandedFilterChange(
-                      "ubicacion",
                       setUbicacionFilter
                     )}
                     className="h-10 border-gray-300 dark:border-gray-600"
@@ -1619,6 +1550,22 @@ export const RegistroList: React.FC = () => {
           onSuccess={handleRelationshipSuccess}
           parentRecord={selectedRecordForRelation}
         />
+      )}
+
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-2 py-2 sm:px-3 sm:py-3 bg-black/70 backdrop-blur-sm">
+          <div className="relative w-full max-w-md max-h-[70vh] overflow-y-auto rounded-xl bg-white dark:bg-gray-900 shadow-2xl border border-white/10 dark:border-gray-700/60">
+            <button
+              type="button"
+              onClick={handleCloseCreateModal}
+              className="absolute top-3 right-3 inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              aria-label="Cerrar"
+            >
+              <X size={16} />
+            </button>
+            <RegistroForm onClose={handleCloseCreateModal} />
+          </div>
+        </div>
       )}
     </div>
   );

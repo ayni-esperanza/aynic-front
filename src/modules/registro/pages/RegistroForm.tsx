@@ -5,7 +5,6 @@ import {
   Save,
   X,
   Calendar,
-  MapPin,
   Settings,
   Info,
   Plus,
@@ -17,13 +16,11 @@ import { Card } from '../../../shared/components/ui/Card';
 import { Input } from '../../../shared/components/ui/Input';
 import { Select } from '../../../shared/components/ui/Select';
 import { SearchableSelect } from '../../../shared/components/ui/SearchableSelect';
-import { LoadingSpinner } from '../../../shared/components/ui/LoadingSpinner';
 import { useToast } from '../../../shared/components/ui/Toast';
 import { useApi } from '../../../shared/hooks/useApi';
 import { registroService } from "../services/registroService";
 import { ImageUpload } from '../../../shared/components/common/ImageUpload';
 import type { DataRecord } from "../types/registro";
-import type { ImageResponse } from '../../../shared/services/imageService';
 
 // Componente HierarchicalSelect para tipos de línea
 const HierarchicalLineTypeSelect: React.FC<{
@@ -105,25 +102,25 @@ const HierarchicalLineTypeSelect: React.FC<{
   const availableOrientations = getOrientations(selectedCategory);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <div>
-        <label className="block mb-2 text-sm font-semibold text-gray-700">
+        <label className="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
           Tipo de Línea
           {required && <span className="ml-1 text-red-500">*</span>}
         </label>
-        <p className="mb-4 text-sm text-gray-600">
+        <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
           Paso 1: Selecciona el tipo de línea de vida
         </p>
       </div>
 
       {/* Paso 1: Seleccionar categoría */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {categories.map((category) => (
           <div
             key={category.value}
-            className={`p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 ${selectedCategory === category.value
-              ? "border-[#18D043] bg-[#18D043]/10 text-[#16a34a] shadow-md"
-              : "border-gray-200 hover:border-gray-300 text-gray-700 hover:shadow-sm"
+            className={`p-3 border-2 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 ${selectedCategory === category.value
+              ? "border-[#18D043] bg-[#18D043]/10 dark:bg-[#18D043]/20 text-[#16a34a] dark:text-[#18D043] shadow-md"
+              : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300 hover:shadow-sm bg-white dark:bg-gray-800"
               }`}
             onClick={(e) => {
               e.preventDefault();
@@ -132,11 +129,11 @@ const HierarchicalLineTypeSelect: React.FC<{
             }}
           >
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <span className="text-2xl">{category.icon}</span>
+              <div className="flex items-center space-x-2">
+                <span className="text-xl">{category.icon}</span>
                 <div>
-                  <p className="font-medium">{category.label}</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-sm font-medium">{category.label}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     {category.value === "permanente"
                       ? "Instalación fija"
                       : "Instalación temporal"}
@@ -144,8 +141,8 @@ const HierarchicalLineTypeSelect: React.FC<{
                 </div>
               </div>
               {selectedCategory === category.value && (
-                <div className="w-6 h-6 bg-[#18D043] rounded-full flex items-center justify-center">
-                  <span className="text-sm font-bold text-white">✓</span>
+                <div className="w-5 h-5 bg-[#18D043] rounded-full flex items-center justify-center">
+                  <span className="text-xs font-bold text-white">✓</span>
                 </div>
               )}
             </div>
@@ -155,17 +152,17 @@ const HierarchicalLineTypeSelect: React.FC<{
 
       {/* Paso 2: Seleccionar orientación (solo si hay categoría seleccionada y es permanente) */}
       {selectedCategory === "permanente" && (
-        <div className="space-y-4 duration-300 animate-in fade-in">
-          <p className="text-sm text-gray-600">
+        <div className="space-y-3 duration-300 animate-in fade-in">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             Paso 2: Selecciona la orientación
           </p>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {availableOrientations.map((orientation) => (
               <div
                 key={orientation.value}
-                className={`p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 ${selectedOrientation === orientation.value
-                  ? "border-[#18D043] bg-[#18D043]/10 text-[#16a34a] shadow-md"
-                  : "border-gray-200 hover:border-gray-300 text-gray-700 hover:shadow-sm"
+                className={`p-3 border-2 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 ${selectedOrientation === orientation.value
+                  ? "border-[#18D043] bg-[#18D043]/10 dark:bg-[#18D043]/20 text-[#16a34a] dark:text-[#18D043] shadow-md"
+                  : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300 hover:shadow-sm bg-white dark:bg-gray-800"
                   }`}
                 onClick={(e) => {
                   e.preventDefault();
@@ -174,11 +171,11 @@ const HierarchicalLineTypeSelect: React.FC<{
                 }}
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-2xl">{orientation.icon}</span>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xl">{orientation.icon}</span>
                     <div>
-                      <p className="font-medium">{orientation.label}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-sm font-medium">{orientation.label}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         {orientation.value === "horizontal"
                           ? "Línea paralela al suelo"
                           : "Línea perpendicular al suelo"}
@@ -186,8 +183,8 @@ const HierarchicalLineTypeSelect: React.FC<{
                     </div>
                   </div>
                   {selectedOrientation === orientation.value && (
-                    <div className="w-6 h-6 bg-[#18D043] rounded-full flex items-center justify-center">
-                      <span className="text-sm font-bold text-white">✓</span>
+                    <div className="w-5 h-5 bg-[#18D043] rounded-full flex items-center justify-center">
+                      <span className="text-xs font-bold text-white">✓</span>
                     </div>
                   )}
                 </div>
@@ -199,14 +196,14 @@ const HierarchicalLineTypeSelect: React.FC<{
 
       {/* Información adicional para temporal */}
       {selectedCategory === "temporal" && (
-        <div className="p-4 duration-300 border border-blue-200 bg-blue-50 rounded-xl animate-in fade-in">
+        <div className="p-3 duration-300 border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 rounded-xl animate-in fade-in">
           <div className="flex items-center space-x-3">
-            <span className="text-2xl">ℹ️</span>
+            <span className="text-xl">ℹ️</span>
             <div>
-              <p className="text-sm font-medium text-blue-800">
+              <p className="text-sm font-medium text-blue-800 dark:text-blue-300">
                 Orientación automática: Horizontal
               </p>
-              <p className="text-xs text-blue-600">
+              <p className="text-xs text-blue-600 dark:text-blue-400">
                 Las líneas de vida temporales solo están disponibles en
                 orientación horizontal
               </p>
@@ -217,16 +214,16 @@ const HierarchicalLineTypeSelect: React.FC<{
 
       {/* Resumen de selección */}
       {selectedCategory && selectedOrientation && (
-        <div className="p-4 border border-[#18D043] bg-[#18D043]/5 rounded-xl animate-in fade-in duration-300">
+        <div className="p-3 border border-[#18D043] bg-[#18D043]/5 dark:bg-[#18D043]/10 rounded-xl animate-in fade-in duration-300">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-[#18D043] rounded-full flex items-center justify-center">
-              <span className="font-bold text-white">✓</span>
+            <div className="w-6 h-6 bg-[#18D043] rounded-full flex items-center justify-center">
+              <span className="text-sm font-bold text-white">✓</span>
             </div>
             <div>
-              <p className="text-sm font-medium text-[#16a34a]">
+              <p className="text-xs font-medium text-[#16a34a] dark:text-[#18D043]">
                 Selección completa:
               </p>
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-gray-700 dark:text-gray-300">
                 {categories.find((c) => c.value === selectedCategory)?.icon}{" "}
                 Línea de Vida{" "}
                 {selectedCategory === "permanente" ? "Permanente" : "Temporal"}{" "}
@@ -256,9 +253,22 @@ const HierarchicalLineTypeSelect: React.FC<{
   );
 };
 
-export const RegistroForm: React.FC = () => {
+interface RegistroFormProps {
+  onClose?: () => void;
+}
+
+export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose }) => {
   const navigate = useNavigate();
   const { success, error: showError } = useToast();
+
+  const isModal = Boolean(onClose);
+  const goBack = useCallback(() => {
+    if (onClose) {
+      onClose();
+    } else {
+      navigate("/registro");
+    }
+  }, [navigate, onClose]);
 
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -550,7 +560,7 @@ export const RegistroForm: React.FC = () => {
   };
 
   const handleImageUploaded = useCallback(
-    (image: ImageResponse) => {
+    () => {
       setHasImage(true);
       success("Imagen agregada exitosamente");
     },
@@ -563,18 +573,14 @@ export const RegistroForm: React.FC = () => {
   }, [success]);
 
   const handleFinishWithoutImage = useCallback(() => {
-    navigate("/registro");
-  }, [navigate]);
-
-  const handleFinishWithImage = useCallback(() => {
-    navigate("/registro");
-  }, [navigate]);
+    goBack();
+  }, [goBack]);
 
   const steps = [
     {
       number: 1,
       title: "Información Básica",
-      description: "Datos principales del registro",
+      description: "Datos generales",
       icon: Info,
       color: "text-blue-600",
       bgColor: "bg-blue-100",
@@ -582,7 +588,7 @@ export const RegistroForm: React.FC = () => {
     {
       number: 2,
       title: "Especificaciones Técnicas",
-      description: "Tipo de línea y ubicación",
+      description: "Detalles técnicos",
       icon: Settings,
       color: "text-purple-600",
       bgColor: "bg-purple-100",
@@ -590,7 +596,7 @@ export const RegistroForm: React.FC = () => {
     {
       number: 3,
       title: "Fechas y Estado",
-      description: "Instalación y vida útil",
+      description: "Información temporal",
       icon: Calendar,
       color: "text-green-600",
       bgColor: "bg-green-100",
@@ -598,75 +604,105 @@ export const RegistroForm: React.FC = () => {
     {
       number: 4,
       title: "Imagen del Registro",
-      description: "Fotografía del equipo o instalación",
+      description: "Fotografía",
       icon: Camera,
       color: "text-orange-600",
       bgColor: "bg-orange-100",
     },
   ];
 
+  const outerContainerClass = isModal
+    ? "w-full max-w-2xl mx-auto bg-transparent"
+    : "min-h-screen bg-gradient-to-br from-gray-50 to-gray-100";
+
+  const contentWrapperClass = isModal
+    ? "w-full px-2 py-2 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl"
+    : "max-w-4xl px-4 py-6 mx-auto sm:px-6 lg:px-8";
+
+  const headerWrapperClass = isModal ? "mb-2" : "mb-8";
+  const headerFlexClass = isModal
+    ? "flex items-center mb-2 space-x-2"
+    : "flex items-center mb-6 space-x-4";
+  const headerIconClass = isModal
+    ? "w-10 h-10"
+    : "w-12 h-12";
+  const headerTitleClass = isModal
+    ? "text-2xl font-bold text-gray-900"
+    : "text-3xl font-bold text-gray-900";
+  const headerSubtitleClass = isModal ? "text-sm text-gray-600" : "text-gray-600";
+
+  const progressWrapperClass = isModal
+    ? "flex items-center justify-center gap-2 mb-3"
+    : "flex items-center justify-between mb-8";
+  const stepCircleSizeClass = isModal ? "w-10 h-10" : "w-12 h-12";
+  const stepConnectorMarginClass = isModal ? "flex-1 mx-4" : "flex-1 mx-6";
+  const stepIconSize = isModal ? 18 : 20;
+
+  const formPaddingClass = isModal ? "p-2" : "p-8";
+  const formIntroSpacingClass = isModal ? "mb-1.5" : "mb-6";
+  const sectionSpacingClass = isModal ? "space-y-2" : "space-y-6";
+  const gridGapClass = isModal ? "gap-2" : "gap-6";
+  const inputHeightClass = isModal ? "!py-1.5 !text-sm" : "";
+  const labelSizeClass = isModal ? "!text-xs" : "";
+  const buttonSizeClass = isModal ? "sm" : "md";
+  const footerSpacingClass = isModal ? "pt-3 mt-3" : "pt-8 mt-8";
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="max-w-4xl px-4 py-6 mx-auto sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center mb-6 space-x-4">
-            <Button
-              variant="outline"
-              onClick={() => navigate("/registro")}
-              icon={ArrowLeft}
-              disabled={creating}
-            >
-              Volver
-            </Button>
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-xl text-white">➕</span>
+    <div className={outerContainerClass}>
+      <div className={contentWrapperClass}>
+        {!isModal && (
+          <>
+            {/* Header */}
+            <div className={headerWrapperClass}>
+              <div className={headerFlexClass}>
+                <div className="flex items-center space-x-4">
+                  <div
+                    className={`${headerIconClass} bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-xl flex items-center justify-center shadow-lg`}
+                  >
+                    <span className="text-lg text-white">➕</span>
+                  </div>
+                  <div>
+                    <h1 className={headerTitleClass}>Nuevo Registro</h1>
+                    <p className={headerSubtitleClass}>Completa el formulario paso a paso</p>
+                  </div>
+                </div>
               </div>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">
-                  Nuevo Registro
-                </h1>
-                <p className="text-gray-600">
-                  Completa el formulario paso a paso
-                </p>
-              </div>
-            </div>
-          </div>
 
           {/* Progress */}
-          <div className="flex items-center justify-between mb-8">
+          <div className={progressWrapperClass}>
             {steps.map((step, idx) => {
               const isActive = currentStep === step.number;
               const isCompleted = currentStep > step.number;
               const Icon = step.icon;
               return (
-                <div key={step.number} className="flex items-center flex-1">
+                <div key={step.number} className={isModal ? "flex items-center" : "flex items-center flex-1"}>
                   <div className="flex items-center">
                     <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${isCompleted
+                      className={`${stepCircleSizeClass} rounded-full flex items-center justify-center border-2 transition-all ${isCompleted
                         ? "bg-[#18D043] text-white border-[#18D043]"
                         : isActive
                           ? `${step.bgColor} ${step.color} border-current`
                           : "bg-gray-100 border-gray-300 text-gray-400"
                         }`}
                     >
-                      {isCompleted ? "✓" : <Icon size={20} />}
+                      {isCompleted ? "✓" : <Icon size={stepIconSize} />}
                     </div>
-                    <div className="ml-4">
-                      <p
-                        className={`text-sm font-medium ${isActive ? "text-gray-900" : "text-gray-500"
-                          }`}
-                      >
-                        {step.title}
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        {step.description}
-                      </p>
-                    </div>
+                    {!isModal && (
+                      <div className="ml-4">
+                        <p
+                          className={`text-sm font-medium ${isActive ? "text-gray-900" : "text-gray-500"
+                            }`}
+                        >
+                          {step.title}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {step.description}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                  {idx < steps.length - 1 && (
-                    <div className="flex-1 mx-6">
+                  {!isModal && idx < steps.length - 1 && (
+                    <div className={stepConnectorMarginClass}>
                       <div
                         className={`h-0.5 transition-all ${isCompleted ? "bg-[#18D043]" : "bg-gray-300"
                           }`}
@@ -678,20 +714,66 @@ export const RegistroForm: React.FC = () => {
             })}
           </div>
         </div>
+          </>
+        )}
 
-        <Card className="bg-white border-0 shadow-xl">
-          <form onSubmit={handleSubmit} className="p-8">
-            <h3 className="mb-2 text-xl font-semibold text-gray-900">
-              {steps[currentStep - 1].title}
-            </h3>
-            <p className="mb-6 text-gray-600">
-              {steps[currentStep - 1].description}
-            </p>
+        <Card className={isModal ? "bg-transparent border-0 shadow-none" : "bg-white border-0 shadow-xl"}>
+          <form onSubmit={handleSubmit} className={formPaddingClass}>
+            {isModal && (
+              <div className="mb-3">
+                <h1 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Nuevo Registro</h1>
+                <div className="relative">
+                  <div className="flex items-start justify-between gap-1 mb-3">
+                    {steps.map((step, idx) => {
+                      const isActive = currentStep === step.number;
+                      const isCompleted = currentStep > step.number;
+                      const Icon = step.icon;
+                      return (
+                        <div key={step.number} className="flex flex-col items-center flex-1 relative">
+                          <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all mb-1 relative z-10 ${
+                              isCompleted
+                                ? "bg-[#18D043] text-white border-[#18D043]"
+                                : isActive
+                                ? `${step.bgColor} ${step.color} border-current bg-white dark:bg-gray-800`
+                                : "bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500"
+                            }`}
+                          >
+                            {isCompleted ? "✓" : <Icon size={14} />}
+                          </div>
+                          {idx < steps.length - 1 && (
+                            <div className="absolute top-4 left-1/2 w-full h-0.5 -z-0">
+                              <div className={`h-full ${isCompleted ? "bg-[#18D043]" : "bg-gray-300 dark:bg-gray-600"}`} />
+                            </div>
+                          )}
+                          <p className={`text-[10px] font-medium text-center leading-tight ${isActive ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-400"}`}>
+                            {step.title}
+                          </p>
+                          <p className="text-[9px] text-gray-400 dark:text-gray-500 text-center mt-0.5 leading-tight">
+                            {step.description}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+            {!isModal && (
+              <>
+                <h3 className="mb-1 text-xl font-semibold text-gray-900">
+                  {steps[currentStep - 1].title}
+                </h3>
+                <p className={`${formIntroSpacingClass} text-gray-600`}>
+                  {steps[currentStep - 1].description}
+                </p>
+              </>
+            )}
 
             {/* ------- PASOS ------- */}
             {currentStep === 1 && (
-              <div className="space-y-6">
-                <div className="grid gap-6 md:grid-cols-2">
+              <div className={sectionSpacingClass}>
+                <div className={`grid ${gridGapClass} md:grid-cols-2`}>
                   <Input
                     label="Código del Registro"
                     value={formData.codigo}
@@ -699,6 +781,7 @@ export const RegistroForm: React.FC = () => {
                     error={errors.codigo}
                     placeholder="COD-0001"
                     required
+                    className={inputHeightClass}
                   />
                   <Input
                     label="Código de Placa"
@@ -706,77 +789,36 @@ export const RegistroForm: React.FC = () => {
                     onChange={(e) => handleChange("codigo_placa", e.target.value)}
                     error={errors.codigo_placa}
                     placeholder="PLC-001-A"
+                    className={inputHeightClass}
                   />
 
                   {/* Cliente con SearchableSelect y funcionalidad de agregar */}
                   <div>
-                    {showNewClientForm ? (
-                      <div className="space-y-3">
-                        <label className="block text-sm font-semibold text-gray-700">
-                          Nuevo Cliente
-                          <span className="ml-1 text-red-500">*</span>
-                        </label>
-                        <div className="flex items-center space-x-2">
-                          <Input
-                            value={newClientName}
-                            onChange={(e) => setNewClientName(e.target.value)}
-                            placeholder="Nombre del nuevo cliente"
-                            className="flex-1"
-                            onKeyPress={(e) => {
-                              if (e.key === "Enter") {
-                                e.preventDefault();
-                                handleAddNewClient();
-                              }
-                            }}
-                          />
-                          <Button
-                            type="button"
-                            size="sm"
-                            onClick={handleAddNewClient}
-                            disabled={!newClientName.trim()}
-                            className="px-3"
-                            icon={Check}
-                          >
-                            Agregar
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={handleCancelNewClient}
-                            className="px-3"
-                            icon={X}
-                          >
-                            Cancelar
-                          </Button>
-                        </div>
+                    <div className="space-y-2">
+                      <SearchableSelect
+                        options={clientesList}
+                        value={formData.cliente}
+                        onChange={(value) => handleChange("cliente", value)}
+                        placeholder="Buscar cliente..."
+                        label="Cliente"
+                        error={errors.cliente}
+                        required
+                        className={inputHeightClass}
+                      />
+                      <div className="flex-shrink-0 mb-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowNewClientForm(true)}
+                          className="px-3 border-[#18D043] text-[#18D043] hover:bg-[#18D043] hover:text-white"
+                          icon={Plus}
+                          title="Agregar nuevo cliente"
+                        >
+                          Nuevo
+                        </Button>
                       </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <SearchableSelect
-                          options={clientesList}
-                          value={formData.cliente}
-                          onChange={(value) => handleChange("cliente", value)}
-                          placeholder="Buscar cliente..."
-                          label="Cliente"
-                          error={errors.cliente}
-                          required
-                        />
-                        <div className="flex-shrink-0 mb-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setShowNewClientForm(true)}
-                            className="px-3 border-[#18D043] text-[#18D043] hover:bg-[#18D043] hover:text-white"
-                            icon={Plus}
-                            title="Agregar nuevo cliente"
-                          >
-                            Nuevo
-                          </Button>
-                        </div>
-                      </div>
-                    )}
+                    </div>
                   </div>
 
                   <Input
@@ -786,6 +828,7 @@ export const RegistroForm: React.FC = () => {
                     error={errors.equipo}
                     placeholder="Equipo-A1"
                     required
+                    className={inputHeightClass}
                   />
                   <Input
                     label="Sección"
@@ -794,6 +837,7 @@ export const RegistroForm: React.FC = () => {
                     error={errors.seccion}
                     placeholder="Sección A"
                     required
+                    className={inputHeightClass}
                   />
                   <Input
                     label="Área"
@@ -802,6 +846,7 @@ export const RegistroForm: React.FC = () => {
                     error={errors.area}
                     placeholder="Área 1"
                     required
+                    className={inputHeightClass}
                   />
                   <Input
                     label="Planta"
@@ -810,14 +855,15 @@ export const RegistroForm: React.FC = () => {
                     error={errors.planta}
                     placeholder="Planta 1"
                     required
+                    className={inputHeightClass}
                   />
                 </div>
               </div>
             )}
 
             {currentStep === 2 && (
-              <div className="space-y-6">
-                <div className="grid gap-6 md:grid-cols-1">
+              <div className={sectionSpacingClass}>
+                <div className={`grid ${gridGapClass} md:grid-cols-1`}>
                   <HierarchicalLineTypeSelect
                     value={formData.tipo_linea}
                     onChange={(value) => handleChange("tipo_linea", value)}
@@ -829,14 +875,14 @@ export const RegistroForm: React.FC = () => {
                 {/* Opciones de anclaje basadas en tipo_linea */}
                 {formData.tipo_linea && (
                   <div className="space-y-4">
-                    <label className="block text-sm font-semibold text-gray-700">
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Tipo de Anclaje
                       <span className="ml-1 text-red-500">*</span>
                     </label>
                     
                     {/* Opciones para Línea de Vida Horizontal */}
                     {(formData.tipo_linea === "permanente_horizontal" || formData.tipo_linea === "temporal_horizontal") && (
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                         {[
                           { value: "anclaje_terminal", label: "Anclaje Terminal", icon: "🔗" },
                           { value: "anclaje_intermedio", label: "Anclaje Intermedio", icon: "🔗" },
@@ -845,23 +891,23 @@ export const RegistroForm: React.FC = () => {
                         ].map((option) => (
                           <div
                             key={option.value}
-                            className={`p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 ${
+                            className={`p-2.5 border-2 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 ${
                               formData.anclaje_tipo === option.value
-                                ? "border-[#18D043] bg-[#18D043]/10 text-[#16a34a] shadow-md"
-                                : "border-gray-200 hover:border-gray-300 text-gray-700 hover:shadow-sm"
+                                ? "border-[#18D043] bg-[#18D043]/10 dark:bg-[#18D043]/20 text-[#16a34a] dark:text-[#18D043] shadow-md"
+                                : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300 hover:shadow-sm bg-white dark:bg-gray-800"
                             }`}
                             onClick={() => handleChange("anclaje_tipo", option.value)}
                           >
                             <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-3">
-                                <span className="text-2xl">{option.icon}</span>
+                              <div className="flex items-center space-x-2">
+                                <span className="text-lg">{option.icon}</span>
                                 <div>
-                                  <p className="font-medium">{option.label}</p>
+                                  <p className="text-sm font-medium">{option.label}</p>
                                 </div>
                               </div>
                               {formData.anclaje_tipo === option.value && (
-                                <div className="w-6 h-6 bg-[#18D043] rounded-full flex items-center justify-center">
-                                  <span className="text-sm font-bold text-white">✓</span>
+                                <div className="w-5 h-5 bg-[#18D043] rounded-full flex items-center justify-center">
+                                  <span className="text-xs font-bold text-white">✓</span>
                                 </div>
                               )}
                             </div>
@@ -872,7 +918,7 @@ export const RegistroForm: React.FC = () => {
 
                     {/* Opciones para Línea de Vida Vertical */}
                     {formData.tipo_linea === "permanente_vertical" && (
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                         {[
                           { value: "anclaje_superior", label: "Anclaje Superior", icon: "⬆️" },
                           { value: "anclaje_inferior", label: "Anclaje Inferior", icon: "⬇️" },
@@ -880,23 +926,23 @@ export const RegistroForm: React.FC = () => {
                         ].map((option) => (
                           <div
                             key={option.value}
-                            className={`p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 ${
+                            className={`p-2.5 border-2 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 ${
                               formData.anclaje_tipo === option.value
-                                ? "border-[#18D043] bg-[#18D043]/10 text-[#16a34a] shadow-md"
-                                : "border-gray-200 hover:border-gray-300 text-gray-700 hover:shadow-sm"
+                                ? "border-[#18D043] bg-[#18D043]/10 dark:bg-[#18D043]/20 text-[#16a34a] dark:text-[#18D043] shadow-md"
+                                : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300 hover:shadow-sm bg-white dark:bg-gray-800"
                             }`}
                             onClick={() => handleChange("anclaje_tipo", option.value)}
                           >
                             <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-3">
-                                <span className="text-2xl">{option.icon}</span>
+                              <div className="flex items-center space-x-2">
+                                <span className="text-lg">{option.icon}</span>
                                 <div>
-                                  <p className="font-medium">{option.label}</p>
+                                  <p className="text-sm font-medium">{option.label}</p>
                                 </div>
                               </div>
                               {formData.anclaje_tipo === option.value && (
-                                <div className="w-6 h-6 bg-[#18D043] rounded-full flex items-center justify-center">
-                                  <span className="text-sm font-bold text-white">✓</span>
+                                <div className="w-5 h-5 bg-[#18D043] rounded-full flex items-center justify-center">
+                                  <span className="text-xs font-bold text-white">✓</span>
                                 </div>
                               )}
                             </div>
@@ -915,7 +961,7 @@ export const RegistroForm: React.FC = () => {
                   </div>
                 )}
 
-                <div className="grid gap-6 md:grid-cols-2">
+                <div className={`grid ${gridGapClass} md:grid-cols-2`}>
                   <Input
                     label="Longitud (m)"
                     type="text"
@@ -926,6 +972,7 @@ export const RegistroForm: React.FC = () => {
                     required
                     inputMode="decimal"
                     pattern="[0-9]*[.]?[0-9]*"
+                    className={inputHeightClass}
                   />
                   <Input
                     label="Ubicación"
@@ -934,10 +981,11 @@ export const RegistroForm: React.FC = () => {
                     error={errors.ubicacion}
                     placeholder="Dirección o coordenadas"
                     required
+                    className={inputHeightClass}
                   />
                 </div>
 
-                <div className="grid gap-6 md:grid-cols-1">
+                <div className={`grid ${gridGapClass} md:grid-cols-1`}>
                   <Input
                     label="Anclaje de equipos"
                     value={formData.anclaje_equipos}
@@ -947,6 +995,7 @@ export const RegistroForm: React.FC = () => {
                     error={errors.anclaje_equipos}
                     placeholder="Tipo/estado del anclaje (ej. 'I M12 química', 'Puntos fijos 2xD-Ring')"
                     maxLength={100}
+                    className={inputHeightClass}
                   />
                   <p className="-mt-4 text-xs text-gray-500">
                     Máx. 100 caracteres. Dejar vacío si no corresponde — se
@@ -955,17 +1004,17 @@ export const RegistroForm: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block mb-2 text-sm font-semibold text-gray-700">
+                  <label className={`block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300 ${labelSizeClass}`}>
                     Observaciones{" "}
                     <span className="text-gray-400">(opcional)</span>
                   </label>
                   <textarea
-                    rows={4}
+                    rows={isModal ? 2 : 4}
                     value={formData.observaciones}
                     onChange={(e) =>
                       handleChange("observaciones", e.target.value)
                     }
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl transition-all duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-[#18D043]/20 focus:border-[#18D043] resize-none hover:border-gray-300"
+                    className={`w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl transition-all duration-200 font-medium text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-[#18D043]/20 dark:focus:ring-[#18D043]/30 focus:border-[#18D043] resize-none hover:border-gray-300 dark:hover:border-gray-600 ${inputHeightClass}`}
                     placeholder="Notas adicionales sobre el registro..."
                   />
                 </div>
@@ -973,8 +1022,8 @@ export const RegistroForm: React.FC = () => {
             )}
 
             {currentStep === 3 && (
-              <div className="space-y-6">
-                <div className="grid gap-6 md:grid-cols-2">
+              <div className={sectionSpacingClass}>
+                <div className={`grid ${gridGapClass} md:grid-cols-2`}>
                   <Input
                     label="Fecha de Instalación"
                     type="date"
@@ -989,6 +1038,9 @@ export const RegistroForm: React.FC = () => {
                       return hoy.toISOString().split('T')[0];
                     })()}
                     required
+                    icon={Calendar}
+                    iconPosition="right"
+                    className={inputHeightClass}
                   />
                   <Input
                     label="Fecha de Caducidad"
@@ -997,9 +1049,12 @@ export const RegistroForm: React.FC = () => {
                     readOnly
                     error={errors.fecha_caducidad}
                     required
+                    icon={Calendar}
+                    iconPosition="right"
+                    className={inputHeightClass}
                   />
                 </div>
-                <div className="grid gap-6 md:grid-cols-3">
+                <div className={`grid ${gridGapClass} md:grid-cols-3`}>
                   <Input
                     label="Vida útil años"
                     type="number"
@@ -1023,6 +1078,7 @@ export const RegistroForm: React.FC = () => {
                     max={50}
                     step={1}
                     required
+                    className={inputHeightClass}
                   />
                   <Input
                     label="Vida útil meses"
@@ -1043,6 +1099,7 @@ export const RegistroForm: React.FC = () => {
                     max={11}
                     maxLength={2}
                     required
+                    className={inputHeightClass}
                   />
                   <Select
                     label="Estado"
@@ -1057,13 +1114,14 @@ export const RegistroForm: React.FC = () => {
                       { value: "inactivo", label: "⚪ Inactivo" },
                       { value: "mantenimiento", label: "🔧 Mantenimiento" },
                     ]}
+                    className={inputHeightClass}
                   />
                 </div>
               </div>
             )}
 
             {currentStep === 4 && (
-              <div className="space-y-6">
+              <div className={sectionSpacingClass}>
                 {savedRecordId && (
                   <div className="mb-6 text-center">
                     <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-orange-100 to-orange-200">
@@ -1108,7 +1166,7 @@ export const RegistroForm: React.FC = () => {
             )}
 
             {/* ------- BOTONES ------- */}
-            <div className="flex justify-between pt-8 mt-8 border-t border-gray-200">
+            <div className={`flex justify-between border-t border-gray-200 ${footerSpacingClass}`}>
               <div>
                 {/* Solo mostrar "Anterior" si no estamos en el paso 4 con imagen subida */}
                 {currentStep > 1 && !(currentStep === 4 && hasImage) && (
@@ -1118,6 +1176,7 @@ export const RegistroForm: React.FC = () => {
                     onClick={handlePrev}
                     icon={ArrowLeft}
                     disabled={creating}
+                    size={buttonSizeClass as "sm" | "md" | "lg"}
                   >
                     Anterior
                   </Button>
@@ -1130,9 +1189,10 @@ export const RegistroForm: React.FC = () => {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => navigate("/registro")}
+                    onClick={goBack}
                     icon={X}
                     disabled={creating}
+                    size={buttonSizeClass as "sm" | "md" | "lg"}
                   >
                     Cancelar
                   </Button>
@@ -1147,6 +1207,7 @@ export const RegistroForm: React.FC = () => {
                         icon={Save}
                         loading={creating}
                         className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
+                        size={buttonSizeClass as "sm" | "md" | "lg"}
                       >
                         {creating ? "Creando..." : "Crear Registro"}
                       </Button>
@@ -1158,6 +1219,7 @@ export const RegistroForm: React.FC = () => {
                         type="button"
                         onClick={handleFinishWithoutImage}
                         className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
+                        size={buttonSizeClass as "sm" | "md" | "lg"}
                       >
                         Finalizar
                       </Button>
@@ -1171,6 +1233,7 @@ export const RegistroForm: React.FC = () => {
                     }}
                     disabled={creating}
                     className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
+                    size={buttonSizeClass as "sm" | "md" | "lg"}
                   >
                     Siguiente
                   </Button>
@@ -1180,6 +1243,62 @@ export const RegistroForm: React.FC = () => {
           </form>
         </Card>
       </div>
+
+      {/* Modal para agregar nuevo cliente */}
+      {showNewClientForm && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center px-4 bg-black/70 backdrop-blur-sm">
+          <div className="relative w-full max-w-md p-6 bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700">
+            <button
+              type="button"
+              onClick={handleCancelNewClient}
+              className="absolute top-3 right-3 inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              aria-label="Cerrar"
+            >
+              <X size={16} />
+            </button>
+            
+            <h3 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">
+              Agregar Nuevo Cliente
+            </h3>
+            
+            <div className="space-y-4">
+              <Input
+                label="Nombre del Cliente"
+                value={newClientName}
+                onChange={(e) => setNewClientName(e.target.value)}
+                placeholder="Ingrese el nombre del cliente"
+                required
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddNewClient();
+                  }
+                }}
+              />
+              
+              <div className="flex justify-end space-x-3 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCancelNewClient}
+                  icon={X}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleAddNewClient}
+                  disabled={!newClientName.trim()}
+                  className="bg-gradient-to-r from-[#18D043] to-[#16a34a]"
+                  icon={Check}
+                >
+                  Agregar
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
