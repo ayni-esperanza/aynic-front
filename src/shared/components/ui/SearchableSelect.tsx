@@ -113,7 +113,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   };
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative w-full min-w-0 ${className}`}>
       {label && (
         <label className="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
           {label}
@@ -122,7 +122,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
       )}
       <div className="relative" ref={dropdownRef}>
         <div
-          className={`relative w-full px-4 py-3 border-2 rounded-xl transition-all duration-200 font-medium cursor-pointer
+          className={`relative w-full min-w-0 min-h-[32px] px-1.5 py-0.5 border-2 rounded-xl transition-all duration-200 font-medium cursor-pointer
             bg-white dark:bg-gray-800
             ${
               error
@@ -132,11 +132,11 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
             ${isOpen ? "ring-2" : ""}`}
           onClick={handleInputClick}
         >
-          <div className="flex items-center">
-            <span className="mr-3 text-gray-400 dark:text-gray-500">🔍</span>
+          <div className="flex items-center min-w-0">
+            <span className="mr-2 text-gray-400 dark:text-gray-500 text-xs">🔍</span>
             {value && !isOpen ? (
-              <div className="flex items-center justify-between w-full">
-                <span className="text-gray-900 dark:text-white">{value}</span>
+              <div className="flex items-center justify-between w-full min-w-0 space-x-2">
+                <span className="text-gray-900 dark:text-white truncate text-sm">{value}</span>
                 <div className="flex items-center space-x-2">
                   <button
                     type="button"
@@ -155,7 +155,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="flex items-center justify-between w-full">
+              <div className="flex items-center justify-between w-full min-w-0 space-x-2">
                 <input
                   ref={inputRef}
                   type="text"
@@ -163,7 +163,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                   onChange={handleInputChange}
                   onKeyDown={handleKeyDown}
                   placeholder={value || placeholder}
-                  className="flex-1 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-transparent border-none outline-none"
+                  className="flex-1 min-w-0 text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-transparent border-none outline-none"
                 />
                 <span
                   className={`text-gray-400 dark:text-gray-500 transition-transform ${
@@ -199,7 +199,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 {filteredOptions.map((option, index) => (
                   <div
                     key={option}
-                    className={`px-4 py-3 cursor-pointer transition-colors flex items-center
+                    className={`px-2 py-1 cursor-pointer transition-colors flex items-center
                       ${
                         index === highlightedIndex
                           ? "bg-[#18D043]/10 dark:bg-[#18D043]/20 text-[#16a34a] dark:text-[#18D043]"

@@ -3,7 +3,7 @@ import { Button } from '../../../shared/components/ui/Button';
 import { Input } from '../../../shared/components/ui/Input';
 import { Select } from '../../../shared/components/ui/Select';
 import { SearchableSelect } from '../../../shared/components/ui/SearchableSelect';
-import { Search, X } from "lucide-react";
+import { Search, X, Filter } from "lucide-react";
 import type { AccidentFilters as AccidentFiltersType } from "../types/accident";
 
 interface AccidentFiltersProps {
@@ -23,13 +23,13 @@ interface AccidentFiltersProps {
 export const AccidentFilters: React.FC<AccidentFiltersProps> = ({
   filters,
   onFiltersChange,
-  onSearch,
   onClearFilters,
   lineasVida,
   loading = false,
 }) => {
   const [localFilters, setLocalFilters] =
     useState<AccidentFiltersType>(filters);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   const handleFilterChange = (
     key: keyof AccidentFiltersType,
@@ -38,10 +38,6 @@ export const AccidentFilters: React.FC<AccidentFiltersProps> = ({
     const newFilters = { ...localFilters, [key]: value };
     setLocalFilters(newFilters);
     onFiltersChange(newFilters);
-  };
-
-  const handleSearch = () => {
-    onSearch();
   };
 
   const handleClearFilters = () => {
@@ -80,7 +76,7 @@ export const AccidentFilters: React.FC<AccidentFiltersProps> = ({
 
   const getSelectedLineaVida = () => {
     if (!localFilters.linea_vida_id) return "";
-    const linea = lineasVida.find((l) => l.id === localFilters.linea_vida_id);
+    const linea = lineasVida.find((l) => l.id === Number(localFilters.linea_vida_id));
     return linea
       ? `${linea.codigo} | ${linea.cliente} | ${linea.ubicacion}`
       : "";
@@ -100,86 +96,91 @@ export const AccidentFilters: React.FC<AccidentFiltersProps> = ({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Primera fila de filtros */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="space-y-4">
+      {/* Filtros principales compactos */}
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
         <SearchableSelect
           options={lineaVidaOptions}
           value={getSelectedLineaVida()}
           onChange={handleLineaVidaChange}
-          placeholder="Buscar por código, cliente o ubicación..."
-          label="Línea de Vida"
+          placeholder="Buscar línea de vida..."
         />
 
         <Select
-          label="Estado"
           value={localFilters.estado || ""}
           onChange={(e) =>
             handleFilterChange("estado", e.target.value || undefined)
           }
           options={estadoOptions}
+          className="px-3 py-2 text-sm"
         />
 
         <Select
-          label="Severidad"
           value={localFilters.severidad || ""}
           onChange={(e) =>
             handleFilterChange("severidad", e.target.value || undefined)
           }
           options={severidadOptions}
+          className="px-3 py-2 text-sm"
         />
 
-        <Input
-          label="Fecha Desde"
-          type="date"
-          value={localFilters.fecha_desde || ""}
-          onChange={(e) =>
-            handleFilterChange("fecha_desde", e.target.value || undefined)
-          }
-        />
+        <button
+          onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+          className={`w-full inline-flex items-center justify-center rounded-xl font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 border-2 text-[#18D043] dark:text-[#18D043] hover:bg-[#18D043] hover:text-white dark:hover:bg-[#18D043] dark:hover:text-white focus:ring-[#18D043]/20 dark:focus:ring-[#18D043]/30 shadow-sm hover:shadow-lg px-2 py-1 text-xs gap-1.5 min-h-[36px] ${
+            showAdvancedFilters 
+              ? "bg-[#18D043] text-white border-[#18D043] dark:border-[#18D043]" 
+              : "border-gray-300 dark:border-gray-600"
+          }`}
+        >
+          <Filter size={16} />
+          Filtros
+        </button>
       </div>
 
-      {/* Segunda fila de filtros */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <Input
-          label="Fecha Hasta"
-          type="date"
-          value={localFilters.fecha_hasta || ""}
-          onChange={(e) =>
-            handleFilterChange("fecha_hasta", e.target.value || undefined)
-          }
-        />
+      {/* Filtros avanzados colapsables */}
+      {showAdvancedFilters && (
+        <div className="grid grid-cols-1 gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 md:grid-cols-3">
+          <Input
+            label="Fecha Desde"
+            type="date"
+            value={localFilters.fecha_desde || ""}
+            onChange={(e) =>
+              handleFilterChange("fecha_desde", e.target.value || undefined)
+            }
+          />
 
-        <Input
-          label="Buscar en Descripción"
-          placeholder="Buscar en descripciones..."
-          value={localFilters.search || ""}
-          onChange={(e) =>
-            handleFilterChange("search", e.target.value || undefined)
-          }
-          icon={Search}
-        />
+          <Input
+            label="Fecha Hasta"
+            type="date"
+            value={localFilters.fecha_hasta || ""}
+            onChange={(e) =>
+              handleFilterChange("fecha_hasta", e.target.value || undefined)
+            }
+          />
 
-        <div className="flex items-end space-x-3">
-          <Button
-            onClick={handleSearch}
-            disabled={loading}
-            loading={loading}
-            className="flex-1"
-          >
-            Buscar
-          </Button>
+          <Input
+            label="Buscar en Descripción"
+            placeholder="Buscar en descripciones..."
+            value={localFilters.search || ""}
+            onChange={(e) =>
+              handleFilterChange("search", e.target.value || undefined)
+            }
+            icon={Search}
+          />
 
-          <Button
-            variant="outline"
-            onClick={handleClearFilters}
-            disabled={loading}
-            icon={X}
-          >
-            Limpiar Filtros
-          </Button>
+          <div className="flex items-end md:col-span-3">
+            <Button
+              variant="outline"
+              onClick={handleClearFilters}
+              disabled={loading}
+              icon={X}
+              className="w-full"
+            >
+              Limpiar Filtros
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

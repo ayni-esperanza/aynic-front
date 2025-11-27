@@ -1037,15 +1037,6 @@ export const RegistroList: React.FC = () => {
         </div>
         <div className="flex items-center space-x-3">
           <Button
-            onClick={refreshDataCallback}
-            variant="outline"
-            icon={RefreshCw}
-            loading={loading}
-            className="border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
-          >
-            Actualizar
-          </Button>
-          <Button
             onClick={() => setShowReports(!showReports)}
             variant="outline"
             icon={FileText}
@@ -1070,10 +1061,10 @@ export const RegistroList: React.FC = () => {
       {/* Estadísticas rápidas */}
       <div className="grid grid-cols-5 gap-3">
         <Card className="border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-800/40">
-          <div className="flex items-center justify-between p-3">
+          <div className="flex items-center justify-between p-2.5">
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium text-blue-600 dark:text-blue-400 truncate">Total</p>
-              <div className="text-xl font-bold text-blue-900 dark:text-blue-100 flex items-center">
+              <div className="text-lg font-bold text-blue-900 dark:text-blue-100 flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
@@ -1081,15 +1072,15 @@ export const RegistroList: React.FC = () => {
                 )}
               </div>
             </div>
-            <div className="text-xl flex-shrink-0">📊</div>
+            <div className="text-lg flex-shrink-0">📊</div>
           </div>
         </Card>
 
         <Card className="border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/40 dark:to-green-800/40">
-          <div className="flex items-center justify-between p-3">
+          <div className="flex items-center justify-between p-2.5">
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium text-green-600 dark:text-green-400 truncate">Activos</p>
-              <div className="text-xl font-bold text-green-900 dark:text-green-100 flex items-center">
+              <div className="text-lg font-bold text-green-900 dark:text-green-100 flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
@@ -1097,15 +1088,15 @@ export const RegistroList: React.FC = () => {
                 )}
               </div>
             </div>
-            <div className="text-xl flex-shrink-0">🟢</div>
+            <div className="text-lg flex-shrink-0">🟢</div>
           </div>
         </Card>
 
         <Card className="border-yellow-200 dark:border-yellow-800 bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/40 dark:to-yellow-800/40">
-          <div className="flex items-center justify-between p-3">
+          <div className="flex items-center justify-between p-2.5">
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium text-yellow-600 dark:text-yellow-400 truncate">Por Vencer</p>
-              <div className="text-xl font-bold text-yellow-900 dark:text-yellow-100 flex items-center">
+              <div className="text-lg font-bold text-yellow-900 dark:text-yellow-100 flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
@@ -1113,15 +1104,15 @@ export const RegistroList: React.FC = () => {
                 )}
               </div>
             </div>
-            <div className="text-xl flex-shrink-0">🟡</div>
+            <div className="text-lg flex-shrink-0">🟡</div>
           </div>
         </Card>
 
         <Card className="border-red-200 dark:border-red-800 bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/40 dark:to-red-800/40">
-          <div className="flex items-center justify-between p-3">
+          <div className="flex items-center justify-between p-2.5">
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium text-red-600 dark:text-red-400 truncate">Vencidos</p>
-              <div className="text-xl font-bold text-red-900 dark:text-red-100 flex items-center">
+              <div className="text-lg font-bold text-red-900 dark:text-red-100 flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
@@ -1129,17 +1120,17 @@ export const RegistroList: React.FC = () => {
                 )}
               </div>
             </div>
-            <div className="text-xl flex-shrink-0">🔴</div>
+            <div className="text-lg flex-shrink-0">🔴</div>
           </div>
         </Card>
 
         <Card className="border-orange-200 dark:border-orange-800 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/40 dark:to-orange-800/40">
-          <div className="flex items-center justify-between p-3">
+          <div className="flex items-center justify-between p-2.5">
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium text-orange-600 dark:text-orange-400 truncate">
                 Mantenimiento
               </p>
-              <div className="text-xl font-bold text-orange-900 dark:text-orange-100 flex items-center">
+              <div className="text-lg font-bold text-orange-900 dark:text-orange-100 flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
@@ -1147,7 +1138,7 @@ export const RegistroList: React.FC = () => {
                 )}
               </div>
             </div>
-            <div className="text-xl flex-shrink-0">🔧</div>
+            <div className="text-lg flex-shrink-0">🔧</div>
           </div>
         </Card>
       </div>

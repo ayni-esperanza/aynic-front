@@ -777,15 +777,6 @@ export const HistorialList: React.FC = () => {
             <div className="flex space-x-3">
               <Button
                 variant="outline"
-                onClick={handleSearch}
-                icon={RotateCcw}
-                disabled={loading || !isInitialized}
-                size="sm"
-              >
-                Recargar
-              </Button>
-              <Button
-                variant="outline"
                 onClick={handleExport}
                 icon={Download}
                 size="sm"

@@ -82,14 +82,6 @@ export const SolicitudesList: React.FC = () => {
             </p>
           </div>
         </div>
-        <Button
-          onClick={refreshData}
-          variant="outline"
-          loading={loading}
-          className="border-gray-300 hover:bg-gray-50"
-        >
-          Actualizar
-        </Button>
       </div>
 
       {/* Contenido principal */}

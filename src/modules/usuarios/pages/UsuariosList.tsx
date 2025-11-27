@@ -261,15 +261,6 @@ export const UsuariosList: React.FC = () => {
         </div>
         <div className="flex items-center space-x-3">
           <Button
-            onClick={refreshData}
-            variant="outline"
-            icon={RefreshCw}
-            loading={loading}
-            className="border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
-          >
-            Actualizar
-          </Button>
-          <Button
             onClick={() => navigate("nuevo")}
             icon={Plus}
             className="bg-gradient-to-r from-[#18D043] to-[#16a34a] hover:from-[#16a34a] hover:to-[#15803d] shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"

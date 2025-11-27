@@ -33,28 +33,24 @@ export const UserStats: React.FC<UserStatsProps> = ({ users, loading = false }) 
       value: stats.total,
       icon: Users,
       color: "blue",
-      description: "Usuarios registrados",
     },
     {
       title: "Administradores",
       value: stats.admins,
       icon: Shield,
       color: "red",
-      description: "Usuarios con rol admin",
     },
     {
       title: "Supervisores",
       value: stats.supervisors,
       icon: Shield,
       color: "purple",
-      description: "Usuarios con rol supervisor",
     },
     {
       title: "Usuarios Activos",
       value: stats.activeUsers,
       icon: UserCheck,
       color: "green",
-      description: "Usuarios activos en el sistema",
     },
   ];
 
@@ -120,22 +116,19 @@ export const UserStats: React.FC<UserStatsProps> = ({ users, loading = false }) 
             key={index}
             className={`${colors.bg} ${colors.border} transition-all duration-200 hover:shadow-lg`}
           >
-            <div className="flex items-center justify-between p-6">
+            <div className="flex items-center justify-between p-3">
               <div className="flex-1">
-                <div className={`text-sm font-medium ${colors.icon}`}>
+                <div className={`text-xs font-medium ${colors.icon}`}>
                   {stat.title}
                 </div>
-                <div className={`text-3xl font-bold ${colors.text} mt-2`}>
+                <div className={`text-2xl font-bold ${colors.text} mt-1`}>
                   {stat.value.toLocaleString()}
-                </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                  {stat.description}
                 </div>
               </div>
               <div
-                className={`w-12 h-12 ${colors.iconBg} rounded-xl flex items-center justify-center shadow-sm`}
+                className={`w-10 h-10 ${colors.iconBg} rounded-xl flex items-center justify-center shadow-sm`}
               >
-                <Icon className={`w-6 h-6 ${colors.icon}`} />
+                <Icon className={`w-5 h-5 ${colors.icon}`} />
               </div>
             </div>
           </Card>

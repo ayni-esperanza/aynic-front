@@ -8,8 +8,6 @@ import {
   Bell,
   BellRing,
   Activity,
-  Eye,
-  RefreshCw,
   Filter,
   BarChart3,
   PieChart,
@@ -21,8 +19,6 @@ import {
   Zap,
   TrendingUp,
   TrendingDown,
-  Minus,
-  Calendar,
   Users,
   Database,
   ChevronLeft,
@@ -124,26 +120,26 @@ const AlertMetricCard: React.FC<{
   const colors = colorClasses[color];
 
   return (
-    <Card
+    <div
       className={`${colors.bg} ${colors.border} ${
         onClick
           ? "cursor-pointer hover:shadow-md"
           : ""
-      } transition-all duration-200`}
+      } transition-all duration-200 rounded-xl border-2 shadow-sm`}
       onClick={onClick}
     >
-      <div className="flex items-center justify-between p-3">
+      <div className="flex items-center justify-between p-2.5">
         <div className="flex-1 min-w-0">
           <div className={`text-xs font-medium ${colors.icon} mb-0.5`}>{title}</div>
           {loading ? (
             <LoadingSpinner size="sm" />
           ) : (
             <>
-              <div className={`text-xl font-bold ${colors.text}`}>
+              <div className={`text-lg font-bold ${colors.text}`}>
                 {typeof value === "number" ? value.toLocaleString() : value}
               </div>
               {description && (
-                <div className="text-[10px] text-gray-600 dark:text-gray-400">{description}</div>
+                <div className="text-[10px] text-gray-600 dark:text-gray-400 mt-0.5">{description}</div>
               )}
               {trend && (
                 <div className="flex items-center mt-0.5">
@@ -165,12 +161,12 @@ const AlertMetricCard: React.FC<{
           )}
         </div>
         <div
-          className={`w-9 h-9 ${colors.iconBg} rounded-lg flex items-center justify-center flex-shrink-0`}
+          className={`w-8 h-8 ${colors.iconBg} rounded-lg flex items-center justify-center flex-shrink-0`}
         >
           <Icon className={`w-4 h-4 ${colors.icon}`} />
         </div>
       </div>
-    </Card>
+    </div>
   );
 };
 
@@ -179,8 +175,7 @@ const AlertItem: React.FC<{
   alert: Alert;
   onMarkAsRead: (id: string) => void;
   onViewRecord: (recordId: string) => void;
-  compact?: boolean;
-}> = ({ alert, onMarkAsRead, onViewRecord, compact = false }) => {
+}> = ({ alert, onMarkAsRead, onViewRecord }) => {
   const getPriorityConfig = (priority: Alert["prioridad"]) => {
     const configs = {
       low: {
@@ -340,7 +335,6 @@ export const Dashboard: React.FC = () => {
     prioridad: "" as Alert["prioridad"] | "",
     leida: "" as boolean | "",
   });
-  const [refreshing, setRefreshing] = useState(false);
   
   // Estados de paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -365,7 +359,7 @@ export const Dashboard: React.FC = () => {
   );
 
   const { execute: markAlertAsRead } = useApi(
-    alertService.markAsRead.bind(alertService),
+    (id: string) => alertService.markAsRead(id),
     {
       onSuccess: () => {
         success("Alerta marcada como leída");
@@ -438,13 +432,10 @@ export const Dashboard: React.FC = () => {
 
   // Funciones
   const refreshData = useCallback(async () => {
-    setRefreshing(true);
     try {
       await loadAlertStats();
     } catch (error) {
       console.error("Error refreshing data:", error);
-    } finally {
-      setRefreshing(false);
     }
   }, [loadAlertStats]);
 
@@ -553,26 +544,6 @@ export const Dashboard: React.FC = () => {
               )}
             </div>
           </div>
-        </div>
-
-        <div className="flex items-center space-x-3">
-          <Button
-            onClick={refreshData}
-            variant="outline"
-            icon={RefreshCw}
-            loading={refreshing}
-            className="border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
-          >
-            Actualizar
-          </Button>
-          <Button
-            onClick={handleGenerateAlerts}
-            variant="outline"
-            icon={Zap}
-            className="border-[#18D043] text-[#18D043] hover:bg-[#18D043] hover:text-white dark:border-[#18D043] dark:text-[#18D043]"
-          >
-            Generar Alertas
-          </Button>
         </div>
       </div>
 
@@ -843,7 +814,6 @@ export const Dashboard: React.FC = () => {
                   alert={alert}
                   onMarkAsRead={handleMarkAsRead}
                   onViewRecord={handleViewRecord}
-                  compact
                 />
               ))}
 

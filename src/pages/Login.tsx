@@ -151,9 +151,9 @@ export const Login: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute text-gray-400 transition-colors duration-200 right-3 hover:text-gray-600 disabled:opacity-50"
+                  className="absolute text-gray-400 transition-colors duration-200 transform -translate-y-1/2 right-3 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400 disabled:opacity-50"
                   disabled={loading}
-                  style={{ top: "2.3rem" }}
+                  style={{ top: "calc(50% + 0.75rem)" }}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
