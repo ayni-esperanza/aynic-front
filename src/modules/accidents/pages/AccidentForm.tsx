@@ -401,7 +401,7 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
                 Evidencias Fotográficas o Documentales
               </label>
               <div
-                className="p-1 text-center transition-colors border-2 border-gray-300 border-dashed cursor-pointer rounded-md hover:border-gray-400"
+                classNaÑme="p-1 text-center transition-colors border-2 border-gray-300 border-dashed cursor-pointer rounded-md hover:border-gray-400"
                 onClick={handleFileUpload}
               >
                 <div className="flex flex-col items-center">
