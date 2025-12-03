@@ -1,3 +1,5 @@
+import React from "react";
+
 interface CardProps {
   children: React.ReactNode;
   className?: string;
@@ -6,13 +8,13 @@ interface CardProps {
   gradient?: boolean;
 }
 
-export const Card: React.FC<CardProps> = ({
+export const Card = React.forwardRef<HTMLDivElement, CardProps>(({
   children,
   className = "",
   padding = "md",
   hover = false,
   gradient = false,
-}) => {
+}, ref) => {
   const paddingClasses = {
     none: "",
     sm: "p-4",
@@ -25,8 +27,10 @@ export const Card: React.FC<CardProps> = ({
   } ${gradient ? "bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900" : ""}`;
 
   return (
-    <div className={`${baseClasses} ${paddingClasses[padding]} ${className}`}>
+    <div ref={ref} className={`${baseClasses} ${paddingClasses[padding]} ${className}`}>
       {children}
     </div>
   );
-};
+});
+
+Card.displayName = "Card";

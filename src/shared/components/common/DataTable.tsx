@@ -102,14 +102,14 @@ const PaginationButtons = React.memo(
             type="button"
             key="first"
             onClick={() => onPageChange(1)}
-            className="px-3 py-2 text-sm font-medium text-gray-700 transition-all duration-200 rounded-lg hover:bg-gray-100 hover:scale-105"
+            className="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 transition-all duration-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-105"
           >
             1
           </button>
         );
         if (startPage > 2) {
           buttonList.push(
-            <span key="ellipsis1" className="px-3 py-2 text-sm text-gray-500">
+            <span key="ellipsis1" className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
               <MoreHorizontal size={16} />
             </span>
           );
@@ -125,7 +125,7 @@ const PaginationButtons = React.memo(
             className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 transform hover:scale-105 ${
               i === currentPage
                 ? "bg-gradient-to-r from-[#18D043] to-[#16a34a] text-white shadow-lg shadow-[#18D043]/25"
-                : "text-gray-700 hover:bg-gray-100"
+                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
             }`}
           >
             {i}
@@ -136,7 +136,7 @@ const PaginationButtons = React.memo(
       if (endPage < totalPages) {
         if (endPage < totalPages - 1) {
           buttonList.push(
-            <span key="ellipsis2" className="px-3 py-2 text-sm text-gray-500">
+            <span key="ellipsis2" className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
               <MoreHorizontal size={16} />
             </span>
           );
@@ -146,7 +146,7 @@ const PaginationButtons = React.memo(
             type="button"
             key="last"
             onClick={() => onPageChange(totalPages)}
-            className="px-3 py-2 text-sm font-medium text-gray-700 transition-all duration-200 rounded-lg hover:bg-gray-100 hover:scale-105"
+            className="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 transition-all duration-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-105"
           >
             {totalPages}
           </button>
@@ -237,7 +237,7 @@ export const DataTable = <T extends Record<string, unknown>>({
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#18D043]/20 border-t-[#18D043]"></div>
           <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#18D043] animate-ping"></div>
         </div>
-        <p className="font-medium text-gray-600">Cargando datos...</p>
+        <p className="font-medium text-gray-600 dark:text-gray-400">Cargando datos...</p>
       </div>
     );
   }
@@ -245,18 +245,18 @@ export const DataTable = <T extends Record<string, unknown>>({
   if (data.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center px-4 py-16">
-        <div className="flex items-center justify-center w-20 h-20 mb-6 bg-gray-100 rounded-full">
+        <div className="flex items-center justify-center w-20 h-20 mb-6 bg-gray-100 dark:bg-gray-700 rounded-full">
           <span className="text-3xl">🔍</span>
         </div>
         <div className="max-w-md text-center">
-          <h3 className="mb-3 text-xl font-semibold text-gray-900">
+          <h3 className="mb-3 text-xl font-semibold text-gray-900 dark:text-white">
             No se encontró ningún registro
           </h3>
-          <p className="mb-2 text-gray-600">
+          <p className="mb-2 text-gray-600 dark:text-gray-400">
             No hay registros que coincidan con los criterios de búsqueda
             actuales.
           </p>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Intenta ajustar los filtros o términos de búsqueda para obtener
             resultados.
           </p>

@@ -123,7 +123,7 @@ const AlertMetricCard: React.FC<{
     <div
       className={`${colors.bg} ${colors.border} ${
         onClick
-          ? "cursor-pointer hover:shadow-md"
+          ? "cursor-pointer hover:shadow-md active:scale-95"
           : ""
       } transition-all duration-200 rounded-xl border-2 shadow-sm`}
       onClick={onClick}
@@ -327,6 +327,7 @@ export const Dashboard: React.FC = () => {
   // Referencias para el ciclo de vida del componente
   const mountedRef = useRef(true);
   const isInitializedRef = useRef(false);
+  const alertsCenterRef = useRef<HTMLDivElement>(null);
 
   // Estados
   const [alertStats, setAlertStats] = useState<AlertStats | null>(null);
@@ -359,7 +360,7 @@ export const Dashboard: React.FC = () => {
   );
 
   const { execute: markAlertAsRead } = useApi(
-    (id: string) => alertService.markAsRead(id),
+    alertService.markAsRead.bind(alertService),
     {
       onSuccess: () => {
         success("Alerta marcada como leída");
@@ -520,6 +521,35 @@ export const Dashboard: React.FC = () => {
     };
   }, [alertStats]);
 
+  // Handlers para filtrar alertas al hacer clic en las cards
+  const handleFilterByTotal = useCallback(() => {
+    setAlertFilters({ tipo: "", prioridad: "", leida: "" });
+    setTimeout(() => {
+      alertsCenterRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  }, []);
+
+  const handleFilterByCritical = useCallback(() => {
+    setAlertFilters({ tipo: "", prioridad: "critical", leida: "" });
+    setTimeout(() => {
+      alertsCenterRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  }, []);
+
+  const handleFilterByUnread = useCallback(() => {
+    setAlertFilters({ tipo: "", prioridad: "", leida: false });
+    setTimeout(() => {
+      alertsCenterRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  }, []);
+
+  const handleFilterByRead = useCallback(() => {
+    setAlertFilters({ tipo: "", prioridad: "", leida: true });
+    setTimeout(() => {
+      alertsCenterRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  }, []);
+
   const loading = loadingAlertStats;
 
   return (
@@ -557,6 +587,7 @@ export const Dashboard: React.FC = () => {
           loading={loading}
           description="Todas las alertas del sistema"
           trend={alertTrends?.totalTrend}
+          onClick={handleFilterByTotal}
         />
 
         <AlertMetricCard
@@ -567,6 +598,7 @@ export const Dashboard: React.FC = () => {
           loading={loading}
           description="Requieren atención inmediata"
           trend={alertTrends?.criticalTrend}
+          onClick={handleFilterByCritical}
         />
 
         <AlertMetricCard
@@ -577,6 +609,7 @@ export const Dashboard: React.FC = () => {
           loading={loading}
           description="Alertas pendientes de revisar"
           trend={alertTrends?.unreadTrend}
+          onClick={handleFilterByUnread}
         />
 
         <AlertMetricCard
@@ -587,6 +620,7 @@ export const Dashboard: React.FC = () => {
           loading={loading}
           description="Alertas procesadas"
           trend={alertTrends?.resolvedTrend}
+          onClick={handleFilterByRead}
         />
       </div>
 
@@ -836,7 +870,7 @@ export const Dashboard: React.FC = () => {
       )}
 
       {/* Centro de Alertas */}
-      <Card>
+      <Card ref={alertsCenterRef}>
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="flex items-center text-xl font-semibold text-gray-900 dark:text-white">
