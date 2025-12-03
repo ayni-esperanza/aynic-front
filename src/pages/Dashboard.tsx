@@ -557,11 +557,8 @@ export const Dashboard: React.FC = () => {
       {/* Header del Dashboard de Alertas */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <div className="w-12 h-12 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-xl flex items-center justify-center shadow-lg">
-            <BellRing className="w-6 h-6 text-white" />
-          </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               Dashboard de Control
             </h1>
             <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">

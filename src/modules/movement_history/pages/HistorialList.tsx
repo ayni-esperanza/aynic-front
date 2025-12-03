@@ -617,9 +617,8 @@ export const HistorialList: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="flex items-center space-x-2 text-2xl font-bold text-gray-900 dark:text-white">
-          <History className="w-8 h-8 text-[#18D043]" />
-          <span>Historial de Movimientos</span>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Historial de Movimientos
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
           Registro completo y detallado de todas las acciones realizadas en las

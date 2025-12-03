@@ -243,21 +243,16 @@ export const UsuariosList: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div className="w-12 h-12 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-xl flex items-center justify-center shadow-lg">
-            <span className="text-xl text-white">👥</span>
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Gestión de Usuarios
-            </h1>
-            <p className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
-              <span>Administra los usuarios del sistema</span>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#18D043]/10 dark:bg-[#18D043]/20 text-[#16a34a] dark:text-[#18D043]">
-                {totalItems} usuarios
-              </span>
-            </p>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Gestión de Usuarios
+          </h1>
+          <p className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+            <span>Administra los usuarios del sistema</span>
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#18D043]/10 dark:bg-[#18D043]/20 text-[#16a34a] dark:text-[#18D043]">
+              {totalItems} usuarios
+            </span>
+          </p>
         </div>
         <div className="flex items-center space-x-3">
           <Button

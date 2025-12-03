@@ -66,21 +66,16 @@ export const SolicitudesList: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center justify-center w-12 h-12 shadow-lg bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl">
-            <FileText className="text-xl text-white" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Solicitudes de Autorización
-            </h1>
-            <p className="flex items-center space-x-2 text-gray-600">
-              <span>Gestiona las solicitudes de eliminación de registros</span>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                {pendingRequests.length} pendientes
-              </span>
-            </p>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Solicitudes de Autorización
+          </h1>
+          <p className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+            <span>Gestiona las solicitudes de eliminación de registros</span>
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300">
+              {pendingRequests.length} pendientes
+            </span>
+          </p>
         </div>
       </div>
 
