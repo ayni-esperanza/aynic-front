@@ -31,6 +31,11 @@ export const AccidentFilters: React.FC<AccidentFiltersProps> = ({
     useState<AccidentFiltersType>(filters);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
+  // Sincronizar filtros locales cuando cambian los filtros externos (por ejemplo, al hacer clic en cards)
+  React.useEffect(() => {
+    setLocalFilters(filters);
+  }, [filters]);
+
   const handleFilterChange = (
     key: keyof AccidentFiltersType,
     value: string | number | undefined

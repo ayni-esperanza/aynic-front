@@ -7,11 +7,13 @@ import type { AccidentStatistics } from "../types/accident";
 interface AccidentStatsProps {
   statistics: AccidentStatistics | null;
   loading: boolean;
+  onFilterClick?: (filterType: 'all' | 'reportado' | 'investigacion' | 'resuelto' | 'critico') => void;
 }
 
 export const AccidentStats: React.FC<AccidentStatsProps> = ({
   statistics,
   loading,
+  onFilterClick,
 }) => {
   if (loading) {
     return (
@@ -44,7 +46,11 @@ export const AccidentStats: React.FC<AccidentStatsProps> = ({
   return (
     <div className="grid grid-cols-1 gap-4 mb-8 md:grid-cols-2 lg:grid-cols-5">
       {/* Total Accidentes */}
-      <Card hover className="p-4">
+      <div
+        className="cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200"
+        onClick={() => onFilterClick?.('all')}
+      >
+        <Card hover className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <p className="text-xs font-medium text-gray-600 dark:text-gray-400">
@@ -59,9 +65,14 @@ export const AccidentStats: React.FC<AccidentStatsProps> = ({
           </div>
         </div>
       </Card>
+      </div>
 
       {/* Reportados */}
-      <Card hover className="p-4">
+      <div
+        className="cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200"
+        onClick={() => onFilterClick?.('reportado')}
+      >
+        <Card hover className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Reportados</p>
@@ -74,9 +85,14 @@ export const AccidentStats: React.FC<AccidentStatsProps> = ({
           </div>
         </div>
       </Card>
+      </div>
 
       {/* En Investigación */}
-      <Card hover className="p-4">
+      <div
+        className="cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200"
+        onClick={() => onFilterClick?.('investigacion')}
+      >
+        <Card hover className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <p className="text-xs font-medium text-gray-600 dark:text-gray-400">
@@ -91,9 +107,14 @@ export const AccidentStats: React.FC<AccidentStatsProps> = ({
           </div>
         </div>
       </Card>
+      </div>
 
       {/* Resueltos */}
-      <Card hover className="p-4">
+      <div
+        className="cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200"
+        onClick={() => onFilterClick?.('resuelto')}
+      >
+        <Card hover className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Resueltos</p>
@@ -106,9 +127,14 @@ export const AccidentStats: React.FC<AccidentStatsProps> = ({
           </div>
         </div>
       </Card>
+      </div>
 
       {/* Críticos */}
-      <Card hover className="p-4 border-red-200 dark:border-red-800">
+      <div
+        className="cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200"
+        onClick={() => onFilterClick?.('critico')}
+      >
+        <Card hover className="p-4 border-red-200 dark:border-red-800">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Críticos</p>
@@ -121,6 +147,7 @@ export const AccidentStats: React.FC<AccidentStatsProps> = ({
           </div>
         </div>
       </Card>
+      </div>
     </div>
   );
 };

@@ -139,6 +139,37 @@ export const AccidentsList: React.FC = () => {
     loadAccidents(newFilters);
   };
 
+  const handleFilterClick = (filterType: 'all' | 'reportado' | 'investigacion' | 'resuelto' | 'critico') => {
+    let newFilters: FilterType = { ...filters, page: 1 };
+    
+    switch (filterType) {
+      case 'all':
+        // Limpiar filtros de estado y severidad
+        delete newFilters.estado;
+        delete newFilters.severidad;
+        break;
+      case 'reportado':
+        newFilters.estado = 'REPORTADO' as EstadoAccidente;
+        delete newFilters.severidad;
+        break;
+      case 'investigacion':
+        newFilters.estado = 'EN_INVESTIGACION' as EstadoAccidente;
+        delete newFilters.severidad;
+        break;
+      case 'resuelto':
+        newFilters.estado = 'RESUELTO' as EstadoAccidente;
+        delete newFilters.severidad;
+        break;
+      case 'critico':
+        delete newFilters.estado;
+        newFilters.severidad = 'CRITICO' as SeveridadAccidente;
+        break;
+    }
+    
+    setFilters(newFilters);
+    loadAccidents(newFilters);
+  };
+
   const handleNewAccident = () => {
     setSelectedAccident(undefined);
     setShowForm(true);
@@ -362,7 +393,7 @@ export const AccidentsList: React.FC = () => {
       </div>
 
       {/* Estadísticas */}
-      <AccidentStats statistics={statistics} loading={statsLoading} />
+      <AccidentStats statistics={statistics} loading={statsLoading} onFilterClick={handleFilterClick} />
 
       {/* Filtros */}
       <Card className="p-6">
