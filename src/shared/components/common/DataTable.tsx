@@ -24,6 +24,8 @@ interface DataTableProps<T extends Record<string, unknown>> {
   stickyHeader?: boolean;
   headerOffset?: number;
   maxBodyHeight?: string;
+  onRowClick?: (item: T) => void;
+  density?: "normal" | "compact";
 }
 
 // Fila de la tabla
@@ -32,48 +34,64 @@ const TableRow = <T extends Record<string, unknown>>({
   columns,
   index,
   isEven,
+  onRowClick,
+  density = "normal",
 }: {
   item: T;
   columns: TableColumn<T>[];
   index: number;
   isEven: boolean;
-}) => (
-  <tr
-    key={index}
-    className={`transition-all duration-200 hover:bg-gradient-to-r hover:from-[#18D043]/5 hover:to-green-50 dark:hover:to-green-900/20 hover:shadow-sm group ${
-      isEven ? "bg-gray-50/50 dark:bg-gray-800/30" : "bg-white dark:bg-gray-800"
-    }`}
-  >
-    {columns.map((column, colIndex) => {
-      try {
-        return (
-          <td
-            key={String(column.key)}
-            className={`px-6 py-4 text-sm whitespace-nowrap transition-all duration-200 group-hover:scale-[1.02] ${
-              colIndex === 0 ? "font-medium text-gray-900 dark:text-white" : "text-gray-700 dark:text-gray-300"
-            } ${column.width ? String(column.width) : ""}`}
-          >
-            {column.render
-              ? column.render((item as any)[column.key], item)
-              : String(((item as any)[column.key] as any) ?? "-")}
-          </td>
-        );
-      } catch (error) {
-        console.warn(`Error rendering column ${String(column.key)}:`, error);
-        return (
-          <td
-            key={String(column.key)}
-            className="px-6 py-4 text-sm text-gray-900 dark:text-white whitespace-nowrap"
-          >
-            <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-800 bg-red-100 rounded-full">
-              Error
-            </span>
-          </td>
-        );
-      }
-    })}
-  </tr>
-);
+  onRowClick?: (item: T) => void;
+  density?: "normal" | "compact";
+}) => {
+  const isCompact = density === "compact";
+  const cellBaseClass = isCompact
+    ? "px-4 py-2 text-[13px] leading-5"
+    : "px-6 py-4 text-sm";
+  const firstColumnClass = isCompact
+    ? "font-semibold text-gray-900 dark:text-white"
+    : "font-medium text-gray-900 dark:text-white";
+  const otherColumnClass = "text-gray-700 dark:text-gray-300";
+
+  return (
+    <tr
+      key={index}
+      onClick={() => onRowClick?.(item)}
+      className={`transition-all duration-200 hover:bg-gradient-to-r hover:from-[#18D043]/5 hover:to-green-50 dark:hover:to-green-900/20 hover:shadow-sm group ${
+        isEven ? "bg-gray-50/50 dark:bg-gray-800/30" : "bg-white dark:bg-gray-800"
+      } ${onRowClick ? "cursor-pointer" : ""}`}
+    >
+      {columns.map((column, colIndex) => {
+        try {
+          return (
+            <td
+              key={String(column.key)}
+              className={`${cellBaseClass} whitespace-nowrap transition-all duration-200 group-hover:scale-[1.01] ${
+                colIndex === 0 ? firstColumnClass : otherColumnClass
+              } ${column.width ? String(column.width) : ""}`}
+            >
+              {column.render
+                ? column.render((item as any)[column.key], item)
+                : String(((item as any)[column.key] as any) ?? "-")}
+            </td>
+          );
+        } catch (error) {
+          console.warn(`Error rendering column ${String(column.key)}:`, error);
+          return (
+            <td
+              key={String(column.key)}
+              className={`${cellBaseClass} text-gray-900 dark:text-white whitespace-nowrap`}
+            >
+              <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-800 bg-red-100 rounded-full">
+                Error
+              </span>
+            </td>
+          );
+        }
+      })}
+    </tr>
+  );
+};
 
 // Botones de paginación
 const PaginationButtons = React.memo(
@@ -174,6 +192,8 @@ export const DataTable = <T extends Record<string, unknown>>({
   stickyHeader = true,
   headerOffset = 0,
   maxBodyHeight = "60vh",
+  onRowClick,
+  density = "normal",
 }: DataTableProps<T>) => {
   const [localSortBy, setLocalSortBy] = useState<keyof T | null>(
     (sortColumn as keyof T) || null
@@ -216,9 +236,11 @@ export const DataTable = <T extends Record<string, unknown>>({
           columns={columns}
           index={index}
           isEven={index % 2 === 0}
+          onRowClick={onRowClick}
+          density={density}
         />
       )),
-    [data, columns]
+    [data, columns, onRowClick, density]
   );
 
   const paginationInfo = useMemo(
@@ -266,7 +288,7 @@ export const DataTable = <T extends Record<string, unknown>>({
   }
 
   return (
-    <div className="space-y-6">
+    <div className={density === "compact" ? "space-y-4" : "space-y-6"}>
       {/* Tabla con header sticky */}
       <div className="overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-xl">
         {/* Scroll horizontal si hace falta */}
@@ -296,7 +318,9 @@ export const DataTable = <T extends Record<string, unknown>>({
                             ? "sticky [top:var(--header-offset)] z-10"
                             : "",
                           "bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600",
-                          "px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider",
+                          density === "compact"
+                            ? "px-4 py-2 text-left text-[11px] font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider"
+                            : "px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider",
                           "border-r border-gray-200 dark:border-gray-600 last:border-r-0 shadow-sm",
                           column.width ? String(column.width) : "",
                           column.sortable
@@ -349,7 +373,9 @@ export const DataTable = <T extends Record<string, unknown>>({
       </div>
 
       {/* Paginación */}
-      <div className="flex flex-col items-center justify-between px-6 py-4 space-y-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm sm:flex-row sm:space-y-0 rounded-xl">
+      <div className={`flex flex-col items-center justify-between bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm sm:flex-row sm:space-y-0 rounded-xl ${
+        density === "compact" ? "px-4 py-3 space-y-3" : "px-6 py-4 space-y-4"
+      }`}>
         <div className="flex items-center space-x-4">
           <div className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300 rounded-lg bg-gray-50 dark:bg-gray-700">
             <span className="font-medium">

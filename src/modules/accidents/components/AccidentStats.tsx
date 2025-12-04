@@ -53,10 +53,10 @@ export const AccidentStats: React.FC<AccidentStatsProps> = ({
         <Card hover className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <p className="text-xs font-medium text-gray-600 dark:text-gray-400">
+            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
               Total Accidentes
             </p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">
+            <p className="text-3xl font-bold text-gray-900 dark:text-white">
               {statistics.total}
             </p>
           </div>
@@ -75,8 +75,8 @@ export const AccidentStats: React.FC<AccidentStatsProps> = ({
         <Card hover className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Reportados</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">
+            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Reportados</p>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white">
               {getEstadoCount("REPORTADO")}
             </p>
           </div>
@@ -95,10 +95,10 @@ export const AccidentStats: React.FC<AccidentStatsProps> = ({
         <Card hover className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <p className="text-xs font-medium text-gray-600 dark:text-gray-400">
+            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
               En Investigación
             </p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">
+            <p className="text-3xl font-bold text-gray-900 dark:text-white">
               {getEstadoCount("EN_INVESTIGACION")}
             </p>
           </div>
@@ -117,8 +117,8 @@ export const AccidentStats: React.FC<AccidentStatsProps> = ({
         <Card hover className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Resueltos</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">
+            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Resueltos</p>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white">
               {getEstadoCount("RESUELTO")}
             </p>
           </div>
@@ -137,8 +137,8 @@ export const AccidentStats: React.FC<AccidentStatsProps> = ({
         <Card hover className="p-4 border-red-200 dark:border-red-800">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Críticos</p>
-            <p className="text-2xl font-bold text-red-600 dark:text-red-400">
+            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Críticos</p>
+            <p className="text-3xl font-bold text-red-600 dark:text-red-400">
               {getCriticosCount()}
             </p>
           </div>

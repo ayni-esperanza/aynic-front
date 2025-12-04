@@ -9,7 +9,6 @@ import { useNavigate } from "react-router-dom";
 import {
   Plus,
   Edit,
-  Trash2,
   Eye,
   Search,
   Filter,
@@ -17,7 +16,6 @@ import {
   List,
   SlidersHorizontal,
   Camera,
-  Link,
   FileText,
   X,
 } from "lucide-react";
@@ -33,6 +31,7 @@ import { useApi } from '../../../shared/hooks/useApi';
 import { registroService } from "../services/registroService";
 import type { ImageResponse } from '../../../shared/services/imageService';
 import { RelationshipModal } from "../components/RelationshipModal";
+import { RegistroDetailModal } from "../components/RegistroDetailModal";
 import { formatDate } from "../../../shared/utils/formatters";
 import { useAuthStore } from "../../../store/authStore";
 import { DeleteModal } from "../../solicitudes/components/DeleteModal";
@@ -67,6 +66,8 @@ export const RegistroList: React.FC = () => {
 
   const [showReports, setShowReports] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState<DataRecord | null>(null);
 
   type AppliedFilters = {
     codigo?: string;
@@ -402,6 +403,22 @@ export const RegistroList: React.FC = () => {
     setSelectedRecordForRelation(null);
     refreshData();
   }, [refreshData]);
+
+  const handleRowClick = useCallback((registro: DataRecord) => {
+    setSelectedRecord(registro);
+    setShowDetailModal(true);
+  }, []);
+
+  const handleCloseDetailModal = useCallback(() => {
+    setShowDetailModal(false);
+    setSelectedRecord(null);
+  }, []);
+
+  const handleOpenEditModal = useCallback((registro: DataRecord) => {
+    // Por ahora navegamos a la página de edición
+    // TODO: Convertir EditarRegistroForm en modal
+    navigate(`editar/${registro.id}`);
+  }, [navigate]);
 
   const getEstadoConfig = useCallback((estado: DataRecord["estado_actual"]) => {
     const configs = {
@@ -777,63 +794,8 @@ export const RegistroList: React.FC = () => {
           return <Badge variant={config.variant}>{estado}</Badge>;
         },
       },
-      {
-        key: "id",
-        label: "Acciones",
-        render: (_: any, registro: DataRecord) => {
-          // Verificar si el usuario es de AYNI (considerando variantes)
-          const isAyniUser = user?.empresa === 'ayni' || user?.empresa === 'Ayni' || user?.empresa === 'AYNI';
-
-          return (
-            <div className="flex space-x-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate(`detalle/${registro.id}`)}
-                icon={Eye}
-                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                title="Ver detalles"
-              >
-                Ver
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate(`editar/${registro.id}`)}
-                icon={Edit}
-                className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                title="Editar registro"
-                disabled={!isAyniUser}
-              >
-                Editar
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleCreateDerivadas(registro)}
-                icon={Link}
-                className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-                title="Crear Líneas Derivadas"
-              >
-                Derivadas
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleDeleteRegistro(registro)}
-                icon={Trash2}
-                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                title="Eliminar registro"
-                disabled={deleting || !isAyniUser}
-              >
-                Eliminar
-              </Button>
-            </div>
-          );
-        },
-      },
     ],
-    [navigate, deleting, handleDeleteRegistro, getEstadoConfig, recordImages, user]
+    [getEstadoConfig, recordImages]
   );
 
   // Vista en cuadrícula (actualizada para mostrar empresa y área)
@@ -952,7 +914,7 @@ export const RegistroList: React.FC = () => {
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate(`detalle/${registro.id}`);
+                    handleRowClick(registro);
                   }}
                   icon={Eye}
                   className="flex-1 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/30"
@@ -965,7 +927,7 @@ export const RegistroList: React.FC = () => {
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate(`editar/${registro.id}`);
+                    handleOpenEditModal(registro);
                   }}
                   icon={Edit}
                   className="flex-1 text-green-600 dark:text-green-400 border-green-200 dark:border-green-700 hover:bg-green-50 dark:hover:bg-green-900/30"
@@ -1042,8 +1004,8 @@ export const RegistroList: React.FC = () => {
           <Card className="border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-800/40">
             <div className="flex items-center justify-between p-2.5">
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-blue-600 dark:text-blue-400 truncate">Total</p>
-              <div className="text-lg font-bold text-blue-900 dark:text-blue-100 flex items-center">
+              <p className="text-sm font-medium text-blue-600 dark:text-blue-400 truncate">Total</p>
+              <div className="text-3xl font-bold text-blue-900 dark:text-blue-100 flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
@@ -1065,8 +1027,8 @@ export const RegistroList: React.FC = () => {
           <Card className="border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/40 dark:to-green-800/40">
             <div className="flex items-center justify-between p-2.5">
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-green-600 dark:text-green-400 truncate">Activos</p>
-              <div className="text-lg font-bold text-green-900 dark:text-green-100 flex items-center">
+              <p className="text-sm font-medium text-green-600 dark:text-green-400 truncate">Activos</p>
+              <div className="text-3xl font-bold text-green-900 dark:text-green-100 flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
@@ -1088,8 +1050,8 @@ export const RegistroList: React.FC = () => {
           <Card className="border-yellow-200 dark:border-yellow-800 bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/40 dark:to-yellow-800/40">
             <div className="flex items-center justify-between p-2.5">
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-yellow-600 dark:text-yellow-400 truncate">Por Vencer</p>
-              <div className="text-lg font-bold text-yellow-900 dark:text-yellow-100 flex items-center">
+              <p className="text-sm font-medium text-yellow-600 dark:text-yellow-400 truncate">Por Vencer</p>
+              <div className="text-3xl font-bold text-yellow-900 dark:text-yellow-100 flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
@@ -1111,8 +1073,8 @@ export const RegistroList: React.FC = () => {
           <Card className="border-red-200 dark:border-red-800 bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/40 dark:to-red-800/40">
             <div className="flex items-center justify-between p-2.5">
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-red-600 dark:text-red-400 truncate">Vencidos</p>
-              <div className="text-lg font-bold text-red-900 dark:text-red-100 flex items-center">
+              <p className="text-sm font-medium text-red-600 dark:text-red-400 truncate">Vencidos</p>
+              <div className="text-3xl font-bold text-red-900 dark:text-red-100 flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
@@ -1134,10 +1096,10 @@ export const RegistroList: React.FC = () => {
           <Card className="border-orange-200 dark:border-orange-800 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/40 dark:to-orange-800/40">
             <div className="flex items-center justify-between p-2.5">
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-orange-600 dark:text-orange-400 truncate">
+              <p className="text-sm font-medium text-orange-600 dark:text-orange-400 truncate">
                 Mantenimiento
               </p>
-              <div className="text-lg font-bold text-orange-900 dark:text-orange-100 flex items-center">
+              <div className="text-3xl font-bold text-orange-900 dark:text-orange-100 flex items-center">
                 {loadingStats ? (
                   <LoadingSpinner size="sm" />
                 ) : (
@@ -1343,8 +1305,19 @@ export const RegistroList: React.FC = () => {
             </div>
           )}
           {/* Panel de filtros */}
-          {showFilters && (
-            <div className="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
+          <div
+            className={`overflow-hidden transition-[max-height] duration-300 ease-in-out ${
+              showFilters ? "max-h-[1200px] mt-4" : "max-h-0"
+            }`}
+            aria-hidden={!showFilters}
+          >
+            <div
+              className={`pt-4 border-t border-gray-200 dark:border-gray-700 transition-all duration-300 ${
+                showFilters
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 -translate-y-2 pointer-events-none"
+              }`}
+            >
               <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
                 {/* Estado */}
                 <div className="md:col-span-4">
@@ -1354,6 +1327,7 @@ export const RegistroList: React.FC = () => {
                   <Select
                     value={statusFilter}
                     onChange={handleStatusFilterChange}
+                    className="h-10"
                     options={[
                       { value: "", label: "Todos los estados" },
                       { value: "activo", label: "Activo" },
@@ -1403,6 +1377,7 @@ export const RegistroList: React.FC = () => {
                   <Select
                     value={anclajeTipoFilter}
                     onChange={handleAnclajeTipoFilterChange}
+                    className="h-10"
                     options={[
                       { value: "", label: "Todos los tipos" },
                       { value: "anclaje_terminal", label: "Anclaje Terminal" },
@@ -1486,7 +1461,7 @@ export const RegistroList: React.FC = () => {
                 </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
       </Card>
 
@@ -1521,6 +1496,8 @@ export const RegistroList: React.FC = () => {
                   });
                   fetchWith({}, pagination.currentPage);
                 }}
+                onRowClick={handleRowClick}
+                density="compact"
               />
             )}
           </div>
@@ -1617,6 +1594,24 @@ export const RegistroList: React.FC = () => {
             <RegistroForm onClose={handleCloseCreateModal} />
           </div>
         </div>
+      )}
+
+      {/* Modal de detalles del registro */}
+      {selectedRecord && (
+        <RegistroDetailModal
+          isOpen={showDetailModal}
+          onClose={handleCloseDetailModal}
+          registroId={selectedRecord.id}
+          onEdit={handleOpenEditModal}
+          onDelete={(registro) => {
+            handleDeleteRegistro(registro);
+            setShowDetailModal(false);
+          }}
+          onCreateDerivadas={(registro) => {
+            handleCreateDerivadas(registro);
+            setShowDetailModal(false);
+          }}
+        />
       )}
     </div>
   );

@@ -124,10 +124,10 @@ export const UserStats: React.FC<UserStatsProps> = ({ users, loading = false, on
             >
             <div className="flex items-center justify-between p-3">
               <div className="flex-1">
-                <div className={`text-xs font-medium ${colors.icon}`}>
+                <div className={`text-sm font-medium ${colors.icon}`}>
                   {stat.title}
                 </div>
-                <div className={`text-2xl font-bold ${colors.text} mt-1`}>
+                <div className={`text-3xl font-bold ${colors.text} mt-1`}>
                   {stat.value.toLocaleString()}
                 </div>
               </div>

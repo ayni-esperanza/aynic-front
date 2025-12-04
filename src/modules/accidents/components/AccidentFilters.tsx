@@ -136,6 +136,8 @@ export const AccidentFilters: React.FC<AccidentFiltersProps> = ({
               ? "bg-[#18D043] text-white border-[#18D043] dark:border-[#18D043]" 
               : "border-gray-300 dark:border-gray-600"
           }`}
+          aria-expanded={showAdvancedFilters}
+          aria-controls="accident-advanced-filters"
         >
           <Filter size={16} />
           Filtros
@@ -143,8 +145,20 @@ export const AccidentFilters: React.FC<AccidentFiltersProps> = ({
       </div>
 
       {/* Filtros avanzados colapsables */}
-      {showAdvancedFilters && (
-        <div className="grid grid-cols-1 gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 md:grid-cols-3">
+      <div
+        id="accident-advanced-filters"
+        className={`overflow-hidden transition-[max-height] duration-300 ease-in-out ${
+          showAdvancedFilters ? "max-h-[600px] mt-3" : "max-h-0"
+        }`}
+        aria-hidden={!showAdvancedFilters}
+      >
+        <div
+          className={`grid grid-cols-1 gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 md:grid-cols-3 transition-all duration-300 ${
+            showAdvancedFilters
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 -translate-y-2 pointer-events-none"
+          }`}
+        >
           <Input
             label="Fecha Desde"
             type="date"
@@ -185,7 +199,7 @@ export const AccidentFilters: React.FC<AccidentFiltersProps> = ({
             </Button>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
