@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Plus, Edit, Trash2, Eye, RefreshCw } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react";
 import { DataTable } from '../../../shared/components/common/DataTable';
 import { Button } from '../../../shared/components/ui/Button';
 import { Badge } from '../../../shared/components/ui/Badge';
@@ -10,12 +9,14 @@ import { useToast } from '../../../shared/components/ui/Toast';
 
 import type { TableColumn } from "../../../types";
 import { useUserData } from "../hooks";
-import { UserFilters, UserStats } from "../components";
+import { UserFilters, UserStats, UserDetailModal, UserCreateModal } from "../components";
 import type { FrontendUser } from "../services/userService";
 
 export const UsuariosList: React.FC = () => {
-  const navigate = useNavigate();
   const { success, error: showError } = useToast();
+  const [selectedUser, setSelectedUser] = useState<FrontendUser | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
 
   // Usar el hook personalizado para datos de usuarios
   const {
@@ -43,6 +44,8 @@ export const UsuariosList: React.FC = () => {
   React.useEffect(() => {
     if (deleteSuccess) {
       success("Usuario eliminado exitosamente");
+      setModalOpen(false);
+      setSelectedUser(null);
     }
   }, [deleteSuccess, success]);
 
@@ -152,47 +155,8 @@ export const UsuariosList: React.FC = () => {
           </Badge>
         ),
       },
-      {
-        key: "id",
-        label: "Acciones",
-        render: (_: any, user: FrontendUser) => (
-          <div className="flex space-x-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(`detalle/${user.id}`)}
-              icon={Eye}
-              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-              title="Ver detalles"
-            >
-              Ver
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(`editar/${user.id}`)}
-              icon={Edit}
-              className="text-green-600 hover:text-green-700 hover:bg-green-50"
-              title="Editar usuario"
-            >
-              Editar
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleDeleteUser(user.id, user.nombre)}
-              icon={Trash2}
-              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-              title="Eliminar usuario"
-              disabled={deleting}
-            >
-              Eliminar
-            </Button>
-          </div>
-        ),
-      },
     ],
-    [navigate, handleDeleteUser, deleting]
+    []
   );
 
   // Mock de paginación simple (puedes implementar paginación real más tarde)
@@ -273,7 +237,7 @@ export const UsuariosList: React.FC = () => {
         </div>
         <div className="flex items-center space-x-3">
           <Button
-            onClick={() => navigate("nuevo")}
+            onClick={() => setCreateModalOpen(true)}
             icon={Plus}
             className="bg-gradient-to-r from-[#18D043] to-[#16a34a] hover:from-[#16a34a] hover:to-[#15803d] shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
           >
@@ -303,9 +267,29 @@ export const UsuariosList: React.FC = () => {
             totalItems={totalItems}
             onPageChange={handlePageChange}
             loading={loading}
+            onRowClick={(user) => {
+              setSelectedUser(user);
+              setModalOpen(true);
+            }}
+            density="compact"
           />
         </div>
       </Card>
+
+                    className="bg-gradient-to-r from-[#18D043] to-[#16a34a] hover:from-[#16a34a] hover:to-[#15803d] shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+        user={selectedUser}
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onUpdated={refreshData}
+        onDelete={handleDeleteUser}
+        deleting={deleting}
+      />
+
+      <UserCreateModal
+        isOpen={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        onCreated={refreshData}
+      />
     </div>
   );
 };
