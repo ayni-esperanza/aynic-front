@@ -1,18 +1,14 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
-  History,
   Users,
   Activity,
   Calendar,
-  Search,
-  RotateCcw,
   ChevronDown,
   ChevronRight,
   Eye,
   EyeOff,
   Download,
-  Filter,
 } from "lucide-react";
 import { Card } from '../../../shared/components/ui/Card';
 import { Badge } from '../../../shared/components/ui/Badge';
@@ -20,7 +16,6 @@ import { Button } from '../../../shared/components/ui/Button';
 import { Input } from '../../../shared/components/ui/Input';
 import { Select } from '../../../shared/components/ui/Select';
 import { useToast } from '../../../shared/components/ui/Toast';
-import { useApi } from '../../../shared/hooks/useApi';
 import { SearchableSelect } from '../../../shared/components/ui/SearchableSelect';
 import {
   movementHistoryService,
@@ -407,16 +402,13 @@ export const HistorialList: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Función de ejecución manual CONTROLADA - acepta filtros específicos
+  // Función de ejecución manual CONTROLADA - recibe filtros específicos
   const executeGetMovements = useCallback(
-    async (customFilters?: MovementFilters) => {
-      if (loading) return; // Prevenir ejecuciones múltiples
-
+    async (filtersToUse: MovementFilters) => {
       setLoading(true);
       setError(null);
 
       try {
-        const filtersToUse = customFilters || filters;
         const result = await movementHistoryService.getMovements(filtersToUse);
         setMovementsData(result);
       } catch (err) {
@@ -429,13 +421,8 @@ export const HistorialList: React.FC = () => {
         setLoading(false);
       }
     },
-    [filters, loading, showError]
+    [showError]
   );
-
-  // FUNCIÓN handlePageChange DECLARADA PRIMERO
-  const handlePageChange = useCallback((page: number) => {
-    setFilters((prev) => ({ ...prev, page }));
-  }, []);
 
   // CARGAR DATOS INICIALES UNA SOLA VEZ
   useEffect(() => {
@@ -491,50 +478,25 @@ export const HistorialList: React.FC = () => {
     [filters, setSearchParams]
   );
 
-  // Esta función SI ejecuta la búsqueda cuando el usuario hace clic en "Buscar"
-  const handleSearch = useCallback(() => {
-    if (!isInitialized) return;
-    executeGetMovements();
-  }, [executeGetMovements, isInitialized]);
-
-  // Ejecutar búsqueda inicial SOLO cuando se inicializa
+  // Ejecutar automáticamente cada vez que cambien los filtros
   useEffect(() => {
-    if (isInitialized && !movementsData) {
-      // Solo ejecutar si no hay datos cargados aún
-      executeGetMovements();
-    }
-  }, [isInitialized]); // ← Solo depende de isInitialized
+    if (!isInitialized) return;
+    executeGetMovements(filters);
+  }, [filters, isInitialized, executeGetMovements]);
 
   // Función para cambiar página CON ejecución inmediata de filtros correctos
   const handlePageChangeAndSearch = useCallback(
     (page: number) => {
-      // Crear los nuevos filtros con la página actualizada
       const newFilters = { ...filters, page };
-
-      // Actualizar el estado
       setFilters(newFilters);
-
-      // Ejecutar INMEDIATAMENTE con los filtros correctos
-      executeGetMovements(newFilters);
     },
-    [filters, executeGetMovements]
+    [filters]
   );
 
-  const handleClearFilters = useCallback(() => {
-    const clearedFilters: MovementFilters = {
-      search: "",
-      action: undefined,
-      username: undefined,
-      date_from: "",
-      date_to: "",
-      page: 1,
-      limit: 10,
-      sortBy: "action_date",
-      sortOrder: "DESC",
-    };
-    setFilters(clearedFilters);
-    setSearchParams(new URLSearchParams());
-  }, [setSearchParams]);
+  const handleRetry = useCallback(() => {
+    if (!isInitialized) return;
+    executeGetMovements(filters);
+  }, [executeGetMovements, filters, isInitialized]);
 
   const handleExport = useCallback(async () => {
     try {
@@ -616,14 +578,26 @@ export const HistorialList: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Historial de Movimientos
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Registro completo y detallado de todas las acciones realizadas en las
-          líneas de vida
-        </p>
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Historial de Movimientos
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Registro completo y detallado de todas las acciones realizadas en las
+            líneas de vida
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          onClick={handleExport}
+          icon={Download}
+          size="sm"
+          disabled={loading || !isInitialized}
+          className="self-start"
+        >
+          Exportar CSV
+        </Button>
       </div>
 
       {/* Estadísticas */}
@@ -692,48 +666,68 @@ export const HistorialList: React.FC = () => {
       )}
 
       {/* FILTROS CON ROL Y USUARIO */}
-      <Card padding="lg">
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+      <Card padding="md">
+        <div className="space-y-3">
+          <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-3 lg:grid-cols-5">
             {/* Búsqueda */}
-            <Input
-              placeholder="Buscar en descripciones..."
-              value={filters.search || ""}
-              onChange={(e) => handleFilterChange("search", e.target.value)}
-              icon={Search}
-            />
+            <div>
+              <label className="block mb-1 text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-gray-400">
+                Buscar
+              </label>
+              <Input
+                placeholder="Descripción, código o usuario"
+                value={filters.search || ""}
+                onChange={(e) => handleFilterChange("search", e.target.value)}
+                className="h-10 text-sm"
+              />
+            </div>
 
             {/* Filtro por Usuario */}
-            <SearchableSelect
-              options={[
-                "Todos los usuarios",
-                ...usernameOptions.map((option) => option.value),
-              ]}
-              value={filters.username ? filters.username : "Todos los usuarios"}
-              onChange={(value) =>
-                handleFilterChange(
-                  "username",
-                  value === "Todos los usuarios" ? "" : value
-                )
-              }
-              placeholder="Buscar usuario..."
-            />
+            <div>
+              <label className="block mb-1 text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-gray-400">
+                Usuario
+              </label>
+              <SearchableSelect
+                options={[
+                  "Todos los usuarios",
+                  ...usernameOptions.map((option) => option.value),
+                ]}
+                value={filters.username ? filters.username : "Todos los usuarios"}
+                onChange={(value) =>
+                  handleFilterChange(
+                    "username",
+                    value === "Todos los usuarios" ? "" : value
+                  )
+                }
+                placeholder="Filtrar por usuario"
+                className="text-sm"
+              />
+            </div>
 
             {/* Acción */}
-            <Select
-              value={filters.action || ""}
-              onChange={(e) => handleFilterChange("action", e.target.value)}
-              options={[
-                { value: "", label: "Todas las acciones" },
-                ...actionOptions.map((option) => ({
-                  value: option.value,
-                  label: option.label,
-                })),
-              ]}
-            />
+            <div>
+              <label className="block mb-1 text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-gray-400">
+                Acción
+              </label>
+              <Select
+                value={filters.action || ""}
+                onChange={(e) => handleFilterChange("action", e.target.value)}
+                options={[
+                  { value: "", label: "Todas las acciones" },
+                  ...actionOptions.map((option) => ({
+                    value: option.value,
+                    label: option.label,
+                  })),
+                ]}
+                className="h-10 text-sm"
+              />
+            </div>
 
-            {/* Fechas en una sola fila */}
-            <div className="flex space-x-2">
+            {/* Fecha desde */}
+            <div>
+              <label className="block mb-1 text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-gray-400">
+                Desde
+              </label>
               <Input
                 type="date"
                 value={filters.date_from || ""}
@@ -741,48 +735,22 @@ export const HistorialList: React.FC = () => {
                   handleFilterChange("date_from", e.target.value)
                 }
                 max={today}
-                placeholder="Desde"
+                className="h-10 text-sm"
               />
+            </div>
+
+            {/* Fecha hasta */}
+            <div>
+              <label className="block mb-1 text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-gray-400">
+                Hasta
+              </label>
               <Input
                 type="date"
                 value={filters.date_to || ""}
                 onChange={(e) => handleFilterChange("date_to", e.target.value)}
                 max={today}
-                placeholder="Hasta"
+                className="h-10 text-sm"
               />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex space-x-3">
-              <Button
-                onClick={handleSearch}
-                icon={Filter}
-                disabled={loading || !isInitialized}
-                loading={loading}
-              >
-                Buscar
-              </Button>
-              <Button
-                variant="outline"
-                onClick={handleClearFilters}
-                icon={RotateCcw}
-                disabled={loading || !isInitialized}
-              >
-                Limpiar Filtros
-              </Button>
-            </div>
-
-            <div className="flex space-x-3">
-              <Button
-                variant="outline"
-                onClick={handleExport}
-                icon={Download}
-                size="sm"
-                disabled={loading || !isInitialized}
-              >
-                Exportar CSV
-              </Button>
             </div>
           </div>
         </div>
@@ -818,7 +786,7 @@ export const HistorialList: React.FC = () => {
                 Error al cargar el historial
               </p>
               <p className="mb-4 text-gray-600">{error}</p>
-              <Button onClick={handleSearch} variant="outline">
+              <Button onClick={handleRetry} variant="outline">
                 Reintentar
               </Button>
             </div>

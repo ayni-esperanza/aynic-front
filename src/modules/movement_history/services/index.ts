@@ -1,2 +1,2 @@
-// Exportaciones de servicios del módulo movement history
+// Exportar solo el servicio
 export { movementHistoryService } from './movementHistoryService';

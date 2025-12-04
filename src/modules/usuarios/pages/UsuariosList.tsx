@@ -9,7 +9,12 @@ import { useToast } from '../../../shared/components/ui/Toast';
 
 import type { TableColumn } from "../../../types";
 import { useUserData } from "../hooks";
-import { UserFilters, UserStats, UserDetailModal, UserCreateModal } from "../components";
+import {
+  UserFilters,
+  UserStats,
+  UserDetailModal,
+  UserCreateModal,
+} from "../components";
 import type { FrontendUser } from "../services/userService";
 
 export const UsuariosList: React.FC = () => {
@@ -276,14 +281,19 @@ export const UsuariosList: React.FC = () => {
         </div>
       </Card>
 
-                    className="bg-gradient-to-r from-[#18D043] to-[#16a34a] hover:from-[#16a34a] hover:to-[#15803d] shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-        user={selectedUser}
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onUpdated={refreshData}
-        onDelete={handleDeleteUser}
-        deleting={deleting}
-      />
+      {selectedUser && (
+        <UserDetailModal
+          user={selectedUser}
+          isOpen={modalOpen}
+          onClose={() => {
+            setModalOpen(false);
+            setSelectedUser(null);
+          }}
+          onUpdated={refreshData}
+          onDelete={handleDeleteUser}
+          deleting={deleting}
+        />
+      )}
 
       <UserCreateModal
         isOpen={createModalOpen}

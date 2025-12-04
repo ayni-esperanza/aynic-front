@@ -1,3 +1,4 @@
+import React, { useCallback } from "react";
 import type { LucideIcon } from "lucide-react";
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -15,8 +16,31 @@ export const Input: React.FC<InputProps> = ({
   icon: Icon,
   iconPosition = "left",
   className = "",
+  onFocus,
+  onClick,
+  type = "text",
   ...props
 }) => {
+  const triggerDatePicker = useCallback((target: HTMLInputElement) => {
+    if (type === "date" && typeof target.showPicker === "function") {
+      try {
+        target.showPicker();
+      } catch {
+        // ignore failures to open the native picker
+      }
+    }
+  }, [type]);
+
+  const handleFocus = useCallback((event: React.FocusEvent<HTMLInputElement>) => {
+    triggerDatePicker(event.currentTarget);
+    onFocus?.(event);
+  }, [onFocus, triggerDatePicker]);
+
+  const handleClick = useCallback((event: React.MouseEvent<HTMLInputElement>) => {
+    triggerDatePicker(event.currentTarget);
+    onClick?.(event);
+  }, [onClick, triggerDatePicker]);
+
   return (
     <div className="space-y-2">
       {label && (
@@ -47,6 +71,9 @@ export const Input: React.FC<InputProps> = ({
             ${Icon && iconPosition === "right" ? "pr-11" : ""}
             ${className}
           `}
+          type={type}
+          onFocus={handleFocus}
+          onClick={handleClick}
           {...props}
         />
         {Icon && iconPosition === "right" && (

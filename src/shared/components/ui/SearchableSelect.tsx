@@ -58,31 +58,32 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
       }
       return;
     }
-    switch (e.key) {
-      case "ArrowDown":
-        e.preventDefault();
-        setHighlightedIndex((prev) =>
-          prev < filteredOptions.length - 1 ? prev + 1 : 0
-        );
-        break;
-      case "ArrowUp":
-        e.preventDefault();
-        setHighlightedIndex((prev) =>
-          prev > 0 ? prev - 1 : filteredOptions.length - 1
-        );
-        break;
-      case "Enter":
-        e.preventDefault();
-        if (highlightedIndex >= 0 && filteredOptions[highlightedIndex]) {
-          handleSelectOption(filteredOptions[highlightedIndex]);
-        }
-        break;
-      case "Escape":
-        e.preventDefault();
-        setIsOpen(false);
-        setSearchTerm("");
-        setHighlightedIndex(-1);
-        break;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlightedIndex((prev) =>
+        prev < filteredOptions.length - 1 ? prev + 1 : 0
+      );
+      return;
+    }
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightedIndex((prev) =>
+        prev > 0 ? prev - 1 : filteredOptions.length - 1
+      );
+      return;
+    }
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (highlightedIndex >= 0 && filteredOptions[highlightedIndex]) {
+        handleSelectOption(filteredOptions[highlightedIndex]);
+      }
+      return;
+    }
+    if (e.key === "Escape") {
+      e.preventDefault();
+      setIsOpen(false);
+      setSearchTerm("");
+      setHighlightedIndex(-1);
     }
   };
 
@@ -108,7 +109,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
     const term = e.target.value;
     setSearchTerm(term);
     setHighlightedIndex(-1);
-    onSearch?.(term); // dispara búsqueda remota
+    onSearch?.(term);
     if (!isOpen) setIsOpen(true);
   };
 
@@ -122,8 +123,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
       )}
       <div className="relative" ref={dropdownRef}>
         <div
-          className={`relative w-full min-w-0 min-h-[32px] px-1.5 py-0.5 border-2 rounded-xl transition-all duration-200 font-medium cursor-pointer
-            bg-white dark:bg-gray-800
+          className={`relative w-full min-w-0 min-h-[40px] px-3 py-2 border-2 rounded-xl transition-all duration-200 font-medium cursor-pointer text-sm bg-white dark:bg-gray-800
             ${
               error
                 ? "border-red-300 dark:border-red-600 focus-within:border-red-500 focus-within:ring-red-500/20"
@@ -146,7 +146,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                     <X size={16} />
                   </button>
                   <span
-                    className={`text-gray-400 dark:text-gray-500 transition-transform ${
+                    className={`text-gray-400 dark:text-gray-500 transition-transform text-xs ${
                       isOpen ? "rotate-180" : ""
                     }`}
                   >
@@ -166,7 +166,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                   className="flex-1 min-w-0 text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-transparent border-none outline-none"
                 />
                 <span
-                  className={`text-gray-400 dark:text-gray-500 transition-transform ${
+                  className={`text-gray-400 dark:text-gray-500 transition-transform text-xs ${
                     isOpen ? "rotate-180" : ""
                   }`}
                 >
@@ -190,29 +190,24 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
               <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                 <div className="mb-2">🔍</div>
                 <div className="font-medium">No se encontraron resultados</div>
-                <div className="text-xs">
-                  Intenta con otro término de búsqueda
-                </div>
+                <div className="text-xs">Intenta con otro término de búsqueda</div>
               </div>
             ) : (
               <div className="py-1">
                 {filteredOptions.map((option, index) => (
                   <div
                     key={option}
-                    className={`px-2 py-1 cursor-pointer transition-colors flex items-center
-                      ${
-                        index === highlightedIndex
-                          ? "bg-[#18D043]/10 dark:bg-[#18D043]/20 text-[#16a34a] dark:text-[#18D043]"
-                          : "hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
-                      }`}
+                    className={`px-2 py-1 cursor-pointer transition-colors flex items-center ${
+                      index === highlightedIndex
+                        ? "bg-[#18D043]/10 dark:bg-[#18D043]/20 text-[#16a34a] dark:text-[#18D043]"
+                        : "hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
+                    }`}
                     onClick={() => handleSelectOption(option)}
                     onMouseEnter={() => setHighlightedIndex(index)}
                   >
                     <div className="flex items-center justify-between w-full">
                       <span className="font-medium">{option}</span>
-                      {value === option && (
-                        <div className="w-2 h-2 bg-[#18D043] rounded-full" />
-                      )}
+                      {value === option && <div className="w-2 h-2 bg-[#18D043] rounded-full" />}
                     </div>
                   </div>
                 ))}

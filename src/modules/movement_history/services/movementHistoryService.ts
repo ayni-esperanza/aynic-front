@@ -1,124 +1,15 @@
 import { apiClient, ApiClientError } from '../../../shared/services/apiClient';
-
-// ===== INTERFACES PARA EL BACKEND =====
-export interface BackendMovementHistory {
-  id: number;
-  record_id: number | null;
-  record_code: string | null;
-  action: string;
-  description: string;
-  action_date: string;
-  user_id: number | null;
-  username: string | null;
-  previous_values: Record<string, any> | null;
-  new_values: Record<string, any> | null;
-  changed_fields: string[] | null;
-  is_record_active: boolean;
-  additional_metadata: Record<string, any> | null;
-  ip_address: string | null;
-  user_agent: string | null;
-  formatted_date: string;
-  action_label: string;
-  user_display_name: string;
-}
-
-export interface BackendMovementStatistics {
-  total: number;
-  today: number;
-  thisWeek: number;
-  byAction: Array<{ action: string; count: number }>;
-  byUser: Array<{ username: string; count: number }>;
-}
-
-export interface BackendPaginatedMovements {
-  data: BackendMovementHistory[];
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
-  };
-}
-
-export interface BackendActionOption {
-  value: string;
-  label: string;
-}
-
-// ===== INTERFACES PARA EL FRONTEND =====
-export interface MovementHistory {
-  id: string;
-  record_id: string | null;
-  record_code: string | null;
-  action: MovementAction;
-  description: string;
-  action_date: Date;
-  user_id: string | null;
-  username: string | null;
-  previous_values: Record<string, any> | null;
-  new_values: Record<string, any> | null;
-  changed_fields: string[] | null;
-  is_record_active: boolean;
-  additional_metadata: Record<string, any> | null;
-  ip_address: string | null;
-  user_agent: string | null;
-  formatted_date: string;
-  action_label: string;
-  user_display_name: string;
-}
-
-export type MovementAction =
-  | "create"
-  | "update"
-  | "delete"
-  | "restore"
-  | "status_change"
-  | "image_upload"
-  | "image_replace"
-  | "image_delete"
-  | "location_change"
-  | "company_change"
-  | "maintenance";
-
-export interface MovementStatistics {
-  total: number;
-  today: number;
-  thisWeek: number;
-  activeUsers: number;
-  byAction: Array<{ action: MovementAction; label: string; count: number }>;
-  byUser: Array<{ username: string; count: number }>;
-}
-
-export interface MovementFilters extends Record<string, unknown> {
-  record_id?: string;
-  action?: MovementAction;
-  username?: string;
-  record_code?: string;
-  date_from?: string;
-  date_to?: string;
-  page?: number;
-  limit?: number;
-  sortBy?: string;
-  sortOrder?: "ASC" | "DESC";
-  search?: string;
-}
-
-export interface ActionOption {
-  value: MovementAction;
-  label: string;
-}
-
-export interface PaginatedMovements {
-  data: MovementHistory[];
-  pagination: {
-    currentPage: number;
-    totalPages: number;
-    totalItems: number;
-    itemsPerPage: number;
-  };
-}
+import type {
+  BackendMovementHistory,
+  BackendMovementStatistics,
+  BackendPaginatedMovements,
+  BackendActionOption,
+  MovementHistory,
+  MovementAction,
+  MovementStatistics,
+  MovementFilters,
+  ActionOption,
+} from '../types/movement';
 
 class MovementHistoryService {
   private readonly basePath = "/record-movement-history";
@@ -158,7 +49,7 @@ class MovementHistoryService {
       today: backendStats.today,
       thisWeek: backendStats.thisWeek,
       activeUsers: backendStats.byUser.length,
-      byAction: backendStats.byAction.map(item => ({
+      byAction: backendStats.byAction.map((item) => ({
         action: this.mapBackendActionToFrontend(item.action),
         label: this.getActionLabel(this.mapBackendActionToFrontend(item.action)),
         count: item.count,
@@ -241,7 +132,7 @@ class MovementHistoryService {
   }> {
     try {
       const queryParams = new URLSearchParams();
-      
+
       if (filters.record_id) {
         queryParams.append("record_id", filters.record_id);
       }
@@ -260,8 +151,8 @@ class MovementHistoryService {
       if (filters.date_to) {
         queryParams.append("date_to", filters.date_to);
       }
-      if (filters.is_record_active !== undefined && filters.is_record_active !== null) {
-        queryParams.append("is_record_active", filters.is_record_active.toString());
+      if ((filters as any).is_record_active !== undefined && (filters as any).is_record_active !== null) {
+        queryParams.append("is_record_active", String((filters as any).is_record_active));
       }
       if (filters.search) {
         queryParams.append("search", filters.search);
@@ -281,9 +172,9 @@ class MovementHistoryService {
 
       const url = `${this.basePath}${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
       const response = await apiClient.get<BackendPaginatedMovements>(url);
-      
+
       return {
-        data: response.data.map(movement => this.mapBackendToFrontend(movement)),
+        data: response.data.map((movement) => this.mapBackendToFrontend(movement)),
         pagination: {
           currentPage: response.meta.page,
           totalPages: response.meta.totalPages,
@@ -312,7 +203,6 @@ class MovementHistoryService {
       return this.mapBackendStatsToFrontend(response);
     } catch (error) {
       console.error("Error fetching movement statistics:", error);
-      // Retornar datos por defecto en caso de error
       return {
         total: 0,
         today: 0,
@@ -330,13 +220,12 @@ class MovementHistoryService {
   async getAvailableActions(): Promise<ActionOption[]> {
     try {
       const response = await apiClient.get<BackendActionOption[]>(`${this.basePath}/actions`);
-      return response.map(option => ({
+      return response.map((option) => ({
         value: this.mapBackendActionToFrontend(option.value) as MovementAction,
         label: option.label,
       }));
     } catch (error) {
       console.error("Error fetching available actions:", error);
-      // Retornar opciones por defecto
       const defaultActions: ActionOption[] = [
         { value: "create", label: "Creación" },
         { value: "update", label: "Actualización" },
@@ -384,7 +273,7 @@ class MovementHistoryService {
   async exportMovements(filters: MovementFilters = {}): Promise<Blob> {
     try {
       const queryParams = new URLSearchParams();
-      
+
       if (filters.record_id) {
         queryParams.append("record_id", filters.record_id);
       }
@@ -400,42 +289,41 @@ class MovementHistoryService {
       if (filters.date_to) {
         queryParams.append("date_to", filters.date_to);
       }
+      if (filters.page) {
+        queryParams.append("page", filters.page.toString());
+      }
+      if (filters.limit) {
+        queryParams.append("limit", filters.limit.toString());
+      }
+      if (filters.sortBy) {
+        queryParams.append("sortBy", filters.sortBy);
+      }
+      if (filters.sortOrder) {
+        queryParams.append("sortOrder", filters.sortOrder);
+      }
 
       const url = `${this.basePath}/export${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
-      const response = await apiClient.get<Blob>(url);
-      return response;
+      const baseURL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+      const fullUrl = `${baseURL}${url}`;
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch(fullUrl, {
+        method: 'GET',
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+      });
+      
+      if (!response.ok) {
+        throw new ApiClientError('Error exportando movimientos', response.status);
+      }
+      
+      return await response.blob();
     } catch (error) {
       console.error("Error exporting movements:", error);
       throw error;
     }
   }
-
-  /**
-   * Validar filtros de movimiento
-   */
-  validateFilters(filters: MovementFilters): string[] {
-    const errors: string[] = [];
-
-    if (filters.date_from && filters.date_to) {
-      const fromDate = new Date(filters.date_from);
-      const toDate = new Date(filters.date_to);
-      
-      if (fromDate > toDate) {
-        errors.push("La fecha de inicio no puede ser mayor que la fecha de fin");
-      }
-    }
-
-    if (filters.page && filters.page < 1) {
-      errors.push("El número de página debe ser mayor a 0");
-    }
-
-    if (filters.limit && (filters.limit < 1 || filters.limit > 100)) {
-      errors.push("El límite debe estar entre 1 y 100");
-    }
-
-    return errors;
-  }
 }
 
-// Exportar instancia singleton
 export const movementHistoryService = new MovementHistoryService();

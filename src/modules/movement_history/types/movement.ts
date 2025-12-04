@@ -112,13 +112,11 @@ export interface ActionOption {
 
 export interface PaginatedMovements {
   data: MovementHistory[];
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
+  pagination: {
+    currentPage: number;
     totalPages: number;
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
+    totalItems: number;
+    itemsPerPage: number;
   };
 }
 
