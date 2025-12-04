@@ -211,6 +211,23 @@ export const UsuariosList: React.FC = () => {
     setCurrentPage(page);
   };
 
+  const handleFilterClick = (filterType: 'all' | 'admin' | 'supervisor' | 'active') => {
+    switch (filterType) {
+      case 'all':
+        updateFilters({ rol: undefined, activo: undefined });
+        break;
+      case 'admin':
+        updateFilters({ rol: 'admin' });
+        break;
+      case 'supervisor':
+        updateFilters({ rol: 'supervisor' });
+        break;
+      case 'active':
+        updateFilters({ activo: true });
+        break;
+    }
+  };
+
   // Loading state inicial
   if (loading && usuarios.length === 0) {
     return (
@@ -266,7 +283,7 @@ export const UsuariosList: React.FC = () => {
       </div>
 
       {/* Estadísticas */}
-      <UserStats users={usuarios} loading={loading} />
+      <UserStats users={usuarios} loading={loading} onFilterClick={handleFilterClick} />
 
       {/* Filtros */}
       <UserFilters

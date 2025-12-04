@@ -6,9 +6,10 @@ import type { User } from "../types";
 interface UserStatsProps {
   users: User[];
   loading?: boolean;
+  onFilterClick?: (filterType: 'all' | 'admin' | 'supervisor' | 'active') => void;
 }
 
-export const UserStats: React.FC<UserStatsProps> = ({ users, loading = false }) => {
+export const UserStats: React.FC<UserStatsProps> = ({ users, loading = false, onFilterClick }) => {
   const stats = React.useMemo(() => {
     const total = users.length;
     const admins = users.filter((user) => user.rol === "admin").length;
@@ -110,12 +111,17 @@ export const UserStats: React.FC<UserStatsProps> = ({ users, loading = false }) 
       {statCards.map((stat, index) => {
         const colors = colorClasses[stat.color as keyof typeof colorClasses];
         const Icon = stat.icon;
+        const filterTypes: Array<'all' | 'admin' | 'supervisor' | 'active'> = ['all', 'admin', 'supervisor', 'active'];
 
         return (
-          <Card
+          <div
             key={index}
-            className={`${colors.bg} ${colors.border} transition-all duration-200 hover:shadow-lg`}
+            className="cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200"
+            onClick={() => onFilterClick?.(filterTypes[index])}
           >
+            <Card
+              className={`${colors.bg} ${colors.border} transition-all duration-200 hover:shadow-lg`}
+            >
             <div className="flex items-center justify-between p-3">
               <div className="flex-1">
                 <div className={`text-xs font-medium ${colors.icon}`}>
@@ -132,6 +138,7 @@ export const UserStats: React.FC<UserStatsProps> = ({ users, loading = false }) 
               </div>
             </div>
           </Card>
+          </div>
         );
       })}
     </div>
