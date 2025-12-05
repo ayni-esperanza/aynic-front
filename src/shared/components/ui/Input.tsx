@@ -42,9 +42,9 @@ export const Input: React.FC<InputProps> = ({
   }, [onClick, triggerDatePicker]);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1">
       {label && (
-        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
           {label}
           {props.required && <span className="ml-1 text-red-500">*</span>}
         </label>
@@ -58,7 +58,7 @@ export const Input: React.FC<InputProps> = ({
         )}
         <input
           className={`
-            w-full px-4 py-3 border-2 rounded-xl transition-all duration-200 font-medium
+            w-full px-3 py-3 border-2 rounded-xl transition-all duration-200 font-medium text-sm
             bg-white dark:bg-gray-800 text-gray-900 dark:text-white
             focus:outline-none focus:ring-2 focus:ring-[#18D043]/20 focus:border-[#18D043]
             dark:focus:ring-[#18D043]/30 dark:focus:border-[#18D043]

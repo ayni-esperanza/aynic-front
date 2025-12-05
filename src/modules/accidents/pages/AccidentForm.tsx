@@ -8,9 +8,8 @@ import { accidentService } from "../services/accidentService";
 import type {
   Accident,
   CreateAccidentDto,
-  UpdateAccidentDto,
-  SeveridadAccidente,
 } from "../types/accident";
+import { SeveridadAccidente, EstadoAccidente } from "../types/accident";
 
 interface AccidentFormProps {
   accident?: Accident;
@@ -26,13 +25,12 @@ interface AccidentFormProps {
 }
 
 interface FormData {
-  linea_vida_id: number | null;
+  linea_vida_id: string | null;
   fecha_accidente: string;
-  descripcion_incidente: string;
-  persona_involucrada: string;
-  acciones_correctivas: string;
+  descripcion: string;
+  lesiones: string;
+  medidas_correctivas: string;
   severidad: SeveridadAccidente;
-  evidencias_urls: string[];
 }
 
 export const AccidentForm: React.FC<AccidentFormProps> = ({
@@ -49,11 +47,10 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
   const [formData, setFormData] = useState<FormData>({
     linea_vida_id: null,
     fecha_accidente: "",
-    descripcion_incidente: "",
-    persona_involucrada: "",
-    acciones_correctivas: "",
-    severidad: "LEVE",
-    evidencias_urls: [],
+    descripcion: "",
+    lesiones: "",
+    medidas_correctivas: "",
+    severidad: SeveridadAccidente.LEVE,
   });
 
   const isEditing = !!accident;
@@ -67,21 +64,19 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
           fecha_accidente: new Date(accident.fecha_accidente)
             .toISOString()
             .split("T")[0],
-          descripcion_incidente: accident.descripcion_incidente,
-          persona_involucrada: accident.persona_involucrada || "",
-          acciones_correctivas: accident.acciones_correctivas || "",
+          descripcion: accident.descripcion,
+          lesiones: accident.lesiones || "",
+          medidas_correctivas: accident.medidas_correctivas || "",
           severidad: accident.severidad,
-          evidencias_urls: accident.evidencias_urls || [],
         });
       } else {
         setFormData({
           linea_vida_id: null,
           fecha_accidente: "",
-          descripcion_incidente: "",
-          persona_involucrada: "",
-          acciones_correctivas: "",
-          severidad: "LEVE",
-          evidencias_urls: [],
+          descripcion: "",
+          lesiones: "",
+          medidas_correctivas: "",
+          severidad: SeveridadAccidente.LEVE,
         });
       }
       setErrors({});
@@ -99,7 +94,7 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
     const newErrors: Partial<FormData> = {};
 
     if (!formData.linea_vida_id) {
-      newErrors.linea_vida_id = "La línea de vida es obligatoria";
+      newErrors.linea_vida_id = "La línea de vida es obligatoria" as any;
     }
 
     if (!formData.fecha_accidente) {
@@ -114,19 +109,19 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
       }
     }
 
-    if (!formData.descripcion_incidente.trim()) {
-      newErrors.descripcion_incidente = "La descripción es obligatoria";
-    } else if (formData.descripcion_incidente.length > 2000) {
-      newErrors.descripcion_incidente =
+    if (!formData.descripcion.trim()) {
+      newErrors.descripcion = "La descripción es obligatoria";
+    } else if (formData.descripcion.length > 2000) {
+      newErrors.descripcion =
         "La descripción no puede exceder 2000 caracteres";
     }
 
     if (
-      formData.acciones_correctivas &&
-      formData.acciones_correctivas.length > 2000
+      formData.medidas_correctivas &&
+      formData.medidas_correctivas.length > 2000
     ) {
-      newErrors.acciones_correctivas =
-        "Las acciones correctivas no pueden exceder 2000 caracteres";
+      newErrors.medidas_correctivas =
+        "Las medidas correctivas no pueden exceder 2000 caracteres";
     }
 
     setErrors(newErrors);
@@ -143,24 +138,21 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
     setLoading(true);
 
     try {
-      const submitData: CreateAccidentDto | UpdateAccidentDto = {
+      const submitData: CreateAccidentDto = {
         linea_vida_id: formData.linea_vida_id!,
         fecha_accidente: formData.fecha_accidente,
-        descripcion_incidente: formData.descripcion_incidente,
-        persona_involucrada: formData.persona_involucrada || undefined,
-        acciones_correctivas: formData.acciones_correctivas || undefined,
+        descripcion: formData.descripcion,
+        lesiones: formData.lesiones || undefined,
+        medidas_correctivas: formData.medidas_correctivas || undefined,
         severidad: formData.severidad,
-        evidencias_urls:
-          formData.evidencias_urls.length > 0
-            ? formData.evidencias_urls
-            : undefined,
+        estado: accident?.estado || EstadoAccidente.REPORTADO,
       };
 
       if (isEditing) {
-        await accidentService.updateAccident(accident.id, submitData);
+        await accidentService.updateAccident(accident.id, { ...submitData, id: accident.id });
         success("Éxito", "Accidente actualizado correctamente");
       } else {
-        await accidentService.createAccident(submitData as CreateAccidentDto);
+        await accidentService.createAccident(submitData);
         success("Éxito", "Accidente registrado correctamente");
       }
 
@@ -178,7 +170,7 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
 
   const getSelectedLineaVida = () => {
     if (!formData.linea_vida_id) return "";
-    const linea = lineasVida.find((l) => l.id === formData.linea_vida_id);
+    const linea = lineasVida.find((l) => l.id.toString() === formData.linea_vida_id);
     return linea ? linea.codigo : "";
   };
 
@@ -190,7 +182,7 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
 
     const linea = lineasVida.find((l) => l.codigo === value);
     if (linea) {
-      handleChange("linea_vida_id", linea.id);
+      handleChange("linea_vida_id", linea.id.toString());
     }
   };
 
@@ -226,10 +218,10 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 bg-black bg-opacity-50">
-      <div className="w-full max-w-lg max-h-[55vh] overflow-y-auto bg-white rounded-lg shadow-xl mx-2">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+      <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl">
         {/* Header reducido y modal más ancha */}
-        <div className="flex items-center justify-between p-2 border-b border-gray-200 bg-gradient-to-r from-red-500 to-red-600">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-red-500 to-red-600">
           <div className="flex items-center space-x-2">
             <div className="flex items-center justify-center w-6 h-6 bg-white rounded bg-opacity-20">
               <span className="text-base text-white">⚠️</span>
@@ -254,7 +246,7 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-1 space-y-1">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Información Básica */}
           <div>
 
@@ -265,7 +257,7 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
                 onChange={handleLineaVidaChange}
                 placeholder="Buscar por código, cliente o ubicación..."
                 label="Línea de Vida Asociada"
-                error={errors.linea_vida_id}
+                error={errors.linea_vida_id as any}
                 required
               />
 
@@ -279,8 +271,6 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
                 error={errors.fecha_accidente}
                 helperText="La fecha no puede ser futura"
                 required
-                className="!py-1 !text-xs"
-                labelClassName="!text-[11px]"
               />
             </div>
           </div>
@@ -292,28 +282,26 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
           <div>
             <div className="grid grid-cols-1 gap-0.5 lg:grid-cols-2">
               <Input
-                label="Persona Involucrada"
-                value={formData.persona_involucrada}
+                label="Lesiones o Daños"
+                value={formData.lesiones}
                 onChange={(e) =>
-                  handleChange("persona_involucrada", e.target.value)
+                  handleChange("lesiones", e.target.value)
                 }
-                placeholder="Nombre completo (opcional)"
-                className="!py-1 !text-xs"
-                labelClassName="!text-[11px]"
+                placeholder="Describe lesiones o daños (opcional)"
               />
 
               <div>
-                <label className="block mb-2 text-sm font-semibold text-gray-700">
+                <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                   Severidad del Accidente <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={formData.severidad}
                   onChange={e => handleChange("severidad", e.target.value)}
-                  className="w-full px-2 py-1 border-2 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 border-gray-200 hover:border-gray-300 bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100"
+                  className="w-full h-10 px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   required
                 >
                   {severidadOptions.map(option => (
-                    <option key={option.value} value={option.value} className="text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800">
+                    <option key={option.value} value={option.value} className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
                       {option.label}
                     </option>
                   ))}
@@ -324,73 +312,71 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
 
           {/* Descripción del Incidente */}
           <div>
-            <label className="block mb-2 text-sm font-semibold text-gray-700">
+            <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
               Descripción del Incidente <span className="text-red-500">*</span>
             </label>
             <textarea
-              value={formData.descripcion_incidente}
+              value={formData.descripcion}
               onChange={(e) =>
-                handleChange("descripcion_incidente", e.target.value)
+                handleChange("descripcion", e.target.value)
               }
               placeholder="Describe detalladamente lo que ocurrió durante el accidente..."
-              className={`w-full px-1 py-0.5 border-2 rounded-md transition-all duration-200 font-medium resize-none text-[11px]
-                bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100
+              className={`w-full px-3 py-2 border-2 rounded-lg transition-all duration-200 resize-none text-sm
+                bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400
                 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500
                 ${
-                  errors.descripcion_incidente
+                  errors.descripcion
                     ? "border-red-300 dark:border-red-600"
-                    : "border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
+                    : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500"
                 }
               `}
-              rows={1}
+              rows={3}
               maxLength={2000}
             />
             <div className="flex justify-between mt-1">
-              {errors.descripcion_incidente && (
+              {errors.descripcion && (
                 <p className="text-sm text-red-600">
-                  {errors.descripcion_incidente}
+                  {errors.descripcion}
                 </p>
               )}
-              <p className="ml-auto text-xs text-gray-500">
-                {formData.descripcion_incidente.length}/2000 caracteres
+              <p className="ml-auto text-xs text-gray-500 dark:text-gray-400">
+                {formData.descripcion.length}/2000 caracteres
               </p>
             </div>
           </div>
 
-          {/* Acciones Correctivas */}
+          {/* Medidas Correctivas */}
           <div>
-            <div>
-              <label className="block mb-2 text-sm font-semibold text-gray-700">
-                Acciones Correctivas Tomadas/Propuestas
-              </label>
-              <textarea
-                value={formData.acciones_correctivas}
-                onChange={(e) =>
-                  handleChange("acciones_correctivas", e.target.value)
+            <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+              Medidas Correctivas Tomadas/Propuestas
+            </label>
+            <textarea
+              value={formData.medidas_correctivas}
+              onChange={(e) =>
+                handleChange("medidas_correctivas", e.target.value)
+              }
+              placeholder="Describe las medidas correctivas implementadas o que se planean implementar..."
+              className={`w-full px-3 py-2 border-2 rounded-lg transition-all duration-200 resize-none text-sm
+                bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400
+                focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500
+                ${
+                  errors.medidas_correctivas
+                    ? "border-red-300 dark:border-red-600"
+                    : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500"
                 }
-                placeholder="Describe las medidas correctivas implementadas o que se planean implementar..."
-                className={`w-full px-1 py-0.5 border-2 rounded-md transition-all duration-200 font-medium resize-none text-[11px]
-                  bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100
-                  focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500
-                  ${
-                    errors.acciones_correctivas
-                      ? "border-red-300 dark:border-red-600"
-                      : "border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
-                  }
-                `}
-                rows={1}
-                maxLength={2000}
-              />
-              <div className="flex justify-between mt-1">
-                {errors.acciones_correctivas && (
-                  <p className="text-sm text-red-600">
-                    {errors.acciones_correctivas}
-                  </p>
-                )}
-                <p className="ml-auto text-xs text-gray-500">
-                  {formData.acciones_correctivas.length}/2000 caracteres
+              `}
+              rows={3}
+              maxLength={2000}
+            />
+            <div className="flex justify-between mt-1">
+              {errors.medidas_correctivas && (
+                <p className="text-sm text-red-600">
+                  {errors.medidas_correctivas}
                 </p>
-              </div>
+              )}
+              <p className="ml-auto text-xs text-gray-500 dark:text-gray-400">
+                {formData.medidas_correctivas.length}/2000 caracteres
+              </p>
             </div>
           </div>
 
@@ -401,7 +387,7 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
                 Evidencias Fotográficas o Documentales
               </label>
               <div
-                classNaÑme="p-1 text-center transition-colors border-2 border-gray-300 border-dashed cursor-pointer rounded-md hover:border-gray-400"
+                className="p-1 text-center transition-colors border-2 border-gray-300 border-dashed cursor-pointer rounded-md hover:border-gray-400"
                 onClick={handleFileUpload}
               >
                 <div className="flex flex-col items-center">

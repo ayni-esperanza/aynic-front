@@ -123,7 +123,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
       )}
       <div className="relative" ref={dropdownRef}>
         <div
-          className={`relative w-full min-w-0 min-h-[40px] px-3 py-2 border-2 rounded-xl transition-all duration-200 font-medium cursor-pointer text-sm bg-white dark:bg-gray-800
+          className={`relative w-full min-w-0 h-10 px-3 border-2 rounded-xl transition-all duration-200 font-medium cursor-pointer text-sm bg-white dark:bg-gray-800 flex items-center
             ${
               error
                 ? "border-red-300 dark:border-red-600 focus-within:border-red-500 focus-within:ring-red-500/20"
@@ -132,21 +132,21 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
             ${isOpen ? "ring-2" : ""}`}
           onClick={handleInputClick}
         >
-          <div className="flex items-center min-w-0">
-            <span className="mr-2 text-gray-400 dark:text-gray-500 text-xs">🔍</span>
+          <div className="flex items-center min-w-0 w-full h-full">
+            <span className="mr-2 text-gray-400 dark:text-gray-500 text-xs flex-shrink-0">🔍</span>
             {value && !isOpen ? (
-              <div className="flex items-center justify-between w-full min-w-0 space-x-2">
-                <span className="text-gray-900 dark:text-white truncate text-sm">{value}</span>
-                <div className="flex items-center space-x-2">
+              <div className="flex items-center justify-between w-full min-w-0 gap-2 h-full">
+                <span className="text-gray-900 dark:text-white truncate text-sm leading-none">{value}</span>
+                <div className="flex items-center gap-1 flex-shrink-0">
                   <button
                     type="button"
                     onClick={handleClearSelection}
-                    className="text-gray-400 dark:text-gray-500 transition-colors hover:text-gray-600 dark:hover:text-gray-300"
+                    className="text-gray-400 dark:text-gray-500 transition-colors hover:text-gray-600 dark:hover:text-gray-300 flex items-center"
                   >
-                    <X size={16} />
+                    <X size={14} />
                   </button>
                   <span
-                    className={`text-gray-400 dark:text-gray-500 transition-transform text-xs ${
+                    className={`text-gray-400 dark:text-gray-500 transition-transform text-xs leading-none ${
                       isOpen ? "rotate-180" : ""
                     }`}
                   >
@@ -155,7 +155,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="flex items-center justify-between w-full min-w-0 space-x-2">
+              <div className="flex items-center justify-between w-full min-w-0 gap-2 h-full">
                 <input
                   ref={inputRef}
                   type="text"
@@ -163,10 +163,10 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                   onChange={handleInputChange}
                   onKeyDown={handleKeyDown}
                   placeholder={value || placeholder}
-                  className="flex-1 min-w-0 text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-transparent border-none outline-none"
+                  className="flex-1 min-w-0 h-full text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 bg-transparent border-none outline-none leading-none"
                 />
                 <span
-                  className={`text-gray-400 dark:text-gray-500 transition-transform text-xs ${
+                  className={`text-gray-400 dark:text-gray-500 transition-transform text-xs flex-shrink-0 leading-none ${
                     isOpen ? "rotate-180" : ""
                   }`}
                 >
@@ -197,7 +197,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 {filteredOptions.map((option, index) => (
                   <div
                     key={option}
-                    className={`px-2 py-1 cursor-pointer transition-colors flex items-center ${
+                    className={`px-3 py-1.5 cursor-pointer transition-colors flex items-center text-sm ${
                       index === highlightedIndex
                         ? "bg-[#18D043]/10 dark:bg-[#18D043]/20 text-[#16a34a] dark:text-[#18D043]"
                         : "hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
@@ -206,8 +206,8 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                     onMouseEnter={() => setHighlightedIndex(index)}
                   >
                     <div className="flex items-center justify-between w-full">
-                      <span className="font-medium">{option}</span>
-                      {value === option && <div className="w-2 h-2 bg-[#18D043] rounded-full" />}
+                      <span className="font-medium truncate">{option}</span>
+                      {value === option && <div className="w-1.5 h-1.5 ml-2 bg-[#18D043] rounded-full flex-shrink-0" />}
                     </div>
                   </div>
                 ))}
