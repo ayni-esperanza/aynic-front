@@ -288,18 +288,20 @@ export const DataTable = <T extends Record<string, unknown>>({
     <div className={density === "compact" ? "space-y-4" : "space-y-6"}>
       {/* Tabla con header sticky */}
       <div className="overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-xl">
-        {/* Scroll horizontal si hace falta */}
-        <div className="overflow-x-auto">
-          {/* Scroll vertical del body */}
+        {/* Contenedor de tabla sin overflow-x-auto para evitar scroll horizontal innecesario */}
+        <div>
+          {/* Scroll vertical del body solo si excede maxBodyHeight */}
           <div
-            className="overflow-y-auto"
-            style={{
+            className={maxBodyHeight ? "overflow-y-auto" : ""}
+            style={maxBodyHeight ? {
               maxHeight: maxBodyHeight,
+              ["--header-offset" as any]: `${headerOffset}px`,
+            } : {
               ["--header-offset" as any]: `${headerOffset}px`,
             }}
           >
-            {/* table-fixed evita desajustes al aparecer el scrollbar vertical */}
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
+            {/* table-auto permite que la tabla se ajuste al contenido */}
+            <table className="w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600">
                 <tr>
                   {columns.map((column) => {

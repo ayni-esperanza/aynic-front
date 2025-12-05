@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { DataTable } from '../../../shared/components/common/DataTable';
 import { Button } from '../../../shared/components/ui/Button';
 import { Badge } from '../../../shared/components/ui/Badge';
@@ -11,13 +10,15 @@ import { formatDate, formatDateTime } from "../../../shared/utils/formatters";
 import { MaintenanceForm } from "./MaintenanceForm";
 import {
   Plus,
-  Eye,
   Trash2,
   Download,
   Image as ImageIcon,
   TrendingUp,
   TrendingDown,
   X,
+  FileText,
+  Building,
+  User,
 } from "lucide-react";
 import { SearchableSelect } from '../../../shared/components/ui/SearchableSelect';
 import type { Maintenance, MaintenanceFilters } from "../types/maintenance";
@@ -55,6 +56,156 @@ const ImagePreviewModal: React.FC<{
 };
 /* ================================================ */
 
+/* ========== Modal de detalle de mantenimiento ========== */
+const MaintenanceDetailModal: React.FC<{
+  maintenance: Maintenance | null;
+  open: boolean;
+  onClose: () => void;
+  onDelete?: (id: number) => void;
+  deleting?: boolean;
+}> = ({ maintenance, open, onClose, onDelete, deleting }) => {
+  if (!open || !maintenance) return null;
+
+  const hasLengthChange = maintenance.previous_length_meters && maintenance.new_length_meters;
+  const lengthChange = hasLengthChange
+    ? maintenance.new_length_meters! - maintenance.previous_length_meters!
+    : 0;
+  const isLengthIncrease = lengthChange > 0;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+      <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-green-500 to-green-600">
+          <div>
+            <h2 className="text-base font-bold text-white">Detalle de Mantenimiento</h2>
+            <p className="text-xs text-green-100">{formatDate(maintenance.maintenance_date)}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-white transition-colors hover:text-green-200"
+            disabled={deleting}
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-4 space-y-4">
+          {/* Línea de Vida */}
+          {maintenance.record && (
+            <Card>
+              <div className="flex items-center mb-3 space-x-2">
+                <Building className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Línea de Vida</h3>
+              </div>
+              <div className="space-y-2">
+                <div>
+                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Código</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{maintenance.record.codigo}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Cliente</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{maintenance.record.cliente}</p>
+                </div>
+                {maintenance.record.ubicacion && (
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Ubicación</p>
+                    <p className="text-sm text-gray-900 dark:text-white">{maintenance.record.ubicacion}</p>
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
+
+          {/* Descripción */}
+          {maintenance.description && (
+            <Card>
+              <div className="flex items-center mb-3 space-x-2">
+                <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Descripción</h3>
+              </div>
+              <p className="text-sm text-gray-700 dark:text-gray-300">{maintenance.description}</p>
+            </Card>
+          )}
+
+          {/* Cambio de longitud */}
+          {hasLengthChange && (
+            <Card>
+              <div className="flex items-center mb-3 space-x-2">
+                {isLengthIncrease ? (
+                  <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+                ) : (
+                  <TrendingDown className="w-4 h-4 text-red-600 dark:text-red-400" />
+                )}
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Cambio de Longitud</h3>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="text-center">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Anterior</p>
+                  <p className="text-lg font-bold text-gray-900 dark:text-white">{maintenance.previous_length_meters}m</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Nueva</p>
+                  <p className="text-lg font-bold text-gray-900 dark:text-white">{maintenance.new_length_meters}m</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Cambio</p>
+                  <p className={`text-lg font-bold ${isLengthIncrease ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                    {isLengthIncrease ? '+' : ''}{lengthChange.toFixed(1)}m
+                  </p>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {/* Registrado por */}
+          <Card>
+            <div className="flex items-center mb-3 space-x-2">
+              <User className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Registrado por</h3>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-gray-900 dark:text-white">
+                {maintenance.user ? `${maintenance.user.nombre} ${maintenance.user.apellidos}` : 'Sistema'}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{formatDateTime(maintenance.created_at)}</p>
+            </div>
+          </Card>
+        </div>
+
+        {/* Footer */}
+        <div className="flex justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            disabled={deleting}
+          >
+            Cerrar
+          </Button>
+          {onDelete && (
+            <Button
+              variant="danger"
+              size="sm"
+              icon={Trash2}
+              onClick={() => {
+                if (window.confirm(`¿Eliminar mantenimiento del ${formatDate(maintenance.maintenance_date)}?`)) {
+                  onDelete(maintenance.id);
+                }
+              }}
+              disabled={deleting}
+            >
+              {deleting ? 'Eliminando...' : 'Eliminar'}
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+/* ================================================ */
+
 /** Construye la URL de la imagen del mantenimiento
  *  Prioriza `image_url` (ya lista del backend).
  *  Si sólo viene `image_r2_key`, la arma con `VITE_R2_PUBLIC_URL`.
@@ -68,7 +219,6 @@ const getMaintenanceImageUrl = (m: Maintenance): string | undefined => {
 };
 
 export const MaintenancesList: React.FC = () => {
-  const navigate = useNavigate();
   const { success, error: showError } = useToast();
 
   const [filters, setFilters] = useState<MaintenanceFilters>({
@@ -79,6 +229,8 @@ export const MaintenancesList: React.FC = () => {
 
   const [showFormModal, setShowFormModal] = useState(false);
   const [selectedRecordId, setSelectedRecordId] = useState<number | undefined>();
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedMaintenance, setSelectedMaintenance] = useState<Maintenance | null>(null);
 
   // ---- líneas de vida (para el filtro) ----
   const { data: initialLineas } = useApi(
@@ -114,6 +266,8 @@ export const MaintenancesList: React.FC = () => {
     {
       onSuccess: () => {
         success("Éxito", "Mantenimiento eliminado correctamente");
+        setShowDetailModal(false);
+        setSelectedMaintenance(null);
         updateFilters({}); // refrescar
       },
       onError: (err) => showError("Error", `Error al eliminar: ${err}`),
@@ -126,6 +280,11 @@ export const MaintenancesList: React.FC = () => {
     const newFilters: MaintenanceFilters = { ...filters, record_id, page: 1 };
     setFilters(newFilters);
     updateFilters(newFilters);
+  };
+
+  const handleViewMaintenance = (maintenance: Maintenance) => {
+    setSelectedMaintenance(maintenance);
+    setShowDetailModal(true);
   };
 
   // ======= estado del modal de imagen =======
@@ -155,7 +314,7 @@ export const MaintenancesList: React.FC = () => {
       label: "Fecha",
       sortable: true,
       render: (_, record) => (
-        <div className="font-medium text-gray-900">
+        <div className="font-medium text-gray-900 dark:text-white">
           {formatDate(record.maintenance_date)}
         </div>
       ),
@@ -165,10 +324,10 @@ export const MaintenancesList: React.FC = () => {
       label: "Línea de Vida",
       render: (_, record) => (
         <div className="space-y-1">
-          <div className="font-medium text-gray-900">
+          <div className="font-medium text-gray-900 dark:text-white">
             {record.record?.codigo || "N/A"}
           </div>
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-gray-600 dark:text-gray-400">
             {record.record?.cliente || "N/A"}
           </div>
         </div>
@@ -208,8 +367,8 @@ export const MaintenancesList: React.FC = () => {
               <div
                 className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${
                   isIncrease
-                    ? "bg-green-100 text-green-800"
-                    : "bg-red-100 text-red-800"
+                    ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                    : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
                 }`}
               >
                 {isIncrease ? (
@@ -219,7 +378,7 @@ export const MaintenancesList: React.FC = () => {
                 )}
                 <span>{`${isIncrease ? "+" : ""}${change.toFixed(1)}m`}</span>
               </div>
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-gray-500 dark:text-gray-400">
                 {record.previous_length_meters}m → {record.new_length_meters}m
               </div>
             </div>
@@ -244,12 +403,15 @@ export const MaintenancesList: React.FC = () => {
             variant="ghost"
             size="sm"
             icon={ImageIcon}
-            onClick={() => openMaintenanceImage(m)}
+            onClick={(e) => {
+              e.stopPropagation();
+              openMaintenanceImage(m);
+            }}
           >
             Ver
           </Button>
         ) : (
-          <span className="text-sm text-gray-400">Sin imagen</span>
+          <span className="text-sm text-gray-400 dark:text-gray-500">Sin imagen</span>
         );
       },
     },
@@ -258,50 +420,14 @@ export const MaintenancesList: React.FC = () => {
       label: "Registrado por",
       render: (_, record) => (
         <div className="text-sm">
-          <div className="font-medium text-gray-900">
+          <div className="font-medium text-gray-900 dark:text-white">
             {record.user
               ? `${record.user.nombre} ${record.user.apellidos}`
               : "Sistema"}
           </div>
-          <div className="text-gray-500">
+          <div className="text-gray-500 dark:text-gray-400">
             {formatDateTime(record.created_at)}
           </div>
-        </div>
-      ),
-    },
-    {
-      key: "actions" as keyof Maintenance,
-      label: "Acciones",
-      render: (_, record) => (
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            icon={Eye}
-            onClick={() => navigate(`/mantenimiento/${record.id}`)}
-          >
-            Ver
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            icon={Trash2}
-            onClick={() => {
-              if (
-                window.confirm(
-                  `¿Eliminar mantenimiento del ${formatDate(
-                    record.maintenance_date
-                  )}?`
-                )
-              ) {
-                deleteMaintenance(record.id);
-              }
-            }}
-            disabled={deleting}
-            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-          >
-            Eliminar
-          </Button>
         </div>
       ),
     },
@@ -368,9 +494,9 @@ export const MaintenancesList: React.FC = () => {
           totalPages={pagination.totalPages}
           totalItems={pagination.total}
           onPageChange={(page) => updateFilters({ ...filters, page })}
+          onRowClick={handleViewMaintenance}
           loading={loading}
-          stickyHeader
-          maxBodyHeight="60vh"
+          density="compact"
         />
       )}
 
@@ -387,6 +513,18 @@ export const MaintenancesList: React.FC = () => {
             "La URL es inválida o el objeto no es público."
           );
         }}
+      />
+
+      {/* Modal de detalle */}
+      <MaintenanceDetailModal
+        maintenance={selectedMaintenance}
+        open={showDetailModal}
+        onClose={() => {
+          setShowDetailModal(false);
+          setSelectedMaintenance(null);
+        }}
+        onDelete={deleteMaintenance}
+        deleting={deleting}
       />
 
       {/* Modal de formulario */}

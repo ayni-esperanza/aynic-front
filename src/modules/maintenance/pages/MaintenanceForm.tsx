@@ -235,17 +235,17 @@ export const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
       <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-500 to-blue-600">
+        <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-500 to-blue-600">
           <div className="flex items-center space-x-2">
-            <div className="flex items-center justify-center w-6 h-6 bg-white rounded bg-opacity-20">
-              <span className="text-base text-white">🔧</span>
+            <div className="flex items-center justify-center w-5 h-5 bg-white rounded bg-opacity-20">
+              <span className="text-sm text-white">🔧</span>
             </div>
             <div>
-              <h2 className="text-base font-bold text-white leading-tight">
+              <h2 className="text-sm font-bold text-white leading-tight">
                 Nuevo Mantenimiento
               </h2>
               <p className="text-xs text-blue-100 leading-tight">
-                Registra un mantenimiento realizado en una línea de vida
+                Registra un mantenimiento realizado
               </p>
             </div>
           </div>
@@ -255,21 +255,21 @@ export const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
             style={{ lineHeight: 0 }}
             disabled={loading}
           >
-            <X size={16} />
+            <X size={14} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-4 space-y-3">
           {/* Información Básica */}
-          <div className="p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
-            <div className="flex items-center mb-4 space-x-2">
-              <Building className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <div className="p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <div className="flex items-center mb-2 space-x-2">
+              <Building className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
                 Información Básica
               </h2>
             </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <div>
               <SearchableSelect
                 options={recordOptions}
@@ -354,14 +354,14 @@ export const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
 
         {/* Detalles del Mantenimiento */}
         <Card>
-          <div className="flex items-center mb-4 space-x-2">
-            <FileText className="w-5 h-5 text-green-600 dark:text-green-400" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <div className="flex items-center mb-2 space-x-2">
+            <FileText className="w-4 h-4 text-green-600 dark:text-green-400" />
+            <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
               Detalles del Mantenimiento
             </h2>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-3">
             {/* Descripción */}
             <div>
               <label className="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -375,23 +375,23 @@ export const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
                 onChange={(e) =>
                   handleInputChange("description", e.target.value)
                 }
-                placeholder="Describe las actividades de mantenimiento realizadas (revisión, limpieza, reparación, etc.)..."
-                className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200 resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 ${
+                placeholder="Describe las actividades de mantenimiento realizadas..."
+                className={`w-full px-3 py-2 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200 resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 ${
                   errors.description
                     ? "border-red-300 focus:border-red-500 dark:border-red-600 dark:focus:border-red-500"
                     : "border-gray-200 hover:border-gray-300 focus:border-indigo-500 dark:border-gray-600 dark:hover:border-gray-500 dark:focus:border-indigo-400"
                 }`}
-                rows={4}
+                rows={3}
                 maxLength={500}
                 disabled={loading}
               />
-              <div className="flex items-center justify-between mt-2">
-                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+              <div className="flex items-center justify-between mt-1">
+                <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
                   <span className="mr-1">💡</span>
-                  Describe qué trabajo se realizó en la línea de vida
+                  Describe qué trabajo se realizó
                 </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {(formData.description || "").length}/500 caracteres
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {(formData.description || "").length}/500
                 </p>
               </div>
               {errors.description && (
@@ -470,26 +470,25 @@ export const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
 
         {/* Imagen del Mantenimiento */}
         <Card>
-          <div className="flex items-center mb-4 space-x-2">
-            <ImageIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <div className="flex items-center mb-2 space-x-2">
+            <ImageIcon className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+            <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
               Imagen del Mantenimiento{" "}
-              <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
+              <span className="ml-2 text-xs font-normal text-gray-500 dark:text-gray-400">
                 (opcional)
               </span>
             </h2>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {!selectedFile ? (
-              <div className="p-8 text-center transition-colors border-2 border-gray-300 border-dashed cursor-pointer rounded-xl hover:border-indigo-400 group dark:border-gray-600 dark:hover:border-indigo-500">
-                <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400 transition-colors group-hover:text-indigo-500 dark:text-gray-500" />
-                <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">
+              <div className="p-6 text-center transition-colors border-2 border-gray-300 border-dashed cursor-pointer rounded-xl hover:border-indigo-400 group dark:border-gray-600 dark:hover:border-indigo-500">
+                <Upload className="w-10 h-10 mx-auto mb-3 text-gray-400 transition-colors group-hover:text-indigo-500 dark:text-gray-500" />
+                <h3 className="mb-2 text-sm font-medium text-gray-900 dark:text-white">
                   Subir imagen del mantenimiento
                 </h3>
-                <p className="max-w-sm mx-auto mb-4 text-gray-600 dark:text-gray-400">
-                  Sube una fotografía que documente el trabajo de mantenimiento
-                  realizado
+                <p className="max-w-sm mx-auto mb-3 text-xs text-gray-600 dark:text-gray-400">
+                  Sube una fotografía que documente el trabajo realizado
                 </p>
                 <input
                   ref={fileInputRef}
@@ -508,36 +507,35 @@ export const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
                 >
                   Seleccionar Imagen
                 </Button>
-                <div className="mt-3 text-sm text-gray-500 dark:text-gray-400">
-                  <p className="font-medium">Formatos: JPG, PNG, WebP</p>
-                  <p>Tamaño máximo: 5MB</p>
+                <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                  <p className="font-medium">JPG, PNG, WebP - Máx. 5MB</p>
                 </div>
               </div>
             ) : (
-              <div className="p-4 border border-gray-200 bg-gray-50 rounded-xl dark:border-gray-700 dark:bg-gray-700/50">
-                <div className="flex items-start space-x-4">
+              <div className="p-3 border border-gray-200 bg-gray-50 rounded-xl dark:border-gray-700 dark:bg-gray-700/50">
+                <div className="flex items-start space-x-3">
                   <div className="flex-shrink-0">
                     <img
                       src={filePreview!}
                       alt="Preview del mantenimiento"
-                      className="object-cover w-24 h-24 border border-gray-300 rounded-lg shadow-sm dark:border-gray-600"
+                      className="object-cover w-20 h-20 border border-gray-300 rounded-lg shadow-sm dark:border-gray-600"
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-gray-900 truncate dark:text-white">
+                    <h4 className="text-sm font-medium text-gray-900 truncate dark:text-white">
                       {selectedFile.name}
                     </h4>
                     <div className="mt-1 space-y-1">
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-xs text-gray-600 dark:text-gray-400">
                         Tamaño: {(selectedFile.size / 1024 / 1024).toFixed(2)}{" "}
                         MB
                       </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-xs text-gray-600 dark:text-gray-400">
                         Tipo: {selectedFile.type}
                       </p>
                     </div>
-                    <div className="flex items-center mt-2">
-                      <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">
+                    <div className="flex items-center mt-1">
+                      <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium text-green-800 bg-green-100 rounded-full">
                         ✓ Archivo válido
                       </span>
                     </div>
@@ -631,7 +629,7 @@ export const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
           )}
 
           {/* Botones de acción */}
-          <div className="flex justify-end pt-4 space-x-2 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex justify-end pt-3 space-x-2 border-t border-gray-200 dark:border-gray-700">
             <Button
               type="button"
               variant="outline"

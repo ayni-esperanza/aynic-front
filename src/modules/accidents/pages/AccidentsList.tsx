@@ -386,6 +386,7 @@ export const AccidentsList: React.FC = () => {
         itemsPerPage={filters.limit || 10}
         onItemsPerPageChange={handleItemsPerPageChange}
         itemsPerPageOptions={[5, 10, 25, 50, 100]}
+        density="compact"
       />
 
       {/* Modal de formulario */}
