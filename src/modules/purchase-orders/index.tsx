@@ -9,7 +9,6 @@ export const PurchaseOrdersModule: React.FC = () => {
   return (
     <Routes>
       <Route index element={<PurchaseOrderList />} />
-      <Route path="nuevo" element={<PurchaseOrderForm />} />
       <Route path="editar/:id" element={<EditPurchaseOrderForm />} />
       <Route path="detalle/:id" element={<PurchaseOrderDetail />} />
     </Routes>
