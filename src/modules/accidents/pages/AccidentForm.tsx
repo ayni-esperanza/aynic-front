@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from '../../../shared/components/ui/Button';
 import { Input } from '../../../shared/components/ui/Input';
 import { SearchableSelect } from '../../../shared/components/ui/SearchableSelect';
-import { X, Upload } from "lucide-react";
+import { X, Upload, Trash2 } from "lucide-react";
 import { useToast } from '../../../shared/components/ui/Toast';
 import { accidentService } from "../services/accidentService";
 import type {
@@ -16,6 +16,7 @@ interface AccidentFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  onDelete?: (accidentId: number) => void;
   lineasVida: Array<{
     id: number;
     codigo: string;
@@ -38,6 +39,7 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
   isOpen,
   onClose,
   onSuccess,
+  onDelete,
   lineasVida,
 }) => {
   const { success, error } = useToast();
@@ -64,7 +66,7 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
           fecha_accidente: new Date(accident.fecha_accidente)
             .toISOString()
             .split("T")[0],
-          descripcion: accident.descripcion,
+          descripcion: accident.descripcion || "",
           lesiones: accident.lesiones || "",
           medidas_correctivas: accident.medidas_correctivas || "",
           severidad: accident.severidad,
@@ -109,7 +111,7 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
       }
     }
 
-    if (!formData.descripcion.trim()) {
+    if (!formData.descripcion || !formData.descripcion.trim()) {
       newErrors.descripcion = "La descripción es obligatoria";
     } else if (formData.descripcion.length > 2000) {
       newErrors.descripcion =
@@ -404,22 +406,38 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
           </div>
 
           {/* Botones */}
-          <div className="flex justify-end pt-1 space-x-0.5 border-t border-gray-200">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={loading}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              loading={loading}
-              className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
-            >
-              {isEditing ? "Actualizar Accidente" : "Registrar Accidente"}
-            </Button>
+          <div className="flex justify-between pt-1 space-x-0.5 border-t border-gray-200 dark:border-gray-700">
+            <div>
+              {isEditing && onDelete && accident && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  icon={Trash2}
+                  onClick={() => onDelete(Number(accident.id))}
+                  disabled={loading}
+                  className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                >
+                  Eliminar
+                </Button>
+              )}
+            </div>
+            <div className="flex space-x-0.5">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={loading}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                loading={loading}
+                className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
+              >
+                {isEditing ? "Actualizar Accidente" : "Registrar Accidente"}
+              </Button>
+            </div>
           </div>
         </form>
       </div>

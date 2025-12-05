@@ -3,7 +3,6 @@ import { Plus, RefreshCw } from "lucide-react";
 import { DataTable } from '../../../shared/components/common/DataTable';
 import { Button } from '../../../shared/components/ui/Button';
 import { Badge } from '../../../shared/components/ui/Badge';
-import { Card } from '../../../shared/components/ui/Card';
 import { LoadingSpinner } from '../../../shared/components/ui/LoadingSpinner';
 import { useToast } from '../../../shared/components/ui/Toast';
 
@@ -262,24 +261,20 @@ export const UsuariosList: React.FC = () => {
       />
 
       {/* Users Table */}
-      <Card className="border-0 shadow-lg">
-        <div className="p-6">
-          <DataTable
-            data={paginatedUsers}
-            columns={columns}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            onPageChange={handlePageChange}
-            loading={loading}
-            onRowClick={(user) => {
-              setSelectedUser(user);
-              setModalOpen(true);
-            }}
-            density="compact"
-          />
-        </div>
-      </Card>
+      <DataTable
+        data={paginatedUsers}
+        columns={columns}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        onPageChange={handlePageChange}
+        loading={loading}
+        onRowClick={(user) => {
+          setSelectedUser(user);
+          setModalOpen(true);
+        }}
+        density="compact"
+      />
 
       {selectedUser && (
         <UserDetailModal

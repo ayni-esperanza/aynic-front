@@ -7,8 +7,7 @@ import { useToast } from '../../../shared/components/ui/Toast';
 import { AccidentStats } from "../components/AccidentStats";
 import { AccidentFilters } from "../components/AccidentFilters";
 import { AccidentForm } from "./AccidentForm";
-import { AccidentDetails } from "../components/AccidentDetails";
-import { Plus, Eye, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit } from "lucide-react";
 import { accidentService } from "../services/accidentService";
 import { formatDate } from '../../../shared/utils/formatters';
 import type {
@@ -40,7 +39,6 @@ export const AccidentsList: React.FC = () => {
     Array<{ id: number; codigo: string; cliente: string; ubicacion: string }>
   >([]);
   const [showForm, setShowForm] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
   const [selectedAccident, setSelectedAccident] = useState<
     Accident | undefined
   >();
@@ -177,27 +175,24 @@ export const AccidentsList: React.FC = () => {
 
   const handleViewAccident = (accident: Accident) => {
     setSelectedAccident(accident);
-    setShowDetails(true);
-  };
-
-  const handleEditAccident = (accident: Accident) => {
-    setSelectedAccident(accident);
     setShowForm(true);
   };
 
-  const handleDeleteAccident = async (accident: Accident) => {
+  const handleDeleteAccident = async (accidentId: number) => {
     if (
       !confirm(
-        `¿Estás seguro de que deseas eliminar el accidente #${accident.id}?`
+        `¿Estás seguro de que deseas eliminar el accidente #${accidentId}?`
       )
     ) {
       return;
     }
 
     try {
-      await accidentService.deleteAccident(accident.id);
+      await accidentService.deleteAccident(accidentId);
       success("Éxito", "Accidente eliminado correctamente");
       loadAccidents();
+      setShowForm(false);
+      setSelectedAccident(undefined);
     } catch (err) {
       error("Error", "No se pudo eliminar el accidente");
     }
@@ -219,11 +214,6 @@ export const AccidentsList: React.FC = () => {
 
   const handleCloseForm = () => {
     setShowForm(false);
-    setSelectedAccident(undefined);
-  };
-
-  const handleCloseDetails = () => {
-    setShowDetails(false);
     setSelectedAccident(undefined);
   };
 
@@ -342,37 +332,6 @@ export const AccidentsList: React.FC = () => {
           ? `${record.usuario.nombre} ${record.usuario.apellidos}`
           : "-",
     },
-    {
-      key: "acciones",
-      label: "Acciones",
-      sortable: false,
-      render: (_, record) => (
-        <div className="flex space-x-2">
-          <Button
-            size="sm"
-            variant="outline"
-            icon={Eye}
-            onClick={() => handleViewAccident(record)}
-            title="Ver detalles"
-          />
-          <Button
-            size="sm"
-            variant="outline"
-            icon={Edit}
-            onClick={() => handleEditAccident(record)}
-            title="Editar"
-          />
-          <Button
-            size="sm"
-            variant="outline"
-            icon={Trash2}
-            onClick={() => handleDeleteAccident(record)}
-            title="Eliminar"
-            className="text-red-600 hover:text-red-700"
-          />
-        </div>
-      ),
-    },
   ];
 
   return (
@@ -417,6 +376,7 @@ export const AccidentsList: React.FC = () => {
         onPageChange={handlePageChange}
         onSort={handleSort}
         loading={loading}
+        onRowClick={handleViewAccident}
       />
 
       {/* Modal de formulario */}
@@ -425,17 +385,9 @@ export const AccidentsList: React.FC = () => {
         isOpen={showForm}
         onClose={handleCloseForm}
         onSuccess={handleFormSuccess}
+        onDelete={handleDeleteAccident}
         lineasVida={lineasVida}
       />
-
-      {/* Modal de detalles */}
-      {selectedAccident && (
-        <AccidentDetails
-          accident={selectedAccident}
-          isOpen={showDetails}
-          onClose={handleCloseDetails}
-        />
-      )}
     </div>
   );
 };
