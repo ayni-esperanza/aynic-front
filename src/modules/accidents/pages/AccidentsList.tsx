@@ -127,6 +127,12 @@ export const AccidentsList: React.FC = () => {
     loadAccidents(newFilters);
   };
 
+  const handleItemsPerPageChange = (limit: number) => {
+    const newFilters = { ...filters, page: 1, limit };
+    setFilters(newFilters);
+    loadAccidents(newFilters);
+  };
+
   const handleSort = (column: keyof Accident, direction: "asc" | "desc") => {
     const newFilters = {
       ...filters,
@@ -377,6 +383,9 @@ export const AccidentsList: React.FC = () => {
         onSort={handleSort}
         loading={loading}
         onRowClick={handleViewAccident}
+        itemsPerPage={filters.limit || 10}
+        onItemsPerPageChange={handleItemsPerPageChange}
+        itemsPerPageOptions={[5, 10, 25, 50, 100]}
       />
 
       {/* Modal de formulario */}

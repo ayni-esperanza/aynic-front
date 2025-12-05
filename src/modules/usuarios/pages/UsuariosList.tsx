@@ -164,7 +164,7 @@ export const UsuariosList: React.FC = () => {
   );
 
   // Mock de paginación simple (puedes implementar paginación real más tarde)
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const totalItems = filteredUsers.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const [currentPage, setCurrentPage] = useState(1);
@@ -177,6 +177,11 @@ export const UsuariosList: React.FC = () => {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1);
   };
 
   const handleFilterClick = (filterType: 'all' | 'admin' | 'supervisor' | 'active') => {
@@ -274,6 +279,9 @@ export const UsuariosList: React.FC = () => {
           setModalOpen(true);
         }}
         density="compact"
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={handleItemsPerPageChange}
+        itemsPerPageOptions={[5, 10, 25, 50, 100]}
       />
 
       {selectedUser && (

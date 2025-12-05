@@ -26,6 +26,9 @@ interface DataTableProps<T extends Record<string, unknown>> {
   maxBodyHeight?: string;
   onRowClick?: (item: T) => void;
   density?: "normal" | "compact";
+  itemsPerPage?: number;
+  onItemsPerPageChange?: (itemsPerPage: number) => void;
+  itemsPerPageOptions?: number[];
 }
 
 // Fila de la tabla
@@ -194,6 +197,9 @@ export const DataTable = <T extends Record<string, unknown>>({
   maxBodyHeight = "60vh",
   onRowClick,
   density = "normal",
+  itemsPerPage = 10,
+  onItemsPerPageChange,
+  itemsPerPageOptions = [10, 25, 50, 100],
 }: DataTableProps<T>) => {
   const [localSortBy, setLocalSortBy] = useState<keyof T | null>(
     (sortColumn as keyof T) || null
@@ -376,15 +382,24 @@ export const DataTable = <T extends Record<string, unknown>>({
       <div className={`flex flex-col items-center justify-between bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm sm:flex-row sm:space-y-0 rounded-xl ${
         density === "compact" ? "px-4 py-3 space-y-3" : "px-6 py-4 space-y-4"
       }`}>
-        <div className="flex items-center space-x-4">
-          <div className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300 rounded-lg bg-gray-50 dark:bg-gray-700">
-            <span className="font-medium">
-              {paginationInfo.start} - {paginationInfo.end}
-            </span>
-            <span className="text-gray-500 dark:text-gray-400"> de </span>
-            <span className="font-medium">{paginationInfo.total}</span>
-            <span className="text-gray-500 dark:text-gray-400"> registros</span>
-          </div>
+        <div className="flex flex-wrap items-center gap-3">
+          {onItemsPerPageChange && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600 dark:text-gray-400">Mostrar:</span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
+                className="px-3 py-1.5 text-sm font-medium border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white hover:border-[#18D043] focus:outline-none focus:ring-2 focus:ring-[#18D043]/20 focus:border-[#18D043] transition-all duration-200"
+              >
+                {itemsPerPageOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+              <span className="text-sm text-gray-600 dark:text-gray-400">por página</span>
+            </div>
+          )}
 
           {totalPages > 1 && (
             <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400 rounded-lg bg-blue-50 dark:bg-blue-900/30">

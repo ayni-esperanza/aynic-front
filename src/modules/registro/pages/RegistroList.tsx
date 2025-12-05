@@ -123,6 +123,7 @@ export const RegistroList: React.FC = () => {
     loading,
     updateFilters,
     handlePageChange,
+    handleItemsPerPageChange,
     refreshData,
   } = useRegistroData();
 
@@ -1497,6 +1498,9 @@ export const RegistroList: React.FC = () => {
               }}
               onRowClick={handleRowClick}
               density="compact"
+              itemsPerPage={pagination.itemsPerPage}
+              onItemsPerPageChange={handleItemsPerPageChange}
+              itemsPerPageOptions={[5, 10, 25, 50, 100]}
             />
           )}
         </>

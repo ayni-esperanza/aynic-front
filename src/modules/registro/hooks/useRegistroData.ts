@@ -81,6 +81,12 @@ export const useRegistroData = (initialFilters?: RecordFilters) => {
     loadRecords(updatedFilters);
   }, [filters, loadRecords]);
 
+  const handleItemsPerPageChange = useCallback((limit: number) => {
+    const updatedFilters = { ...filters, page: 1, limit };
+    setFilters(updatedFilters);
+    loadRecords(updatedFilters);
+  }, [filters, loadRecords]);
+
   const handleSort = useCallback((sortBy: string, sortOrder: "ASC" | "DESC") => {
     const updatedFilters = { ...filters, sortBy, sortOrder, page: 1 };
     setFilters(updatedFilters);
@@ -114,6 +120,7 @@ export const useRegistroData = (initialFilters?: RecordFilters) => {
     clearFilters,
     refreshData,
     handlePageChange,
+    handleItemsPerPageChange,
     handleSort,
     searchRecords,
   };
