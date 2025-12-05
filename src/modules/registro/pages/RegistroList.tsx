@@ -800,7 +800,7 @@ export const RegistroList: React.FC = () => {
 
   // Vista en cuadrícula (actualizada para mostrar empresa y área)
   const GridView = () => (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
       {registros.map((registro) => {
         const estadoConfig = getEstadoConfig(registro.estado_actual);
         const hasImage = recordImages.has(registro.id);
@@ -810,26 +810,26 @@ export const RegistroList: React.FC = () => {
             className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-[#18D043] relative"
           >
             {hasImage && (
-              <div className="absolute z-10 top-2 right-2">
-                <div className="flex items-center justify-center w-8 h-8 bg-orange-500 rounded-full shadow-lg">
-                  <Camera className="w-4 h-4 text-white" />
+              <div className="absolute z-10 top-1.5 right-1.5">
+                <div className="flex items-center justify-center w-6 h-6 bg-orange-500 rounded-full shadow-lg">
+                  <Camera className="w-3 h-3 text-white" />
                 </div>
               </div>
             )}
 
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-xl flex items-center justify-center shadow-md">
-                    <span className="font-bold text-white">
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-10 h-10 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-lg flex items-center justify-center shadow-md">
+                    <span className="text-sm font-bold text-white">
                       {registro.codigo.slice(-2)}
                     </span>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
                       {registro.codigo}
                     </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{registro.cliente}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{registro.cliente}</p>
                   </div>
                 </div>
                 <Badge variant={estadoConfig.variant} size="sm">
@@ -841,57 +841,57 @@ export const RegistroList: React.FC = () => {
                 </Badge>
               </div>
 
-              <div className="mb-4 space-y-3">
+              <div className="mb-3 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Empresa:</span>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Empresa:</span>
+                  <span className="text-xs font-medium text-gray-900 dark:text-white">
                     {registro.cliente}
                   </span>
                 </div>
                 {registro.codigo_placa && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Código Placa:</span>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">Código Placa:</span>
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">
                       {registro.codigo_placa}
                     </span>
                   </div>
                 )}
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Área:</span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Área:</span>
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300">
                     {registro.area}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Equipo:</span>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Equipo:</span>
+                  <span className="text-xs font-medium text-gray-900 dark:text-white">
                     {registro.equipo}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Tipo:</span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Tipo:</span>
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
                     {registro.tipo_linea}
                   </span>
                 </div>
                 {registro.anclaje_tipo && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Anclaje:</span>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">Anclaje:</span>
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
                       {registro.anclaje_tipo.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
                     </span>
                   </div>
                 )}
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Longitud:</span>
-                  <span className="text-sm font-mono bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-2 py-0.5 rounded">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Longitud:</span>
+                  <span className="text-xs font-mono bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-1.5 py-0.5 rounded">
                     {registro.longitud}m
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Ubicación:</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Ubicación:</span>
                   <span
-                    className="text-sm text-gray-900 dark:text-white truncate max-w-32"
+                    className="text-xs text-gray-900 dark:text-white truncate max-w-32"
                     title={registro.ubicacion}
                   >
                     {registro.ubicacion}
@@ -899,15 +899,15 @@ export const RegistroList: React.FC = () => {
                 </div>
                 {hasImage && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Imagen:</span>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">Imagen:</span>
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300">
                       Disponible
                     </span>
                   </div>
                 )}
               </div>
 
-              <div className="flex pt-3 space-x-2 border-t border-gray-100 dark:border-gray-700">
+              <div className="flex pt-2 space-x-2 border-t border-gray-100 dark:border-gray-700">
                 <Button
                   type="button"
                   variant="outline"
@@ -1466,96 +1466,94 @@ export const RegistroList: React.FC = () => {
       </Card>
 
       {/* Contenido principal */}
-      <Card className="border-0 shadow-lg">
-        {viewMode === "table" ? (
-          <div className="p-6">
-            {loading && registros.length === 0 ? (
-              <div className="flex items-center justify-center py-16">
-                <div className="text-center">
-                  <LoadingSpinner size="lg" className="mb-4" />
-                  <p className="text-gray-600">Cargando registros...</p>
-                </div>
+      {viewMode === "table" ? (
+        <>
+          {loading && registros.length === 0 ? (
+            <div className="flex items-center justify-center py-16">
+              <div className="text-center">
+                <LoadingSpinner size="lg" className="mb-4" />
+                <p className="text-gray-600">Cargando registros...</p>
               </div>
-            ) : registros.length === 0 ? (
-              <NoResultsMessage />
-            ) : (
-              <DataTable
-                data={registros}
-                columns={columns}
-                currentPage={pagination.currentPage}
-                totalPages={pagination.totalPages}
-                totalItems={pagination.totalItems}
-                onPageChange={handlePageChange}
-                loading={loading}
-                sortColumn={sort.field as any}
-                sortDirection={sort.order.toLowerCase() as "asc" | "desc"}
-                onSort={(column, direction) => {
-                  setSort({
-                    field: String(column),
-                    order: direction.toUpperCase() as SortOrder,
-                  });
-                  fetchWith({}, pagination.currentPage);
-                }}
-                onRowClick={handleRowClick}
-                density="compact"
-              />
-            )}
-          </div>
-        ) : (
-          <div className="p-6">
-            {loading && registros.length === 0 ? (
-              <div className="flex items-center justify-center py-16">
-                <div className="text-center">
-                  <LoadingSpinner size="lg" className="mb-4" />
-                  <p className="text-gray-600">Cargando registros...</p>
-                </div>
+            </div>
+          ) : registros.length === 0 ? (
+            <NoResultsMessage />
+          ) : (
+            <DataTable
+              data={registros}
+              columns={columns}
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              totalItems={pagination.totalItems}
+              onPageChange={handlePageChange}
+              loading={loading}
+              sortColumn={sort.field as any}
+              sortDirection={sort.order.toLowerCase() as "asc" | "desc"}
+              onSort={(column, direction) => {
+                setSort({
+                  field: String(column),
+                  order: direction.toUpperCase() as SortOrder,
+                });
+                fetchWith({}, pagination.currentPage);
+              }}
+              onRowClick={handleRowClick}
+              density="compact"
+            />
+          )}
+        </>
+      ) : (
+        <div className="p-6">
+          {loading && registros.length === 0 ? (
+            <div className="flex items-center justify-center py-16">
+              <div className="text-center">
+                <LoadingSpinner size="lg" className="mb-4" />
+                <p className="text-gray-600">Cargando registros...</p>
               </div>
-            ) : registros.length === 0 ? (
-              <NoResultsMessage />
-            ) : (
-              <>
-                <GridView />
-                {/* Paginación para vista grid */}
-                {pagination.totalPages > 1 && (
-                  <div className="flex items-center justify-between mt-6">
-                    <div className="text-sm text-gray-700">
-                      Mostrando{" "}
-                      {Math.min(
-                        (pagination.currentPage - 1) * pagination.itemsPerPage +
-                        1,
-                        pagination.totalItems
-                      )}{" "}
-                      a{" "}
-                      {Math.min(
-                        pagination.currentPage * pagination.itemsPerPage,
-                        pagination.totalItems
-                      )}
-                      de {pagination.totalItems} registros
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      {Array.from(
-                        { length: pagination.totalPages },
-                        (_, i) => i + 1
-                      ).map((page) => (
-                        <button
-                          key={page}
-                          onClick={() => handlePageChange(page)}
-                          className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${page === pagination.currentPage
-                            ? "bg-[#18D043] text-white"
-                            : "text-gray-700 hover:bg-gray-100"
-                            }`}
-                        >
-                          {page}
-                        </button>
-                      ))}
-                    </div>
+            </div>
+          ) : registros.length === 0 ? (
+            <NoResultsMessage />
+          ) : (
+            <>
+              <GridView />
+              {/* Paginación para vista grid */}
+              {pagination.totalPages > 1 && (
+                <div className="flex items-center justify-between mt-6">
+                  <div className="text-sm text-gray-700">
+                    Mostrando{" "}
+                    {Math.min(
+                      (pagination.currentPage - 1) * pagination.itemsPerPage +
+                      1,
+                      pagination.totalItems
+                    )}{" "}
+                    a{" "}
+                    {Math.min(
+                      pagination.currentPage * pagination.itemsPerPage,
+                      pagination.totalItems
+                    )}
+                    de {pagination.totalItems} registros
                   </div>
-                )}
-              </>
-            )}
-          </div>
-        )}
-      </Card>
+                  <div className="flex items-center space-x-2">
+                    {Array.from(
+                      { length: pagination.totalPages },
+                      (_, i) => i + 1
+                    ).map((page) => (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${page === pagination.currentPage
+                          ? "bg-[#18D043] text-white"
+                          : "text-gray-700 hover:bg-gray-100"
+                          }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
       {/* Modal de eliminación con autorización */}
       <DeleteModal
         isOpen={deleteModalOpen}
