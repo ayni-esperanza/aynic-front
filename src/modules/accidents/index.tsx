@@ -23,7 +23,7 @@ export { accidentService } from "./services";
 export type {
   Accident,
   AccidentStatistics,
-  AccidentFilters,
+  AccidentFilters as AccidentFiltersType,
   CreateAccidentDto,
   UpdateAccidentDto,
   EstadoAccidente,

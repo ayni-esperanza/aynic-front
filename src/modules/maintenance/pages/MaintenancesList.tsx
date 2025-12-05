@@ -8,6 +8,7 @@ import { useToast } from '../../../shared/components/ui/Toast';
 import { usePaginatedApi, useMutation, useApi } from '../../../shared/hooks/useApi';
 import { maintenanceService } from "../services/maintenanceService";
 import { formatDate, formatDateTime } from "../../../shared/utils/formatters";
+import { MaintenanceForm } from "./MaintenanceForm";
 import {
   Plus,
   Eye,
@@ -75,6 +76,9 @@ export const MaintenancesList: React.FC = () => {
     limit: 10,
     record_id: undefined,
   });
+
+  const [showFormModal, setShowFormModal] = useState(false);
+  const [selectedRecordId, setSelectedRecordId] = useState<number | undefined>();
 
   // ---- líneas de vida (para el filtro) ----
   const { data: initialLineas } = useApi(
@@ -173,16 +177,19 @@ export const MaintenancesList: React.FC = () => {
     {
       key: "description",
       label: "Descripción",
-      render: (value) => (
-        <div className="max-w-xs">
-          <div
-            className="text-sm text-gray-900 truncate"
-            title={value as string}
-          >
-            {value || "Sin descripción"}
+      render: (_, record) => {
+        const desc = record.description || "Sin descripción";
+        return (
+          <div className="max-w-xs">
+            <div
+              className="text-sm text-gray-900 truncate dark:text-white"
+              title={desc}
+            >
+              {desc}
+            </div>
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       key: "new_length_meters",
@@ -326,7 +333,7 @@ export const MaintenancesList: React.FC = () => {
           <Button variant="outline" icon={Download} disabled={loading}>
             Exportar
           </Button>
-          <Button icon={Plus} onClick={() => navigate("/mantenimiento/nuevo")}>
+          <Button icon={Plus} onClick={() => setShowFormModal(true)}>
             Nuevo Mantenimiento
           </Button>
         </div>
@@ -380,6 +387,19 @@ export const MaintenancesList: React.FC = () => {
             "La URL es inválida o el objeto no es público."
           );
         }}
+      />
+
+      {/* Modal de formulario */}
+      <MaintenanceForm
+        isOpen={showFormModal}
+        onClose={() => {
+          setShowFormModal(false);
+          setSelectedRecordId(undefined);
+        }}
+        onSuccess={() => {
+          updateFilters({});
+        }}
+        preselectedRecordId={selectedRecordId}
       />
     </div>
   );

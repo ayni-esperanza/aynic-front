@@ -7,7 +7,7 @@ import {
   ArrowDown,
   MoreHorizontal,
 } from "lucide-react";
-import type { TableColumn } from "../../types";
+import type { TableColumn } from "../../../types";
 import { Button } from "../ui/Button";
 
 interface DataTableProps<T extends Record<string, unknown>> {
@@ -186,7 +186,7 @@ export const DataTable = <T extends Record<string, unknown>>({
   columns,
   currentPage,
   totalPages,
-  totalItems,
+  totalItems: _totalItems,
   onPageChange,
   loading = false,
   onSort,
@@ -247,15 +247,6 @@ export const DataTable = <T extends Record<string, unknown>>({
         />
       )),
     [data, columns, onRowClick, density]
-  );
-
-  const paginationInfo = useMemo(
-    () => ({
-      start: Math.min((currentPage - 1) * 10 + 1, totalItems),
-      end: Math.min(currentPage * 10, totalItems),
-      total: totalItems,
-    }),
-    [currentPage, totalItems]
   );
 
   if (loading) {

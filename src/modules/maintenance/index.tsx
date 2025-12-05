@@ -9,7 +9,6 @@ export const MaintenanceModule: React.FC = () => {
   return (
     <Routes>
       <Route index element={<MaintenancesList />} />
-      <Route path="nuevo" element={<MaintenanceForm />} />
       <Route path=":id" element={<MaintenanceDetail />} />
       <Route path="record/:recordId" element={<MaintenanceRecordView />} />
       <Route path="*" element={<Navigate to="/mantenimiento" replace />} />
