@@ -5,11 +5,8 @@ import React, {
   useCallback,
   useRef,
 } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   Plus,
-  Edit,
-  Eye,
   Search,
   Filter,
   Grid,
@@ -33,7 +30,6 @@ import type { ImageResponse } from '../../../shared/services/imageService';
 import { RelationshipModal } from "../components/RelationshipModal";
 import { RegistroDetailModal } from "../components/RegistroDetailModal";
 import { formatDate } from "../../../shared/utils/formatters";
-import { useAuthStore } from "../../../store/authStore";
 import { DeleteModal } from "../../solicitudes/components/DeleteModal";
 import { apiClient } from '../../../shared/services/apiClient';
 import { ReportsSection } from "../components/ReportsSection";
@@ -43,9 +39,7 @@ import type { TableColumn } from "../../../types";
 import { useRegistroData } from "../hooks/useRegistroData";
 
 export const RegistroList: React.FC = () => {
-  const navigate = useNavigate();
   const { success, error: showError } = useToast();
-  const { user } = useAuthStore();
 
   // Estados para filtros y vista
   const [searchTerm, setSearchTerm] = useState("");
@@ -414,12 +408,6 @@ export const RegistroList: React.FC = () => {
     setShowDetailModal(false);
     setSelectedRecord(null);
   }, []);
-
-  const handleOpenEditModal = useCallback((registro: DataRecord) => {
-    // Por ahora navegamos a la página de edición
-    // TODO: Convertir EditarRegistroForm en modal
-    navigate(`editar/${registro.id}`);
-  }, [navigate]);
 
   const getEstadoConfig = useCallback((estado: DataRecord["estado_actual"]) => {
     const configs = {
@@ -806,9 +794,10 @@ export const RegistroList: React.FC = () => {
         const estadoConfig = getEstadoConfig(registro.estado_actual);
         const hasImage = recordImages.has(registro.id);
         return (
-          <Card
+          <div
             key={registro.id}
-            className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-[#18D043] relative"
+            onClick={() => handleRowClick(registro)}
+            className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-[#18D043] relative cursor-pointer bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
           >
             {hasImage && (
               <div className="absolute z-10 top-1.5 right-1.5">
@@ -907,38 +896,8 @@ export const RegistroList: React.FC = () => {
                   </div>
                 )}
               </div>
-
-              <div className="flex pt-2 space-x-2 border-t border-gray-100 dark:border-gray-700">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRowClick(registro);
-                  }}
-                  icon={Eye}
-                  className="flex-1 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/30"
-                >
-                  Ver
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleOpenEditModal(registro);
-                  }}
-                  icon={Edit}
-                  className="flex-1 text-green-600 dark:text-green-400 border-green-200 dark:border-green-700 hover:bg-green-50 dark:hover:bg-green-900/30"
-                  disabled={!(user?.empresa === 'ayni' || user?.empresa === 'Ayni' || user?.empresa === 'AYNI')}
-                >
-                  Editar
-                </Button>
-              </div>
             </div>
-          </Card>
+          </div>
         );
       })}
     </div>
@@ -1604,7 +1563,6 @@ export const RegistroList: React.FC = () => {
           isOpen={showDetailModal}
           onClose={handleCloseDetailModal}
           registroId={selectedRecord.id}
-          onEdit={handleOpenEditModal}
           onDelete={(registro) => {
             handleDeleteRegistro(registro);
             setShowDetailModal(false);

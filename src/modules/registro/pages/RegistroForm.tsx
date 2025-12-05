@@ -794,30 +794,31 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose }) => {
 
                   {/* Cliente con SearchableSelect y funcionalidad de agregar */}
                   <div>
-                    <div className="space-y-2">
-                      <SearchableSelect
-                        options={clientesList}
-                        value={formData.cliente}
-                        onChange={(value) => handleChange("cliente", value)}
-                        placeholder="Buscar cliente..."
-                        label="Cliente"
-                        error={errors.cliente}
-                        required
-                        className={inputHeightClass}
-                      />
-                      <div className="flex-shrink-0 mb-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setShowNewClientForm(true)}
-                          className="px-3 border-[#18D043] text-[#18D043] hover:bg-[#18D043] hover:text-white"
-                          icon={Plus}
-                          title="Agregar nuevo cliente"
-                        >
-                          Nuevo
-                        </Button>
+                    <label className="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      Cliente
+                      <span className="ml-1 text-red-500">*</span>
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <SearchableSelect
+                          options={clientesList}
+                          value={formData.cliente}
+                          onChange={(value) => handleChange("cliente", value)}
+                          placeholder="Buscar cliente..."
+                          error={errors.cliente}
+                          required={false}
+                          className={inputHeightClass}
+                        />
                       </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowNewClientForm(true)}
+                        className="px-2 py-1.5 border-[#18D043] text-[#18D043] hover:bg-[#18D043] hover:text-white flex-shrink-0"
+                        icon={Plus}
+                        title="Agregar nuevo cliente"
+                      />
                     </div>
                   </div>
 

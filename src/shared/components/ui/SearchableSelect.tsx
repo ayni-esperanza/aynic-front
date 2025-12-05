@@ -114,7 +114,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   };
 
   return (
-    <div className={`relative w-full min-w-0 ${className}`}>
+    <div className={`relative w-full min-w-0`}>
       {label && (
         <label className="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
           {label}
@@ -123,7 +123,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
       )}
       <div className="relative" ref={dropdownRef}>
         <div
-          className={`relative w-full min-w-0 h-10 px-3 border-2 rounded-xl transition-all duration-200 font-medium cursor-pointer text-sm bg-white dark:bg-gray-800 flex items-center
+          className={`relative w-full min-w-0 px-3 py-1.5 border-2 rounded-xl transition-all duration-200 font-medium cursor-pointer text-sm bg-white dark:bg-gray-800 flex items-center ${className}
             ${
               error
                 ? "border-red-300 dark:border-red-600 focus-within:border-red-500 focus-within:ring-red-500/20"
@@ -163,7 +163,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                   onChange={handleInputChange}
                   onKeyDown={handleKeyDown}
                   placeholder={value || placeholder}
-                  className="flex-1 min-w-0 h-full text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 bg-transparent border-none outline-none leading-none"
+                  className="flex-1 min-w-0 h-full text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 bg-transparent border-none outline-none leading-none"
                 />
                 <span
                   className={`text-gray-400 dark:text-gray-500 transition-transform text-xs flex-shrink-0 leading-none ${
