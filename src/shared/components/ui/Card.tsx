@@ -6,6 +6,7 @@ interface CardProps {
   padding?: "none" | "sm" | "md" | "lg";
   hover?: boolean;
   gradient?: boolean;
+  unstyled?: boolean;
 }
 
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(({
@@ -14,6 +15,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(({
   padding = "md",
   hover = false,
   gradient = false,
+  unstyled = false,
 }, ref) => {
   const paddingClasses = {
     none: "",
@@ -26,8 +28,12 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(({
     hover ? "hover:shadow-lg hover:scale-[1.02] hover:border-[#18D043]/20 dark:hover:border-[#18D043]/30" : ""
   } ${gradient ? "bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900" : ""}`;
 
+  const computedClasses = unstyled
+    ? className
+    : `${baseClasses} ${paddingClasses[padding]} ${className}`.trim();
+
   return (
-    <div ref={ref} className={`${baseClasses} ${paddingClasses[padding]} ${className}`}>
+    <div ref={ref} className={computedClasses}>
       {children}
     </div>
   );

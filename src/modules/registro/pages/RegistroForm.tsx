@@ -618,12 +618,14 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose }) => {
   ];
 
   const outerContainerClass = isModal
-    ? "w-full max-w-2xl mx-auto bg-transparent"
+    ? "w-full h-full flex-1 flex flex-col min-h-0"
     : "min-h-screen bg-gradient-to-br from-gray-50 to-gray-100";
 
   const contentWrapperClass = isModal
-    ? "w-full px-2 py-2 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl"
+    ? "w-full h-full flex flex-col min-h-0 px-4 py-4 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl"
     : "max-w-4xl px-4 py-6 mx-auto sm:px-6 lg:px-8";
+  
+  const formScrollClass = isModal ? "flex-1 min-h-0 overflow-y-auto px-1" : "";
 
   const headerWrapperClass = isModal ? "mb-2" : "mb-8";
   const headerFlexClass = isModal
@@ -644,14 +646,15 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose }) => {
   const stepConnectorMarginClass = isModal ? "flex-1 mx-4" : "flex-1 mx-6";
   const stepIconSize = isModal ? 18 : 20;
 
-  const formPaddingClass = isModal ? "p-2" : "p-8";
-  const formIntroSpacingClass = isModal ? "mb-1.5" : "mb-6";
-  const sectionSpacingClass = isModal ? "space-y-2" : "space-y-6";
-  const gridGapClass = isModal ? "gap-2" : "gap-6";
+  const formPaddingClass = isModal ? "p-4 flex flex-col flex-1 min-h-0 overflow-hidden" : "p-8";
+  const formIntroSpacingClass = isModal ? "mb-2" : "mb-6";
+  const sectionSpacingClass = isModal ? "space-y-4" : "space-y-6";
+  const gridGapClass = isModal ? "gap-4" : "gap-6";
   const inputHeightClass = isModal ? "!py-1.5 !text-sm" : "";
   const labelSizeClass = isModal ? "!text-xs" : "";
   const buttonSizeClass = isModal ? "sm" : "md";
   const footerSpacingClass = isModal ? "pt-3 mt-3" : "pt-8 mt-8";
+  const clienteLabelClass = isModal ? "text-xs" : "text-sm";
 
   return (
     <div className={outerContainerClass}>
@@ -723,11 +726,28 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose }) => {
           </>
         )}
 
-        <Card className={isModal ? "bg-transparent border-0 shadow-none" : "bg-white border-0 shadow-xl"}>
+        <Card
+          unstyled={isModal}
+          padding={isModal ? "none" : "md"}
+          className={isModal ? "flex-1 flex flex-col min-h-0 overflow-hidden" : "border-0 shadow-xl"}
+        >
           <form onSubmit={handleSubmit} className={formPaddingClass}>
             {isModal && (
-              <div className="mb-3">
-                <h1 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Nuevo Registro</h1>
+              <div className="mb-4 flex-shrink-0">
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div>
+                    <h1 className="text-lg font-bold text-gray-900 dark:text-white">Nuevo Registro</h1>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Completa el formulario paso a paso</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={goBack}
+                    className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                    aria-label="Cerrar"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
                 <div className="relative">
                   <div className="flex items-start justify-between gap-1 mb-3">
                     {steps.map((step, idx) => {
@@ -777,6 +797,7 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose }) => {
             )}
 
             {/* ------- PASOS ------- */}
+            <div className={formScrollClass}>
             {currentStep === 1 && (
               <div className={sectionSpacingClass}>
                 <div className={`grid ${gridGapClass} md:grid-cols-2`}>
@@ -800,7 +821,7 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose }) => {
 
                   {/* Cliente con SearchableSelect y funcionalidad de agregar */}
                   <div>
-                    <label className="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    <label className={`block mb-2 font-semibold text-gray-700 dark:text-gray-300 ${clienteLabelClass}`}>
                       Cliente
                       <span className="ml-1 text-red-500">*</span>
                     </label>
@@ -813,7 +834,7 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose }) => {
                           placeholder="Buscar cliente..."
                           error={errors.cliente}
                           required={false}
-                          className={inputHeightClass}
+                          size={isModal ? "compact" : "default"}
                         />
                       </div>
                       <Button
@@ -821,10 +842,12 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose }) => {
                         variant="outline"
                         size="sm"
                         onClick={() => setShowNewClientForm(true)}
-                        className="px-2 py-1.5 border-[#18D043] text-[#18D043] hover:bg-[#18D043] hover:text-white flex-shrink-0"
+                        className="h-10 w-10 !p-0 !gap-0 border-[#18D043] text-[#18D043] hover:bg-[#18D043] hover:text-white flex-shrink-0"
                         icon={Plus}
                         title="Agregar nuevo cliente"
-                      />
+                      >
+                        <span className="sr-only">Agregar cliente</span>
+                      </Button>
                     </div>
                   </div>
 
@@ -1053,7 +1076,7 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose }) => {
                     label="Fecha de Caducidad"
                     type="date"
                     value={formData.fecha_caducidad}
-                    readOnly
+                    onChange={(e) => handleChange("fecha_caducidad", e.target.value)}
                     error={errors.fecha_caducidad}
                     required
                     icon={Calendar}
@@ -1171,9 +1194,10 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose }) => {
                 )}
               </div>
             )}
+            </div>
 
             {/* ------- BOTONES ------- */}
-            <div className={`flex justify-between border-t border-gray-200 ${footerSpacingClass}`}>
+            <div className={`flex justify-between border-t border-gray-200 dark:border-gray-700 ${footerSpacingClass} ${isModal ? 'flex-shrink-0' : ''}`}>
               <div>
                 {/* Solo mostrar "Anterior" si no estamos en el paso 4 con imagen subida */}
                 {currentStep > 1 && !(currentStep === 4 && hasImage) && (

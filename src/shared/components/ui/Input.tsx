@@ -60,6 +60,7 @@ export const Input: React.FC<InputProps> = ({
           className={`
             w-full px-3 py-3 border-2 rounded-xl transition-all duration-200 font-medium text-sm
             bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+            placeholder:text-gray-400 dark:placeholder:text-gray-500
             focus:outline-none focus:ring-2 focus:ring-[#18D043]/20 focus:border-[#18D043]
             dark:focus:ring-[#18D043]/30 dark:focus:border-[#18D043]
             ${

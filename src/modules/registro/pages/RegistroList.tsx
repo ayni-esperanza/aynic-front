@@ -14,7 +14,6 @@ import {
   SlidersHorizontal,
   Camera,
   FileText,
-  X,
 } from "lucide-react";
 import { DataTable } from '../../../shared/components/common/DataTable';
 import { Button } from '../../../shared/components/ui/Button';
@@ -1550,17 +1549,9 @@ export const RegistroList: React.FC = () => {
       {showCreateModal && (
         <div
           ref={createModalRef}
-          className="fixed inset-0 z-50 flex items-center justify-center px-2 py-2 sm:px-3 sm:py-3 bg-black/70 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 bg-black/70 backdrop-blur-sm"
         >
-          <div className="relative w-full max-w-md max-h-[70vh] overflow-y-auto rounded-xl bg-white dark:bg-gray-900 shadow-2xl border border-white/10 dark:border-gray-700/60">
-            <button
-              type="button"
-              onClick={handleCloseCreateModal}
-              className="absolute top-3 right-3 inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-              aria-label="Cerrar"
-            >
-              <X size={16} />
-            </button>
+          <div className="relative w-full max-w-4xl h-[90vh] max-h-[90vh] overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-2xl border border-white/10 dark:border-gray-700/60 flex">
             <RegistroForm onClose={handleCloseCreateModal} />
           </div>
         </div>
