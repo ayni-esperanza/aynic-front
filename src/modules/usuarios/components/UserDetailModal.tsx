@@ -1,11 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { X, Trash2, UserCircle } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Trash2 } from "lucide-react";
 import { Button } from '../../../shared/components/ui/Button';
 import { Input } from '../../../shared/components/ui/Input';
 import { Select } from '../../../shared/components/ui/Select';
-import { Badge } from '../../../shared/components/ui/Badge';
 import { useToast } from '../../../shared/components/ui/Toast';
 import { useApi } from '../../../shared/hooks/useApi';
+import { useModalClose } from '../../../shared/hooks/useModalClose';
 import { userService, type FrontendUser, type UpdateUserFrontendDto } from "../services/userService";
 
 interface UserDetailModalProps {
@@ -33,6 +33,8 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
 }) => {
   const { success, error } = useToast();
   const [formData, setFormData] = useState<UpdateUserFrontendDto>({});
+  
+  const modalRef = useModalClose({ isOpen, onClose });
 
   const {
     execute: updateUser,
@@ -100,25 +102,10 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
     onClose();
   };
 
-  const rolBadge = useMemo(() => {
-    if (!user) return null;
-    const variants: Record<FrontendUser["rol"], "danger" | "warning" | "secondary"> = {
-      admin: "danger",
-      supervisor: "warning",
-      usuario: "secondary",
-    };
-    const labels: Record<FrontendUser["rol"], string> = {
-      admin: "Administrador",
-      supervisor: "Supervisor",
-      usuario: "Usuario",
-    };
-    return <Badge variant={variants[user.rol]}>{labels[user.rol]}</Badge>;
-  }, [user]);
-
   if (!isOpen || !user) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div className="w-full max-w-4xl max-h-[92vh] overflow-y-auto bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-2xl">
         {/* Header */}
         <div className="flex items-start justify-between p-5 sm:p-6 border-b border-gray-200 dark:border-gray-800">
@@ -131,28 +118,11 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                 {user.nombre} {user.apellidos || ""}
               </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">@{user.usuario}</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-            aria-label="Cerrar"
-          >
-            <X size={22} />
-          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-5">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-              <UserCircle size={18} className="text-[#18D043]" />
-              {rolBadge}
-              <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800">
-                {user.email}
-              </span>
-            </div>
-          </div>
           <div className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <Input
@@ -207,47 +177,41 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
               />
             </div>
 
-            <div className="flex items-center justify-end gap-3">
+            <div className="flex items-center justify-between gap-3">
               <Button
                 type="button"
-                variant="ghost"
-                onClick={() => {
-                  if (!user) return;
-                  setFormData({
-                    usuario: user.usuario,
-                    nombre: user.nombre,
-                    apellidos: user.apellidos || "",
-                    email: user.email,
-                    telefono: user.telefono || "",
-                    cargo: user.cargo || "",
-                    empresa: user.empresa,
-                    rol: user.rol,
-                  });
-                }}
-                className="text-sm"
+                variant="danger"
+                icon={Trash2}
+                onClick={handleDelete}
+                disabled={deleting || updating}
               >
-                Restablecer
+                Eliminar usuario
               </Button>
-              <Button type="submit" loading={updating} className="text-sm">
-                Guardar cambios
-              </Button>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-gray-200 dark:border-gray-800">
-            <Button
-              type="button"
-              variant="danger"
-              icon={Trash2}
-              onClick={handleDelete}
-              disabled={deleting || updating}
-            >
-              Eliminar usuario
-            </Button>
-            <div className="flex gap-2">
-              <Button type="button" variant="outline" onClick={onClose}>
-                Cerrar
-              </Button>
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    if (!user) return;
+                    setFormData({
+                      usuario: user.usuario,
+                      nombre: user.nombre,
+                      apellidos: user.apellidos || "",
+                      email: user.email,
+                      telefono: user.telefono || "",
+                      cargo: user.cargo || "",
+                      empresa: user.empresa,
+                      rol: user.rol,
+                    });
+                  }}
+                  className="text-sm"
+                >
+                  Restablecer
+                </Button>
+                <Button type="submit" loading={updating} className="text-sm">
+                  Guardar cambios
+                </Button>
+              </div>
             </div>
           </div>
         </form>

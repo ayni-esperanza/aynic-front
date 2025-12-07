@@ -4,6 +4,7 @@ import { Input } from '../../../shared/components/ui/Input';
 import { SearchableSelect } from '../../../shared/components/ui/SearchableSelect';
 import { X, Upload, Trash2 } from "lucide-react";
 import { useToast } from '../../../shared/components/ui/Toast';
+import { useModalClose } from '../../../shared/hooks/useModalClose';
 import { accidentService } from "../services/accidentService";
 import type {
   Accident,
@@ -45,6 +46,8 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
   const { success, error } = useToast();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Partial<FormData>>({});
+
+  const modalRef = useModalClose({ isOpen, onClose });
 
   const [formData, setFormData] = useState<FormData>({
     linea_vida_id: null,
@@ -220,7 +223,7 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+    <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
       <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl">
         {/* Header reducido y modal más ancha */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-red-500 to-red-600">

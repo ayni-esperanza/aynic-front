@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Trash2, AlertTriangle, CheckCircle } from "lucide-react";
 import { Button } from '../../../shared/components/ui/Button';
 import { LoadingSpinner } from '../../../shared/components/ui/LoadingSpinner';
+import { useModalClose } from '../../../shared/hooks/useModalClose';
 import { useAuthStore } from "../../../store/authStore";
 import { apiClient } from '../../../shared/services/apiClient';
 import type { DataRecord } from "../../registro/types/registro";
@@ -27,6 +28,8 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({
   );
   const [checkingAuth, setCheckingAuth] = useState(false);
   const { user } = useAuthStore();
+  
+  const modalRef = useModalClose({ isOpen, onClose });
 
   // Verificar si necesita autorización cuando se abre el modal
   useEffect(() => {
@@ -71,7 +74,7 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({
   if (!isOpen || !record) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="w-full max-w-md p-6 bg-white shadow-xl rounded-xl">
         <div className="text-center">
           <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full">

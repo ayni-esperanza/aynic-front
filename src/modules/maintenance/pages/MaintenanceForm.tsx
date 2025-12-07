@@ -5,6 +5,7 @@ import { Button } from '../../../shared/components/ui/Button';
 import { SearchableSelect } from '../../../shared/components/ui/SearchableSelect';
 import { useToast } from '../../../shared/components/ui/Toast';
 import { useMutation, useApi } from '../../../shared/hooks/useApi';
+import { useModalClose } from '../../../shared/hooks/useModalClose';
 import { maintenanceService } from "../services/maintenanceService";
 import {
   Save,
@@ -41,6 +42,7 @@ export const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
 }) => {
   const { success, error: showError } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const modalRef = useModalClose({ isOpen, onClose });
 
   // Estado del formulario
   const [formData, setFormData] = useState<CreateMaintenanceDto>({
@@ -232,7 +234,7 @@ export const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+    <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
       <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-500 to-blue-600">

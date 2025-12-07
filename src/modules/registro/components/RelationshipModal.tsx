@@ -3,6 +3,7 @@ import { X, Plus, Trash2 } from "lucide-react";
 import { Button } from '../../../shared/components/ui/Button';
 import { Input } from '../../../shared/components/ui/Input';
 import { useToast } from '../../../shared/components/ui/Toast';
+import { useModalClose } from '../../../shared/hooks/useModalClose';
 import { relationshipService, CreateRelationshipDto } from "../services/relationshipService";
 import type { DataRecord } from "../types/registro";
 
@@ -40,6 +41,8 @@ export const RelationshipModal: React.FC<RelationshipModalProps> = ({
     { codigo: "", longitud: parentRecord.longitud, ubicacion: parentRecord.ubicacion },
     { codigo: "", longitud: parentRecord.longitud, ubicacion: parentRecord.ubicacion },
   ]);
+  
+  const modalRef = useModalClose({ isOpen, onClose });
 
   const addNewLine = () => {
     setChildRecords(prev => [...prev, {
@@ -103,7 +106,7 @@ export const RelationshipModal: React.FC<RelationshipModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div className="w-full max-w-4xl max-h-[92vh] overflow-y-auto bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-2xl">
         {/* Header */}
         <div className="p-5 sm:p-6 bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 rounded-t-2xl">

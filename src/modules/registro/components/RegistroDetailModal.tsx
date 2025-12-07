@@ -24,6 +24,7 @@ import { Input } from '../../../shared/components/ui/Input';
 import { LoadingSpinner } from '../../../shared/components/ui/LoadingSpinner';
 import { useToast } from '../../../shared/components/ui/Toast';
 import { useApi } from '../../../shared/hooks/useApi';
+import { useModalClose } from '../../../shared/hooks/useModalClose';
 import { registroService } from "../services/registroService";
 import { relationshipService } from "../services/relationshipService";
 import {
@@ -50,6 +51,7 @@ export const RegistroDetailModal: React.FC<RegistroDetailModalProps> = ({
   onDelete,
   onCreateDerivadas,
 }) => {
+  const modalRef = useModalClose({ isOpen, onClose });
   const { error: showError, success } = useToast();
   const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState("general");
@@ -268,7 +270,7 @@ export const RegistroDetailModal: React.FC<RegistroDetailModalProps> = ({
 
   if (loading && !registro) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+      <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
         <div className="text-center">
           <LoadingSpinner size="lg" />
           <p className="mt-4 text-white">Cargando registro...</p>
@@ -279,7 +281,7 @@ export const RegistroDetailModal: React.FC<RegistroDetailModalProps> = ({
 
   if (error || !registro) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+      <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
         <Card className="w-full max-w-md text-center shadow-xl">
           <div className="p-8">
             <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full">
@@ -707,10 +709,9 @@ export const RegistroDetailModal: React.FC<RegistroDetailModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={onClose}>
+    <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
       <div
         className="relative w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-xl bg-white dark:bg-gray-900 shadow-2xl border border-white/10 dark:border-gray-700/60"
-        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="bg-gradient-to-r from-[#18D043] to-[#16a34a] p-6 text-white">

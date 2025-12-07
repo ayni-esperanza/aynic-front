@@ -595,9 +595,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
                     <p className="font-semibold text-gray-900 dark:text-white">
                       {user?.nombre || "Usuario Sistema"}
                     </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {user?.email || "usuario@sistema.com"}
-                    </p>
                     <div className="flex items-center mt-1 space-x-1">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                       <span className="text-xs font-medium text-green-600 dark:text-green-400">

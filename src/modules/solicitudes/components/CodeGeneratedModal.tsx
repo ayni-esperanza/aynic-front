@@ -2,6 +2,7 @@ import React from "react";
 import { CheckCircle, Copy } from "lucide-react";
 import { Button } from '../../../shared/components/ui/Button';
 import { useToast } from '../../../shared/components/ui/Toast';
+import { useModalClose } from '../../../shared/hooks/useModalClose';
 
 interface CodeGeneratedModalProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ export const CodeGeneratedModal: React.FC<CodeGeneratedModalProps> = ({
   requestInfo,
 }) => {
   const { success } = useToast();
+  const modalRef = useModalClose({ isOpen, onClose });
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(code);
@@ -31,7 +33,7 @@ export const CodeGeneratedModal: React.FC<CodeGeneratedModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="w-full max-w-md p-6 bg-white shadow-xl rounded-xl">
         <div className="text-center">
           <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full">

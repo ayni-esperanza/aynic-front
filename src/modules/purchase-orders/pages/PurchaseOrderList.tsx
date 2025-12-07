@@ -3,6 +3,7 @@ import { Plus, Search, Filter, CheckCircle, XCircle, Clock, CheckSquare, FileTex
 import { usePurchaseOrders } from '../hooks';
 import { PurchaseOrder, PurchaseOrderStatus, PurchaseOrderType } from '../types';
 import { PurchaseOrderForm } from './PurchaseOrderForm';
+import { useModalClose } from '../../../shared/hooks/useModalClose';
 
 const statusColors = {
   [PurchaseOrderStatus.PENDING]: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
@@ -63,6 +64,15 @@ export const PurchaseOrderList: React.FC = () => {
     setHasChanges(false);
     setShowDetailModal(true);
   };
+
+  const handleCloseDetailModal = () => {
+    setShowDetailModal(false);
+  };
+
+  const detailModalRef = useModalClose({
+    isOpen: showDetailModal,
+    onClose: handleCloseDetailModal,
+  });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -293,7 +303,10 @@ export const PurchaseOrderList: React.FC = () => {
 
       {/* Modal de detalle */}
       {showDetailModal && selectedOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+        <div
+          ref={detailModalRef}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
+        >
           <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-500 to-blue-600">
@@ -305,7 +318,7 @@ export const PurchaseOrderList: React.FC = () => {
                 </div>
               </div>
               <button
-                onClick={() => setShowDetailModal(false)}
+                onClick={handleCloseDetailModal}
                 className="text-white transition-colors hover:text-blue-200"
               >
                 <XCircle size={20} />

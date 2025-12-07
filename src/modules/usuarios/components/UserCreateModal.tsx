@@ -5,6 +5,7 @@ import { Input } from '../../../shared/components/ui/Input';
 import { Select } from '../../../shared/components/ui/Select';
 import { useToast } from '../../../shared/components/ui/Toast';
 import { useApi } from '../../../shared/hooks/useApi';
+import { useModalClose } from '../../../shared/hooks/useModalClose';
 import { userService, type CreateUserFrontendDto } from "../services/userService";
 
 type UserRole = "admin" | "supervisor" | "usuario";
@@ -36,6 +37,8 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({
   const { success, error } = useToast();
   const [formData, setFormData] = useState(createDefaultForm());
   const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  const modalRef = useModalClose({ isOpen, onClose });
 
   const { execute: createUser, loading } = useApi(
     async (...args: unknown[]) => {
@@ -141,8 +144,8 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-3xl max-h-[92vh] overflow-y-auto rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-2xl">
+    <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-2xl">
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-800">
           <div>
             <p className="text-xs font-semibold tracking-wide text-[#18D043] uppercase">Gestión de usuarios</p>

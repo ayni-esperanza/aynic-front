@@ -18,6 +18,7 @@ import { Select } from '../../../shared/components/ui/Select';
 import { SearchableSelect } from '../../../shared/components/ui/SearchableSelect';
 import { useToast } from '../../../shared/components/ui/Toast';
 import { useApi } from '../../../shared/hooks/useApi';
+import { useModalClose } from '../../../shared/hooks/useModalClose';
 import { registroService } from "../services/registroService";
 import { ImageUpload } from '../../../shared/components/common/ImageUpload';
 import type { DataRecord } from "../types/registro";
@@ -558,6 +559,11 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose }) => {
     setNewClientName("");
     setShowNewClientForm(false);
   };
+
+  const newClientModalRef = useModalClose({
+    isOpen: showNewClientForm,
+    onClose: handleCancelNewClient,
+  });
 
   const handleImageUploaded = useCallback(
     () => {
@@ -1247,7 +1253,10 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose }) => {
 
       {/* Modal para agregar nuevo cliente */}
       {showNewClientForm && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center px-4 bg-black/70 backdrop-blur-sm">
+        <div
+          ref={newClientModalRef}
+          className="fixed inset-0 z-[60] flex items-center justify-center px-4 bg-black/70 backdrop-blur-sm"
+        >
           <div className="relative w-full max-w-md p-6 bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700">
             <button
               type="button"

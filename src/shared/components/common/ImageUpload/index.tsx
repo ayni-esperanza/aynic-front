@@ -15,6 +15,7 @@ import { Badge } from "../../ui/Badge";
 import { LoadingSpinner } from "../../ui/LoadingSpinner";
 import { useToast } from "../../ui/Toast";
 import { useApi } from "../../../hooks/useApi";
+import { useModalClose } from "../../../hooks/useModalClose";
 import {
   imageService,
   type ImageResponse,
@@ -63,6 +64,10 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [description, setDescription] = useState("");
   const [showImageModal, setShowImageModal] = useState(false);
+  const imageModalRef = useModalClose({
+    isOpen: showImageModal,
+    onClose: () => setShowImageModal(false),
+  });
 
   // Hook para cargar imagen existente
   const { loading: loadingImage, execute: loadImage } = useApi(
@@ -616,7 +621,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
       {/* Modal para ver imagen completa */}
       {showImageModal && currentImage && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
+        <div ref={imageModalRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
           <div className="relative max-w-4xl max-h-full">
             <Button
                className="absolute z-10 text-white top-4 right-4 bg-black/50 hover:bg-black/70"

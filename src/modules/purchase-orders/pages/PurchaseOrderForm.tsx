@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Save, X, AlertCircle, ShoppingCart } from 'lucide-react';
+import { useModalClose } from '../../../shared/hooks/useModalClose';
 import { usePurchaseOrders } from '../hooks';
 import { CreatePurchaseOrderData, PurchaseOrderType } from '../types';
 
@@ -19,6 +20,7 @@ export const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
   const hookResult = usePurchaseOrders();
   const createPurchaseOrder = onCreatePurchaseOrder || hookResult.createPurchaseOrder;
   const loading = hookResult.loading;
+  const modalRef = useModalClose({ isOpen, onClose });
   const [formData, setFormData] = useState<CreatePurchaseOrderData>({
     codigo: '',
     descripcion: '',
@@ -101,7 +103,7 @@ export const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+    <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
       <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-500 to-blue-600">

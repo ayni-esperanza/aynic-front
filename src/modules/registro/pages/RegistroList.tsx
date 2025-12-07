@@ -25,6 +25,7 @@ import { Select } from '../../../shared/components/ui/Select';
 import { LoadingSpinner } from '../../../shared/components/ui/LoadingSpinner';
 import { useToast } from '../../../shared/components/ui/Toast';
 import { useApi } from '../../../shared/hooks/useApi';
+import { useModalClose } from '../../../shared/hooks/useModalClose';
 import { registroService } from "../services/registroService";
 import type { ImageResponse } from '../../../shared/services/imageService';
 import { RelationshipModal } from "../components/RelationshipModal";
@@ -248,6 +249,11 @@ export const RegistroList: React.FC = () => {
     setShowCreateModal(false);
     refreshDataCallback();
   }, [refreshDataCallback]);
+
+  const createModalRef = useModalClose({
+    isOpen: showCreateModal,
+    onClose: handleCloseCreateModal,
+  });
 
   const handleTextFilterChange = useCallback(
     (field: string, setter: (v: string) => void) =>
@@ -1542,7 +1548,10 @@ export const RegistroList: React.FC = () => {
       )}
 
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-2 py-2 sm:px-3 sm:py-3 bg-black/70 backdrop-blur-sm">
+        <div
+          ref={createModalRef}
+          className="fixed inset-0 z-50 flex items-center justify-center px-2 py-2 sm:px-3 sm:py-3 bg-black/70 backdrop-blur-sm"
+        >
           <div className="relative w-full max-w-md max-h-[70vh] overflow-y-auto rounded-xl bg-white dark:bg-gray-900 shadow-2xl border border-white/10 dark:border-gray-700/60">
             <button
               type="button"

@@ -5,6 +5,7 @@ import { Badge } from '../../../shared/components/ui/Badge';
 import { Card } from '../../../shared/components/ui/Card';
 import { useToast } from '../../../shared/components/ui/Toast';
 import { usePaginatedApi, useMutation, useApi } from '../../../shared/hooks/useApi';
+import { useModalClose } from '../../../shared/hooks/useModalClose';
 import { maintenanceService } from "../services/maintenanceService";
 import { formatDate, formatDateTime } from "../../../shared/utils/formatters";
 import { MaintenanceForm } from "./MaintenanceForm";
@@ -33,8 +34,9 @@ const ImagePreviewModal: React.FC<{
   onError?: () => void;
 }> = ({ open, src, title, onClose, onError }) => {
   if (!open) return null;
+  const modalRef = useModalClose({ isOpen: open, onClose });
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
+    <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
       <div className="relative max-w-5xl max-h-full">
         <Button
           className="absolute z-10 text-white top-3 right-3 bg-black/60 hover:bg-black/80"
@@ -65,6 +67,7 @@ const MaintenanceDetailModal: React.FC<{
   deleting?: boolean;
 }> = ({ maintenance, open, onClose, onDelete, deleting }) => {
   if (!open || !maintenance) return null;
+  const modalRef = useModalClose({ isOpen: open, onClose });
 
   const hasLengthChange = maintenance.previous_length_meters && maintenance.new_length_meters;
   const lengthChange = hasLengthChange
@@ -73,7 +76,7 @@ const MaintenanceDetailModal: React.FC<{
   const isLengthIncrease = lengthChange > 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+    <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
       <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-green-500 to-green-600">
