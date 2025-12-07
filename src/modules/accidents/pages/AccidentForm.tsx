@@ -264,6 +264,8 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
                 label="Línea de Vida Asociada"
                 error={errors.linea_vida_id as any}
                 required
+                size="compact"
+                className="!min-h-11 !h-11"
               />
 
               <Input
@@ -275,6 +277,7 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
                 }
                 error={errors.fecha_accidente}
                 helperText="La fecha no puede ser futura"
+                className="!py-2.5 !h-11"
                 required
               />
             </div>
@@ -293,16 +296,17 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
                   handleChange("lesiones", e.target.value)
                 }
                 placeholder="Describe lesiones o daños (opcional)"
+                className="!py-2.5 !h-11"
               />
 
-              <div>
-                <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
                   Severidad del Accidente <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={formData.severidad}
                   onChange={e => handleChange("severidad", e.target.value)}
-                  className="w-full h-10 px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full h-11 px-3 py-2.5 border-2 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   required
                 >
                   {severidadOptions.map(option => (

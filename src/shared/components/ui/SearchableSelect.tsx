@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 
 interface SearchableSelectProps {
@@ -38,15 +38,13 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
         setSearchTerm("");
         setHighlightedIndex(-1);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
@@ -66,20 +64,19 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
       }
       return;
     }
+
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setHighlightedIndex((prev) =>
-        prev < filteredOptions.length - 1 ? prev + 1 : 0
-      );
+      setHighlightedIndex((prev) => (prev < filteredOptions.length - 1 ? prev + 1 : 0));
       return;
     }
+
     if (e.key === "ArrowUp") {
       e.preventDefault();
-      setHighlightedIndex((prev) =>
-        prev > 0 ? prev - 1 : filteredOptions.length - 1
-      );
+      setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : filteredOptions.length - 1));
       return;
     }
+
     if (e.key === "Enter") {
       e.preventDefault();
       if (highlightedIndex >= 0 && filteredOptions[highlightedIndex]) {
@@ -87,6 +84,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
       }
       return;
     }
+
     if (e.key === "Escape") {
       e.preventDefault();
       setIsOpen(false);
@@ -131,7 +129,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
       meta: "text-xs",
     },
     compact: {
-      wrapper: "px-3 py-1.5 text-sm min-h-[40px]",
+      wrapper: "px-3 py-2.5 text-sm min-h-[44px]",
       value: "text-sm",
       input: "text-sm",
       icon: "text-xs",
@@ -141,25 +139,24 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   } as const;
 
   const currentSize = sizeConfig[size];
-
   const showStaticDisplay = !isOpen;
 
   return (
-    <div className={`relative w-full min-w-0`}>
+    <div className="relative w-full min-w-0">
       {label && (
-        <label className="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+        <label className="block mb-1 text-xs font-medium text-gray-700 dark:text-gray-300">
           {label}
           {required && <span className="ml-1 text-red-500">*</span>}
         </label>
       )}
+
       <div className="relative" ref={dropdownRef}>
         <div
-          className={`relative w-full min-w-0 border-2 rounded-xl transition-all duration-200 font-medium cursor-pointer bg-white dark:bg-gray-800 flex items-center ${currentSize.wrapper} ${className}
-            ${
-              error
-                ? "border-red-300 dark:border-red-600 focus-within:border-red-500 focus-within:ring-red-500/20"
-                : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 focus-within:border-[#18D043] focus-within:ring-[#18D043]/20 dark:focus-within:ring-[#18D043]/30"
-            }`}
+          className={`relative w-full min-w-0 border-2 rounded-xl transition-all duration-200 font-medium cursor-pointer bg-white dark:bg-gray-800 flex items-center ${currentSize.wrapper} ${className} ${
+            error
+              ? "border-red-300 dark:border-red-600 focus-within:border-red-500 focus-within:ring-red-500/20"
+              : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 focus-within:border-[#18D043] focus-within:ring-[#18D043]/20 dark:focus-within:ring-[#18D043]/30"
+          }`}
           onClick={handleInputClick}
         >
           <div className="flex items-center min-w-0 w-full h-full">
