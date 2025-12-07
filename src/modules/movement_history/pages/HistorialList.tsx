@@ -9,6 +9,7 @@ import {
   Eye,
   EyeOff,
   Download,
+  Filter,
 } from "lucide-react";
 import { Card } from '../../../shared/components/ui/Card';
 import { Badge } from '../../../shared/components/ui/Badge';
@@ -668,6 +669,12 @@ export const HistorialList: React.FC = () => {
       {/* FILTROS CON ROL Y USUARIO */}
       <Card padding="md">
         <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">
+              <Filter className="w-4 h-4 text-[#18D043]" />
+              Filtros rápidos
+            </div>
+          </div>
           <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-3 lg:grid-cols-5">
             {/* Búsqueda */}
             <div>
@@ -700,7 +707,8 @@ export const HistorialList: React.FC = () => {
                   )
                 }
                 placeholder="Filtrar por usuario"
-                className="text-sm"
+                size="compact"
+                className="text-sm !h-10 !min-h-10"
               />
             </div>
 

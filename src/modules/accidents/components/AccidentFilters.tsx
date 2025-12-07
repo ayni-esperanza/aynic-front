@@ -99,7 +99,14 @@ export const AccidentFilters: React.FC<AccidentFiltersProps> = ({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">
+          <Filter className="w-4 h-4 text-[#18D043]" />
+          Filtros rápidos
+        </div>
+      </div>
+
       {/* Filtros principales compactos */}
       <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
         <SearchableSelect
@@ -145,20 +152,20 @@ export const AccidentFilters: React.FC<AccidentFiltersProps> = ({
       </div>
 
       {/* Filtros avanzados colapsables */}
-      <div
-        id="accident-advanced-filters"
-        className={`overflow-hidden transition-[max-height] duration-300 ease-in-out ${
-          showAdvancedFilters ? "max-h-[600px] mt-2" : "max-h-0"
-        }`}
-        aria-hidden={!showAdvancedFilters}
-      >
         <div
-          className={`grid grid-cols-1 gap-2 p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 md:grid-cols-3 transition-all duration-300 ${
-            showAdvancedFilters
-              ? "opacity-100 translate-y-0"
-              : "opacity-0 -translate-y-2 pointer-events-none"
+          id="accident-advanced-filters"
+          className={`overflow-hidden transition-[max-height] duration-300 ease-in-out ${
+            showAdvancedFilters ? "max-h-[500px] mt-1" : "max-h-0"
           }`}
+          aria-hidden={!showAdvancedFilters}
         >
+          <div
+            className={`grid grid-cols-1 gap-2 p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 md:grid-cols-3 transition-all duration-300 ${
+              showAdvancedFilters
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 -translate-y-2 pointer-events-none"
+            }`}
+          >
           <Input
             label="Fecha Desde"
             type="date"

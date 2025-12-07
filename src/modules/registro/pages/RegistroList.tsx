@@ -1085,7 +1085,13 @@ export const RegistroList: React.FC = () => {
 
       {/* Controles y filtros */}
       <Card className="border border-gray-200 dark:border-gray-700 shadow-sm bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-800">
-        <div className="p-4">
+        <div className="p-2.5">
+          <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">
+              <Filter className="w-4 h-4 text-[#18D043]" />
+              Filtros rápidos
+            </div>
+          </div>
           {/* Top bar: filtros + botones en una sola fila */}
           <div className="flex items-center gap-2">
             {/* Código */}
@@ -1212,7 +1218,7 @@ export const RegistroList: React.FC = () => {
           </div>
           {/* Indicador de filtros activos */}
           {Object.values(appliedFilters).some(Boolean) && (
-            <div className="flex flex-wrap items-center gap-2 mt-3">
+            <div className="flex flex-wrap items-center gap-2 mt-2">
               <span className="mr-1 text-xs font-semibold text-gray-600 dark:text-gray-300">
                 Filtros activos:
               </span>

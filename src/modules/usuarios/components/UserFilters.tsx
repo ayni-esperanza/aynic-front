@@ -21,7 +21,7 @@ export const UserFiltersComponent: React.FC<UserFiltersProps> = ({
   );
 
   return (
-    <div className="bg-white dark:bg-gray-900/70 p-3 sm:p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-3 mb-6">
+    <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-3 mb-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">
           <Filter className="w-4 h-4 text-[#18D043]" />
