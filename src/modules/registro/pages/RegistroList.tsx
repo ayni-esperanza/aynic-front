@@ -170,9 +170,8 @@ export const RegistroList: React.FC = () => {
       }
 
       updateFilters(params);
-      await loadStats();
     },
-    [buildParams, updateFilters, loadStats, pagination.currentPage]
+    [buildParams, updateFilters, pagination.currentPage]
   );
 
   // Cargar datos inicial solo una vez
@@ -239,10 +238,11 @@ export const RegistroList: React.FC = () => {
   const refreshDataCallback = useCallback(async () => {
     try {
       await fetchWith({}, pagination.currentPage);
+      await loadStats();
     } catch (error) {
       console.error("Error refreshing data:", error);
     }
-  }, [fetchWith, pagination.currentPage]);
+  }, [fetchWith, loadStats, pagination.currentPage]);
 
   const handleCloseCreateModal = useCallback(() => {
     setShowCreateModal(false);
@@ -382,6 +382,7 @@ export const RegistroList: React.FC = () => {
         setDeleteModalOpen(false);
         setRecordToDelete(null);
         refreshData();
+        await loadStats();
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : "Error al eliminar registro";
@@ -390,7 +391,7 @@ export const RegistroList: React.FC = () => {
         setDeleting(false);
       }
     },
-    [recordToDelete, success, showError, refreshData]
+    [recordToDelete, success, showError, refreshData, loadStats]
   );
 
   const handleCreateDerivadas = useCallback((registro: DataRecord) => {
@@ -402,7 +403,8 @@ export const RegistroList: React.FC = () => {
     setShowRelationshipModal(false);
     setSelectedRecordForRelation(null);
     refreshData();
-  }, [refreshData]);
+    loadStats();
+  }, [refreshData, loadStats]);
 
   const handleRowClick = useCallback((registro: DataRecord) => {
     setSelectedRecord(registro);
@@ -1551,7 +1553,7 @@ export const RegistroList: React.FC = () => {
           ref={createModalRef}
           className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 bg-black/70 backdrop-blur-sm"
         >
-          <div className="relative w-full max-w-[min(95vw,_1100px)] max-h-[92vh] overflow-y-auto rounded-2xl bg-white dark:bg-gray-900 shadow-2xl border border-white/10 dark:border-gray-700/60 flex">
+          <div className="relative w-full max-w-[min(90vw,_950px)] max-h-[88vh] overflow-y-auto rounded-2xl bg-white dark:bg-gray-900 shadow-2xl border border-white/10 dark:border-gray-700/60 flex">
             <RegistroForm onClose={handleCloseCreateModal} />
           </div>
         </div>

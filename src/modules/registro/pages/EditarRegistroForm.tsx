@@ -683,20 +683,20 @@ export const EditarRegistroForm: React.FC<EditarRegistroFormProps> = ({ onClose,
     : "min-h-screen bg-gradient-to-br from-gray-50 to-gray-100";
 
   const contentWrapperClass = isModal
-    ? "w-full h-full flex flex-col min-h-0 px-4 py-4 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl"
+    ? "w-full h-full flex flex-col min-h-0 px-3 py-3 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl"
     : "max-w-4xl px-4 py-6 mx-auto sm:px-6 lg:px-8";
 
-  const formScrollClass = isModal ? "flex-1 min-h-0 overflow-y-auto px-1" : "";
+  const formScrollClass = isModal ? "flex-1 min-h-0 overflow-y-auto px-0.5" : "";
 
-  const formPaddingClass = isModal ? "p-4 flex flex-col flex-1 min-h-0 overflow-hidden" : "p-8";
-  const formIntroSpacingClass = isModal ? "mb-2" : "mb-6";
-  const sectionSpacingClass = isModal ? "space-y-4" : "space-y-6";
-  const gridGapClass = isModal ? "gap-4" : "gap-6";
-  const inputHeightClass = isModal ? "!py-1.5 !text-sm" : "";
-  const labelSizeClass = isModal ? "text-xs" : "text-sm";
+  const formPaddingClass = isModal ? "p-3 flex flex-col flex-1 min-h-0 overflow-hidden" : "p-8";
+  const formIntroSpacingClass = isModal ? "mb-1.5" : "mb-6";
+  const sectionSpacingClass = isModal ? "space-y-3" : "space-y-6";
+  const gridGapClass = isModal ? "gap-3" : "gap-6";
+  const inputHeightClass = isModal ? "!py-1.25 !text-[13px]" : "";
+  const labelSizeClass = isModal ? "text-[11px]" : "text-sm";
   const buttonSizeClass = isModal ? "sm" : "md";
-  const footerSpacingClass = isModal ? "pt-3 mt-3" : "pt-8 mt-8";
-  const clienteLabelClass = isModal ? "text-xs" : "text-sm";
+  const footerSpacingClass = isModal ? "pt-2 mt-2" : "pt-8 mt-8";
+  const clienteLabelClass = isModal ? "text-[11px]" : "text-sm";
 
   // Render
   if (loadingRegistro) {
@@ -791,23 +791,23 @@ export const EditarRegistroForm: React.FC<EditarRegistroFormProps> = ({ onClose,
         >
           <form onSubmit={handleSubmit} className={formPaddingClass}>
             {isModal ? (
-              <div className="mb-4 flex-shrink-0">
-                <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="mb-3 flex-shrink-0">
+                <div className="flex items-start justify-between gap-2 mb-2">
                   <div>
-                    <h1 className="text-lg font-bold text-gray-900 dark:text-white">Editar Registro</h1>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Actualiza la información del registro</p>
+                    <h1 className="text-base font-semibold text-gray-900 dark:text-white">Editar Registro</h1>
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400">Actualiza la información del registro</p>
                   </div>
                   <button
                     type="button"
                     onClick={goBack}
-                    className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                    className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                     aria-label="Cerrar"
                   >
-                    <X size={16} />
+                    <X size={14} />
                   </button>
                 </div>
                 <div className="relative">
-                  <div className="flex items-start justify-between gap-1 mb-3">
+                  <div className="flex items-start justify-between gap-1 mb-2">
                     {steps.map((step, idx) => {
                       const isActive = currentStep === step.number;
                       const isCompleted = currentStep > step.number;
@@ -946,7 +946,7 @@ export const EditarRegistroForm: React.FC<EditarRegistroFormProps> = ({ onClose,
                             variant="outline"
                             size="sm"
                             onClick={() => setShowNewClientForm(true)}
-                            className="h-10 w-10 !p-0 !gap-0 border-[#18D043] text-[#18D043] hover:bg-[#18D043] hover:text-white flex-shrink-0"
+                            className={`${isModal ? "h-9 w-9" : "h-10 w-10"} !p-0 !gap-0 border-[#18D043] text-[#18D043] hover:bg-[#18D043] hover:text-white flex-shrink-0`}
                             icon={Plus}
                             title="Agregar nuevo cliente"
                           >
@@ -1148,7 +1148,7 @@ export const EditarRegistroForm: React.FC<EditarRegistroFormProps> = ({ onClose,
                     onChange={(e) =>
                       handleChange("observaciones", e.target.value)
                     }
-                    className={`w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl transition-all duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-[#18D043]/20 focus:border-[#18D043] resize-none hover:border-gray-300 dark:hover:border-gray-600 dark:bg-gray-800 dark:text-white ${inputHeightClass}`}
+                    className={`w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl transition-all duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-[#18D043]/20 focus:border-[#18D043] resize-none hover:border-gray-300 dark:hover:border-gray-600 bg-white text-gray-900 dark:bg-gray-800 dark:text-white ${inputHeightClass}`}
                     placeholder="Notas adicionales sobre el registro..."
                   />
                 </div>
