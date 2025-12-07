@@ -145,8 +145,8 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({
 
   return (
     <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-2xl">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-800">
+      <div className="w-full max-w-[min(85vw,_780px)] max-h-[85vh] overflow-y-auto rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-2xl flex flex-col">
+        <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800">
           <div>
             <p className="text-xs font-semibold tracking-wide text-[#18D043] uppercase">Gestión de usuarios</p>
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Nuevo usuario</h2>
@@ -160,14 +160,15 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-5">
-          <div className="grid gap-4 md:grid-cols-2">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3 text-sm">
+          <div className="grid gap-3 md:grid-cols-2">
             <Input
               label="Usuario"
               value={formData.usuario}
               onChange={(e) => handleChange("usuario", e.target.value)}
               required
               error={errors.usuario}
+              className="!py-2 text-[13px]"
             />
             <Input
               label="Nombre"
@@ -175,12 +176,14 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({
               onChange={(e) => handleChange("nombre", e.target.value)}
               required
               error={errors.nombre}
+              className="!py-2 text-[13px]"
             />
             <Input
               label="Apellidos"
               value={formData.apellidos}
               onChange={(e) => handleChange("apellidos", e.target.value)}
               error={errors.apellidos}
+              className="!py-2 text-[13px]"
             />
             <Input
               label="Email"
@@ -189,6 +192,7 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({
               onChange={(e) => handleChange("email", e.target.value)}
               required
               error={errors.email}
+              className="!py-2 text-[13px]"
             />
             <Input
               label="Teléfono"
@@ -196,6 +200,7 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({
               onChange={(e) => handleChange("telefono", e.target.value)}
               error={errors.telefono}
               placeholder="Opcional"
+              className="!py-2 text-[13px]"
             />
             <Input
               label="Cargo"
@@ -203,6 +208,7 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({
               onChange={(e) => handleChange("cargo", e.target.value)}
               error={errors.cargo}
               placeholder="Opcional"
+              className="!py-2 text-[13px]"
             />
             <Input
               label="Empresa"
@@ -210,6 +216,7 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({
               onChange={(e) => handleChange("empresa", e.target.value)}
               required
               error={errors.empresa}
+              className="!py-2 text-[13px]"
             />
             <Select
               label="Rol"
@@ -221,10 +228,11 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({
                 { value: "admin", label: "Administrador" },
               ]}
               required
+              className="!py-2 text-[13px]"
             />
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2">
             <Input
               label="Contraseña"
               type="password"
@@ -232,6 +240,7 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({
               onChange={(e) => handleChange("contrasenia", e.target.value)}
               required
               error={errors.contrasenia}
+              className="!py-2 text-[13px]"
             />
             <Input
               label="Confirmar contraseña"
@@ -240,10 +249,11 @@ export const UserCreateModal: React.FC<UserCreateModalProps> = ({
               onChange={(e) => handleChange("confirmarContrasenia", e.target.value)}
               required
               error={errors.confirmarContrasenia}
+              className="!py-2 text-[13px]"
             />
           </div>
 
-          <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
+          <div className="flex flex-wrap items-center justify-end gap-2 pt-1 text-sm">
             <Button type="button" variant="ghost" onClick={closeModal} disabled={loading}>
               Cancelar
             </Button>

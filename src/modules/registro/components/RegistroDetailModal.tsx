@@ -22,7 +22,7 @@ export const RegistroDetailModal: React.FC<RegistroDetailModalProps> = ({
 
   return (
     <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 bg-black/70 backdrop-blur-sm">
-      <div className="relative w-full max-w-4xl h-[90vh] max-h-[90vh] overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-2xl border border-white/10 dark:border-gray-700/60 flex">
+      <div className="relative w-full max-w-[min(95vw,_1100px)] max-h-[92vh] overflow-y-auto rounded-2xl bg-white dark:bg-gray-900 shadow-2xl border border-white/10 dark:border-gray-700/60 flex">
         <EditarRegistroForm registroId={registroId} onClose={onClose} />
       </div>
     </div>
