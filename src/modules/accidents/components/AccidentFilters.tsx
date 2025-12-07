@@ -9,7 +9,6 @@ import type { AccidentFilters as AccidentFiltersType } from "../types/accident";
 interface AccidentFiltersProps {
   filters: AccidentFiltersType;
   onFiltersChange: (filters: AccidentFiltersType) => void;
-  onSearch: () => void;
   onClearFilters: () => void;
   lineasVida: Array<{
     id: number;
@@ -40,7 +39,7 @@ export const AccidentFilters: React.FC<AccidentFiltersProps> = ({
     key: keyof AccidentFiltersType,
     value: string | number | undefined
   ) => {
-    const newFilters = { ...localFilters, [key]: value };
+    const newFilters = { ...localFilters, [key]: value, page: 1 };
     setLocalFilters(newFilters);
     onFiltersChange(newFilters);
   };
@@ -51,7 +50,6 @@ export const AccidentFilters: React.FC<AccidentFiltersProps> = ({
       limit: 10,
     };
     setLocalFilters(clearedFilters);
-    onFiltersChange(clearedFilters);
     onClearFilters();
   };
 
@@ -109,6 +107,8 @@ export const AccidentFilters: React.FC<AccidentFiltersProps> = ({
           value={getSelectedLineaVida()}
           onChange={handleLineaVidaChange}
           placeholder="Buscar línea de vida..."
+          size="compact"
+          className="!min-h-10"
         />
 
         <Select

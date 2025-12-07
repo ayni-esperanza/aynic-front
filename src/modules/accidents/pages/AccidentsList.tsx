@@ -106,10 +106,7 @@ export const AccidentsList: React.FC = () => {
 
   const handleFiltersChange = (newFilters: FilterType) => {
     setFilters(newFilters);
-  };
-
-  const handleSearch = () => {
-    loadAccidents(filters);
+    loadAccidents(newFilters);
   };
 
   const handleClearFilters = () => {
@@ -365,7 +362,6 @@ export const AccidentsList: React.FC = () => {
         <AccidentFilters
           filters={filters}
           onFiltersChange={handleFiltersChange}
-          onSearch={handleSearch}
           onClearFilters={handleClearFilters}
           lineasVida={lineasVida}
           loading={loading}
