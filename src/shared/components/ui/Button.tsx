@@ -26,21 +26,21 @@ export const Button: React.FC<ButtonProps> = ({
 
   const variantClasses = {
     primary:
-      "bg-gradient-to-r from-[#18D043] to-[#16a34a] text-white hover:from-[#16a34a] hover:to-[#15803d] focus:ring-[#18D043]/20 shadow-lg hover:shadow-xl shadow-[#18D043]/25",
+      "bg-gradient-to-r from-[#18D043] to-[#16a34a] text-white hover:from-[#16a34a] hover:to-[#15803d] focus:ring-[#18D043]/20 dark:focus:ring-[#18D043]/30 shadow-lg hover:shadow-xl shadow-[#18D043]/25 dark:shadow-[#18D043]/40",
     secondary:
-      "bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 hover:from-gray-200 hover:to-gray-300 focus:ring-gray-500/20 shadow-sm hover:shadow-md",
+      "bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 text-gray-700 dark:text-gray-100 hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-500 focus:ring-gray-500/20 dark:focus:ring-gray-400/30 shadow-sm hover:shadow-md",
     outline:
-      "border-2 border-[#18D043] text-[#18D043] hover:bg-[#18D043] hover:text-white focus:ring-[#18D043]/20 shadow-sm hover:shadow-lg",
+      "border-2 border-[#18D043] dark:border-[#18D043] text-[#18D043] dark:text-[#18D043] hover:bg-[#18D043] hover:text-white dark:hover:bg-[#18D043] dark:hover:text-white focus:ring-[#18D043]/20 dark:focus:ring-[#18D043]/30 shadow-sm hover:shadow-lg",
     ghost:
-      "text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:ring-gray-500/20 rounded-lg",
+      "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 focus:ring-gray-500/20 dark:focus:ring-gray-400/30 rounded-lg",
     danger:
-      "bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800 focus:ring-red-500/20 shadow-lg hover:shadow-xl shadow-red-600/25",
+      "bg-gradient-to-r from-red-600 to-red-700 dark:from-red-700 dark:to-red-800 text-white hover:from-red-700 hover:to-red-800 dark:hover:from-red-800 dark:hover:to-red-900 focus:ring-red-500/20 dark:focus:ring-red-400/30 shadow-lg hover:shadow-xl shadow-red-600/25 dark:shadow-red-700/40",
   };
 
   const sizeClasses = {
-    sm: "px-4 py-2 text-sm gap-2",
-    md: "px-6 py-3 text-sm gap-2",
-    lg: "px-8 py-4 text-base gap-3",
+    sm: "px-2.5 py-1 text-xs gap-1.5",
+    md: "px-3 py-1.5 text-sm gap-1.5",
+    lg: "px-4 py-2 text-sm gap-2",
   };
 
   return (

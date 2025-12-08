@@ -3,6 +3,7 @@ import { X, Plus, Trash2 } from "lucide-react";
 import { Button } from '../../../shared/components/ui/Button';
 import { Input } from '../../../shared/components/ui/Input';
 import { useToast } from '../../../shared/components/ui/Toast';
+import { useModalClose } from '../../../shared/hooks/useModalClose';
 import { relationshipService, CreateRelationshipDto } from "../services/relationshipService";
 import type { DataRecord } from "../types/registro";
 
@@ -40,6 +41,8 @@ export const RelationshipModal: React.FC<RelationshipModalProps> = ({
     { codigo: "", longitud: parentRecord.longitud, ubicacion: parentRecord.ubicacion },
     { codigo: "", longitud: parentRecord.longitud, ubicacion: parentRecord.ubicacion },
   ]);
+  
+  const modalRef = useModalClose({ isOpen, onClose });
 
   const addNewLine = () => {
     setChildRecords(prev => [...prev, {
@@ -92,7 +95,7 @@ export const RelationshipModal: React.FC<RelationshipModalProps> = ({
 
       const result = await relationshipService.createRelationship(payload);
       success("Éxito", result.message);
-      onSuccess();
+      onSuccess?.();
     } catch (err: any) {
       error("Error", err.message || "Error al crear las líneas derivadas");
     } finally {
@@ -103,26 +106,30 @@ export const RelationshipModal: React.FC<RelationshipModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
-      <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white rounded-xl shadow-xl">
+    <div ref={modalRef} className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" style={{ margin: 0 }}>
+      <div className="w-full max-w-4xl max-h-[92vh] overflow-y-auto bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-2xl">
         {/* Header */}
-        <div className="p-6 bg-gradient-to-r from-blue-500 to-blue-600 rounded-t-xl">
-          <div className="flex items-center justify-between">
+        <div className="p-5 sm:p-6 bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 rounded-t-2xl">
+          <div className="flex items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-bold text-white">Crear Líneas Derivadas</h2>
-              <p className="text-blue-100">Línea: {parentRecord.codigo}</p>
+              <h2 className="text-lg font-semibold text-white">Crear Líneas Derivadas</h2>
+              <p className="text-sm text-blue-100">Línea: {parentRecord.codigo}</p>
             </div>
-            <button onClick={onClose} className="text-white hover:text-blue-200">
+            <button
+              onClick={onClose}
+              className="text-white hover:text-blue-200 transition-colors"
+              aria-label="Cerrar"
+            >
               <X size={24} />
             </button>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-5 text-gray-900 dark:text-gray-100">
           {/* Tipo de relación */}
           <div>
-            <h3 className="mb-3 font-semibold text-gray-900">Tipo de Operación</h3>
-            <div className="grid grid-cols-3 gap-3">
+            <h3 className="mb-3 text-sm font-semibold text-gray-800 dark:text-gray-200 uppercase tracking-wide">Tipo de operación</h3>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               {[
                 { value: "DIVISION" as const, label: "División", icon: "🔄" },
                 { value: "REPLACEMENT" as const, label: "Reemplazo", icon: "↔️" },
@@ -137,8 +144,8 @@ export const RelationshipModal: React.FC<RelationshipModalProps> = ({
                     onChange={(e) => setRelationshipType(e.target.value as any)}
                     className="sr-only peer"
                   />
-                  <div className="p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-300 peer-checked:border-blue-500 peer-checked:bg-blue-50">
-                    <div className="font-medium">{icon} {label}</div>
+                  <div className="p-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer bg-white dark:bg-gray-900/40 hover:border-blue-300 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:dark:bg-blue-500/10 transition-colors">
+                    <div className="text-sm font-medium">{icon} {label}</div>
                   </div>
                 </label>
               ))}
@@ -148,17 +155,17 @@ export const RelationshipModal: React.FC<RelationshipModalProps> = ({
           {/* Nuevas líneas */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-gray-900">Nuevas Líneas</h3>
-              <Button type="button" onClick={addNewLine} size="sm" icon={Plus}>
+              <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 uppercase tracking-wide">Nuevas líneas</h3>
+              <Button type="button" onClick={addNewLine} size="sm" icon={Plus} variant="outline" className="text-xs">
                 Agregar Línea
               </Button>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               {childRecords.map((record, index) => (
-                <div key={index} className="p-4 border border-gray-200 rounded-lg">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-medium">Nueva Línea #{index + 1}</h4>
+                <div key={index} className="p-4 border border-gray-200 dark:border-gray-800 rounded-xl bg-white/70 dark:bg-gray-800/60">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Nueva Línea #{index + 1}</h4>
                     {childRecords.length > 1 && (
                       <Button
                         type="button"
@@ -166,13 +173,13 @@ export const RelationshipModal: React.FC<RelationshipModalProps> = ({
                         size="sm"
                         variant="ghost"
                         icon={Trash2}
-                        className="text-red-600"
+                        className="text-xs text-red-600 hover:text-red-700"
                       >
                         Eliminar
                       </Button>
                     )}
                   </div>
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                     <Input
                       label="Código *"
                       value={record.codigo}
@@ -201,11 +208,11 @@ export const RelationshipModal: React.FC<RelationshipModalProps> = ({
 
           {/* Notas */}
           <div>
-            <label className="block mb-2 text-sm font-medium text-gray-700">Notas (Opcional)</label>
+            <label className="block mb-2 text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">Notas (opcional)</label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800/60 text-gray-900 dark:text-gray-100 resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               rows={3}
               placeholder="Razón de la operación, cambios realizados, etc."
               maxLength={500}
@@ -213,11 +220,11 @@ export const RelationshipModal: React.FC<RelationshipModalProps> = ({
           </div>
 
           {/* Botones */}
-          <div className="flex justify-end space-x-4">
-            <Button type="button" variant="outline" onClick={onClose}>
+          <div className="flex flex-wrap justify-end gap-3">
+            <Button type="button" variant="outline" onClick={onClose} className="min-w-[120px]">
               Cancelar
             </Button>
-            <Button type="submit" loading={loading}>
+            <Button type="submit" loading={loading} className="min-w-[160px]">
               Crear Líneas Derivadas
             </Button>
           </div>

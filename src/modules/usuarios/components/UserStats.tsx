@@ -1,14 +1,15 @@
 import React from "react";
-import { Users, Shield, UserCheck, UserX } from "lucide-react";
+import { Users, Shield, UserCheck } from "lucide-react";
 import { Card } from '../../../shared/components/ui/Card';
 import type { User } from "../types";
 
 interface UserStatsProps {
   users: User[];
   loading?: boolean;
+  onFilterClick?: (filterType: 'all' | 'admin' | 'supervisor' | 'active') => void;
 }
 
-export const UserStats: React.FC<UserStatsProps> = ({ users, loading = false }) => {
+export const UserStats: React.FC<UserStatsProps> = ({ users, loading = false, onFilterClick }) => {
   const stats = React.useMemo(() => {
     const total = users.length;
     const admins = users.filter((user) => user.rol === "admin").length;
@@ -33,66 +34,62 @@ export const UserStats: React.FC<UserStatsProps> = ({ users, loading = false }) 
       value: stats.total,
       icon: Users,
       color: "blue",
-      description: "Usuarios registrados",
     },
     {
       title: "Administradores",
       value: stats.admins,
       icon: Shield,
       color: "red",
-      description: "Usuarios con rol admin",
     },
     {
       title: "Supervisores",
       value: stats.supervisors,
       icon: Shield,
       color: "purple",
-      description: "Usuarios con rol supervisor",
     },
     {
       title: "Usuarios Activos",
       value: stats.activeUsers,
       icon: UserCheck,
       color: "green",
-      description: "Usuarios activos en el sistema",
     },
   ];
 
   const colorClasses = {
     blue: {
-      bg: "bg-blue-50",
-      border: "border-blue-200",
-      icon: "text-blue-600",
-      iconBg: "bg-blue-100",
-      text: "text-blue-900",
+      bg: "bg-blue-50 dark:bg-blue-900/20",
+      border: "border-blue-200 dark:border-blue-800",
+      icon: "text-blue-600 dark:text-blue-400",
+      iconBg: "bg-blue-100 dark:bg-blue-900/40",
+      text: "text-blue-900 dark:text-blue-100",
     },
     red: {
-      bg: "bg-red-50",
-      border: "border-red-200",
-      icon: "text-red-600",
-      iconBg: "bg-red-100",
-      text: "text-red-900",
+      bg: "bg-red-50 dark:bg-red-900/20",
+      border: "border-red-200 dark:border-red-800",
+      icon: "text-red-600 dark:text-red-400",
+      iconBg: "bg-red-100 dark:bg-red-900/40",
+      text: "text-red-900 dark:text-red-100",
     },
     purple: {
-      bg: "bg-purple-50",
-      border: "border-purple-200",
-      icon: "text-purple-600",
-      iconBg: "bg-purple-100",
-      text: "text-purple-900",
+      bg: "bg-purple-50 dark:bg-purple-900/20",
+      border: "border-purple-200 dark:border-purple-800",
+      icon: "text-purple-600 dark:text-purple-400",
+      iconBg: "bg-purple-100 dark:bg-purple-900/40",
+      text: "text-purple-900 dark:text-purple-100",
     },
     green: {
-      bg: "bg-green-50",
-      border: "border-green-200",
-      icon: "text-green-600",
-      iconBg: "bg-green-100",
-      text: "text-green-900",
+      bg: "bg-green-50 dark:bg-green-900/20",
+      border: "border-green-200 dark:border-green-800",
+      icon: "text-green-600 dark:text-green-400",
+      iconBg: "bg-green-100 dark:bg-green-900/40",
+      text: "text-green-900 dark:text-green-100",
     },
   };
 
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        {statCards.map((stat, index) => (
+        {statCards.map((_stat, index) => (
           <Card key={index} className="p-6">
             <div className="animate-pulse">
               <div className="flex items-center justify-between">
@@ -110,35 +107,38 @@ export const UserStats: React.FC<UserStatsProps> = ({ users, loading = false }) 
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-4 sm:mb-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
       {statCards.map((stat, index) => {
         const colors = colorClasses[stat.color as keyof typeof colorClasses];
         const Icon = stat.icon;
+        const filterTypes: Array<'all' | 'admin' | 'supervisor' | 'active'> = ['all', 'admin', 'supervisor', 'active'];
 
         return (
-          <Card
+          <div
             key={index}
-            className={`${colors.bg} ${colors.border} transition-all duration-200 hover:shadow-lg`}
+            className="cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200"
+            onClick={() => onFilterClick?.(filterTypes[index])}
           >
-            <div className="flex items-center justify-between p-4 sm:p-6">
+            <Card
+              className={`${colors.bg} ${colors.border} transition-all duration-200 hover:shadow-lg`}
+            >
+            <div className="flex items-center justify-between p-3">
               <div className="flex-1">
-                <div className={`text-xs sm:text-sm font-medium ${colors.icon}`}>
+                <div className={`text-sm font-medium ${colors.icon}`}>
                   {stat.title}
                 </div>
-                <div className={`text-2xl sm:text-3xl font-bold ${colors.text} mt-1 sm:mt-2`}>
+                <div className={`text-3xl font-bold ${colors.text} mt-1`}>
                   {stat.value.toLocaleString()}
-                </div>
-                <div className="text-xs text-gray-600 mt-1">
-                  {stat.description}
                 </div>
               </div>
               <div
-                className={`w-10 h-10 sm:w-12 sm:h-12 ${colors.iconBg} rounded-xl flex items-center justify-center shadow-sm`}
+                className={`w-10 h-10 ${colors.iconBg} rounded-xl flex items-center justify-center shadow-sm`}
               >
-                <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${colors.icon}`} />
+                <Icon className={`w-5 h-5 ${colors.icon}`} />
               </div>
             </div>
           </Card>
+          </div>
         );
       })}
     </div>

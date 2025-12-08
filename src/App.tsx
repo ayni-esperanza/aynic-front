@@ -84,25 +84,7 @@ const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({
     init();
   }, [initializeAuth, handleTokenExpired, showError]);
 
-  // Mostrar loading mientras se inicializa
-  if (!isInitialized || loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="flex flex-col items-center justify-center text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-2xl flex items-center justify-center shadow-lg mb-6">
-            <span className="text-2xl text-white">⚡</span>
-          </div>
-          {/* Spinner */}
-          <LoadingSpinner size="lg" className="mb-4" />
-          <h2 className="mb-2 text-xl font-semibold text-gray-900">
-            Iniciando AyniLine
-          </h2>
-          <p className="text-gray-600">Verificando autenticación...</p>
-        </div>
-      </div>
-    );
-  }
-
+  // No mostrar pantalla de carga, cargar directamente
   return <>{children}</>;
 };
 

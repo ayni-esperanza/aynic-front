@@ -76,38 +76,38 @@ export const Login: React.FC = () => {
 
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-4 bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="flex items-center justify-center min-h-screen p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       <div className="w-full max-w-md">
         {/* Logo y Header */}
-        <div className="mb-8 text-center">
-          <div className="flex items-center justify-center mb-6">
-            <div className="flex items-center justify-center w-20 h-20 bg-white shadow-lg rounded-2xl">
+        <div className="mb-6 text-center">
+          <div className="flex items-center justify-center mb-4">
+            <div className="flex items-center justify-center w-16 h-16 bg-white dark:bg-gray-800 shadow-lg rounded-2xl">
               <img
                 src={logoAyni}
                 alt="Logo Ayni"
-                className="object-contain w-16 h-16"
+                className="object-contain w-12 h-12"
                 style={{ maxWidth: "90%", maxHeight: "90%" }}
               />
             </div>
           </div>
-          <h1 className="mb-2 text-3xl font-bold text-gray-900">
+          <h1 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
             Bienvenido a AyniLine
           </h1>
-          <p className="text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             Ingresa tus credenciales para acceder al sistema
           </p>
         </div>
 
         {/* Formulario de Login */}
-        <Card className="bg-white border-0 shadow-xl">
-          <form onSubmit={handleSubmit} className="p-8 space-y-6">
+        <Card className="bg-white dark:bg-gray-800 border-0 shadow-xl">
+          <form onSubmit={handleSubmit} className="p-6 space-y-5">
             {/* Error general de la API */}
             {error && (
-              <div className="flex items-center p-4 space-x-3 text-red-700 border border-red-200 rounded-lg bg-red-50">
-                <AlertCircle size={20} className="text-red-500" />
+              <div className="flex items-center p-3 space-x-2 text-red-700 border border-red-200 rounded-lg bg-red-50">
+                <AlertCircle size={18} className="text-red-500" />
                 <div>
-                  <p className="text-sm font-medium">Error de autenticación</p>
-                  <p className="text-sm">{error}</p>
+                  <p className="text-xs font-medium">Error de autenticación</p>
+                  <p className="text-xs">{error}</p>
                 </div>
               </div>
             )}
@@ -123,7 +123,7 @@ export const Login: React.FC = () => {
                   placeholder="Ingresa tu usuario"
                   icon={User}
                   iconPosition="left"
-                  className="pl-11"
+                  className="pl-11 text-sm"
                   required
                   disabled={loading}
                 />
@@ -139,7 +139,7 @@ export const Login: React.FC = () => {
                   placeholder="Ingresa tu contraseña"
                   icon={Lock}
                   iconPosition="left"
-                  className="pl-11 pr-11"
+                  className="pl-11 pr-11 text-sm"
                   required
                   disabled={loading}
                   style={
@@ -152,11 +152,11 @@ export const Login: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute text-gray-400 transition-colors duration-200 right-3 hover:text-gray-600 disabled:opacity-50"
+                  className="absolute text-gray-400 transition-colors duration-200 transform -translate-y-1/2 right-3 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400 disabled:opacity-50"
                   disabled={loading}
-                  style={{ top: "2.5rem" }}
+                  style={{ top: "calc(50% + 0.75rem)" }}
                 >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
@@ -166,7 +166,7 @@ export const Login: React.FC = () => {
               loading={loading}
               icon={LogIn}
               className="w-full bg-gradient-to-r from-[#18D043] to-[#16a34a] hover:from-[#16a34a] hover:to-[#15803d] shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-              size="lg"
+              size="md"
               disabled={loading}
             >
               {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
@@ -175,12 +175,12 @@ export const Login: React.FC = () => {
         </Card>
 
         {/* Footer */}
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-500">
+        <div className="mt-4 text-center">
+          <p className="text-xs text-gray-500">
             Sistema de Gestión de Líneas de Vida © 2025
           </p>
-          <div className="flex items-center justify-center mt-2 space-x-1">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          <div className="flex items-center justify-center mt-1 space-x-1">
+            <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
             <span className="text-xs font-medium text-green-600">
               {loading ? "Conectando..." : "Sistema en línea"}
             </span>

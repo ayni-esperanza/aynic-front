@@ -5,10 +5,10 @@ import {
   User,
   AlertTriangle,
   FileText,
-  Camera,
 } from "lucide-react";
 import { Badge } from '../../../shared/components/ui/Badge';
 import { formatDate } from '../../../shared/utils/formatters';
+import { useModalClose } from '../../../shared/hooks/useModalClose';
 import type {
   Accident,
   EstadoAccidente,
@@ -26,6 +26,7 @@ export const AccidentDetails: React.FC<AccidentDetailsProps> = ({
   isOpen,
   onClose,
 }) => {
+  const modalRef = useModalClose({ isOpen, onClose });
   if (!isOpen) return null;
 
   // Función para renderizar badge de estado
@@ -73,7 +74,7 @@ export const AccidentDetails: React.FC<AccidentDetailsProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+    <div ref={modalRef} className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" style={{ margin: 0 }}>
       <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white rounded-xl shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-red-500 to-red-600">
@@ -137,27 +138,26 @@ export const AccidentDetails: React.FC<AccidentDetailsProps> = ({
                   Código:
                 </span>
                 <div className="font-semibold text-blue-900">
-                  {accident.lineaVida?.codigo ||
-                    `ID: ${accident.linea_vida_id}`}
+                  {accident.linea_vida_codigo || `ID: ${accident.linea_vida_id}`}
                 </div>
               </div>
-              {accident.lineaVida?.cliente && (
+              {accident.linea_vida_cliente && (
                 <div>
                   <span className="text-sm font-medium text-blue-700">
                     Cliente:
                   </span>
                   <div className="font-semibold text-blue-900">
-                    {accident.lineaVida.cliente}
+                    {accident.linea_vida_cliente}
                   </div>
                 </div>
               )}
-              {accident.lineaVida?.ubicacion && (
+              {accident.linea_vida_ubicacion && (
                 <div className="md:col-span-2">
                   <span className="text-sm font-medium text-blue-700">
                     Ubicación:
                   </span>
                   <div className="font-semibold text-blue-900">
-                    {accident.lineaVida.ubicacion}
+                    {accident.linea_vida_ubicacion}
                   </div>
                 </div>
               )}
@@ -172,63 +172,82 @@ export const AccidentDetails: React.FC<AccidentDetailsProps> = ({
             </h3>
             <div className="p-4 rounded-lg bg-gray-50">
               <p className="leading-relaxed text-gray-800 whitespace-pre-wrap">
-                {accident.descripcion_incidente}
+                {accident.descripcion}
               </p>
             </div>
           </div>
 
-          {/* Persona Involucrada */}
-          {accident.persona_involucrada && (
+          {/* Investigador */}
+          {accident.investigador && (
             <div>
               <h3 className="flex items-center mb-3 text-lg font-semibold text-gray-900">
                 <User className="w-5 h-5 mr-2 text-purple-500" />
-                Persona Involucrada
+                Investigador
               </h3>
               <div className="p-4 rounded-lg bg-purple-50">
                 <p className="font-semibold text-purple-900">
-                  {accident.persona_involucrada}
+                  {accident.investigador}
                 </p>
               </div>
             </div>
           )}
 
-          {/* Acciones Correctivas */}
-          {accident.acciones_correctivas && (
+          {/* Medidas Correctivas */}
+          {accident.medidas_correctivas && (
             <div>
               <h3 className="flex items-center mb-3 text-lg font-semibold text-gray-900">
                 <FileText className="w-5 h-5 mr-2 text-green-500" />
-                Acciones Correctivas
+                Medidas Correctivas
               </h3>
               <div className="p-4 rounded-lg bg-green-50">
                 <p className="leading-relaxed text-green-800 whitespace-pre-wrap">
-                  {accident.acciones_correctivas}
+                  {accident.medidas_correctivas}
                 </p>
               </div>
             </div>
           )}
 
-          {/* Evidencias */}
-          {accident.evidencias_urls && accident.evidencias_urls.length > 0 && (
+          {/* Lesiones o Daños */}
+          {accident.lesiones && (
             <div>
               <h3 className="flex items-center mb-3 text-lg font-semibold text-gray-900">
-                <Camera className="w-5 h-5 mr-2 text-orange-500" />
-                Evidencias Adjuntas
+                <AlertTriangle className="w-5 h-5 mr-2 text-orange-500" />
+                Lesiones o Daños
               </h3>
               <div className="p-4 rounded-lg bg-orange-50">
-                <div className="space-y-2">
-                  {accident.evidencias_urls.map((url, index) => (
-                    <a
-                      key={index}
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center p-2 text-orange-700 transition-colors rounded hover:text-orange-900 hover:bg-orange-100"
-                    >
-                      <Camera className="w-4 h-4 mr-2" />
-                      Evidencia {index + 1}
-                    </a>
-                  ))}
-                </div>
+                <p className="leading-relaxed text-orange-800 whitespace-pre-wrap">
+                  {accident.lesiones}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Testigos */}
+          {accident.testigos && (
+            <div>
+              <h3 className="flex items-center mb-3 text-lg font-semibold text-gray-900">
+                <User className="w-5 h-5 mr-2 text-blue-500" />
+                Testigos
+              </h3>
+              <div className="p-4 rounded-lg bg-blue-50">
+                <p className="leading-relaxed text-blue-800 whitespace-pre-wrap">
+                  {accident.testigos}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Conclusiones */}
+          {accident.conclusiones && (
+            <div>
+              <h3 className="flex items-center mb-3 text-lg font-semibold text-gray-900">
+                <FileText className="w-5 h-5 mr-2 text-indigo-500" />
+                Conclusiones de la Investigación
+              </h3>
+              <div className="p-4 rounded-lg bg-indigo-50">
+                <p className="leading-relaxed text-indigo-800 whitespace-pre-wrap">
+                  {accident.conclusiones}
+                </p>
               </div>
             </div>
           )}
@@ -242,22 +261,30 @@ export const AccidentDetails: React.FC<AccidentDetailsProps> = ({
             <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
               <div>
                 <span className="font-medium text-gray-600">
-                  Fecha de Reporte:
+                  Fecha de Creación:
                 </span>
                 <div className="text-gray-900">
-                  {formatDate(accident.fecha_creacion)}
+                  {formatDate(accident.created_at)}
                 </div>
               </div>
-              {accident.usuario && (
+              {accident.fecha_investigacion && (
                 <div>
                   <span className="font-medium text-gray-600">
-                    Reportado por:
+                    Fecha de Investigación:
                   </span>
                   <div className="text-gray-900">
-                    {accident.usuario.nombre} {accident.usuario.apellidos}
+                    {formatDate(accident.fecha_investigacion)}
                   </div>
                 </div>
               )}
+              <div>
+                <span className="font-medium text-gray-600">
+                  Última Actualización:
+                </span>
+                <div className="text-gray-900">
+                  {formatDate(accident.updated_at)}
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -16,7 +16,7 @@ interface UseApiOptions<T = unknown> {
   retryDelay?: number;
 }
 
-type ApiFunction<T> = (...args: unknown[]) => Promise<T>;
+type ApiFunction<T> = (...args: any[]) => Promise<T>;
 
 export const useApi = <T = unknown>(
   apiFunction: ApiFunction<T>,
@@ -39,7 +39,7 @@ export const useApi = <T = unknown>(
 
   const mountedRef = useRef(true);
   const retryTimeoutRef = useRef<NodeJS.Timeout>();
-  const lastArgsRef = useRef<unknown[]>();
+  const lastArgsRef = useRef<any[]>();
   const executedRef = useRef(false); // Para evitar ejecuciones múltiples
 
   useEffect(() => {
@@ -53,7 +53,7 @@ export const useApi = <T = unknown>(
   }, []);
 
   const execute = useCallback(
-    async (...args: unknown[]) => {
+    async (...args: any[]) => {
       lastArgsRef.current = args;
       let currentRetry = 0;
 

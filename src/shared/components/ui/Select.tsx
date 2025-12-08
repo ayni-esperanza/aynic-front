@@ -19,21 +19,22 @@ export const Select: React.FC<SelectProps> = ({
   ...props
 }) => {
   return (
-    <div className="space-y-2">
+    <div>
       {label && (
-        <label className="block text-sm font-semibold text-gray-700">
+        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
           {label}
           {props.required && <span className="ml-1 text-red-500">*</span>}
         </label>
       )}
       <select
         className={`
-          w-full px-4 py-3 border-2 rounded-xl transition-all duration-200 font-medium
-          focus:outline-none focus:ring-2 focus:ring-[#18D043]/20 focus:border-[#18D043]
+          w-full px-3 py-2 border-2 rounded-xl transition-all duration-200 font-medium text-sm
+          bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+          focus:outline-none focus:ring-2 focus:ring-[#18D043]/20 dark:focus:ring-[#18D043]/30 focus:border-[#18D043]
           ${
             error
-              ? "border-red-300 focus:border-red-500 focus:ring-red-500/20"
-              : "border-gray-200 hover:border-gray-300"
+              ? "border-red-300 dark:border-red-600 focus:border-red-500 focus:ring-red-500/20"
+              : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
           }
           ${className}
         `}
@@ -47,7 +48,7 @@ export const Select: React.FC<SelectProps> = ({
         ))}
       </select>
       {error && (
-        <p className="flex items-center space-x-1 text-sm text-red-600">
+        <p className="flex items-center space-x-1 text-sm text-red-600 dark:text-red-400">
           <span className="text-red-500">⚠️</span>
           <span>{error}</span>
         </p>

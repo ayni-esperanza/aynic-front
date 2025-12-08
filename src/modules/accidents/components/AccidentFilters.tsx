@@ -3,13 +3,12 @@ import { Button } from '../../../shared/components/ui/Button';
 import { Input } from '../../../shared/components/ui/Input';
 import { Select } from '../../../shared/components/ui/Select';
 import { SearchableSelect } from '../../../shared/components/ui/SearchableSelect';
-import { Search, X } from "lucide-react";
+import { Search, X, Filter } from "lucide-react";
 import type { AccidentFilters as AccidentFiltersType } from "../types/accident";
 
 interface AccidentFiltersProps {
   filters: AccidentFiltersType;
   onFiltersChange: (filters: AccidentFiltersType) => void;
-  onSearch: () => void;
   onClearFilters: () => void;
   lineasVida: Array<{
     id: number;
@@ -23,25 +22,26 @@ interface AccidentFiltersProps {
 export const AccidentFilters: React.FC<AccidentFiltersProps> = ({
   filters,
   onFiltersChange,
-  onSearch,
   onClearFilters,
   lineasVida,
   loading = false,
 }) => {
   const [localFilters, setLocalFilters] =
     useState<AccidentFiltersType>(filters);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  // Sincronizar filtros locales cuando cambian los filtros externos (por ejemplo, al hacer clic en cards)
+  React.useEffect(() => {
+    setLocalFilters(filters);
+  }, [filters]);
 
   const handleFilterChange = (
     key: keyof AccidentFiltersType,
     value: string | number | undefined
   ) => {
-    const newFilters = { ...localFilters, [key]: value };
+    const newFilters = { ...localFilters, [key]: value, page: 1 };
     setLocalFilters(newFilters);
     onFiltersChange(newFilters);
-  };
-
-  const handleSearch = () => {
-    onSearch();
   };
 
   const handleClearFilters = () => {
@@ -50,7 +50,6 @@ export const AccidentFilters: React.FC<AccidentFiltersProps> = ({
       limit: 10,
     };
     setLocalFilters(clearedFilters);
-    onFiltersChange(clearedFilters);
     onClearFilters();
   };
 
@@ -80,7 +79,7 @@ export const AccidentFilters: React.FC<AccidentFiltersProps> = ({
 
   const getSelectedLineaVida = () => {
     if (!localFilters.linea_vida_id) return "";
-    const linea = lineasVida.find((l) => l.id === localFilters.linea_vida_id);
+    const linea = lineasVida.find((l) => l.id === Number(localFilters.linea_vida_id));
     return linea
       ? `${linea.codigo} | ${linea.cliente} | ${linea.ubicacion}`
       : "";
@@ -100,86 +99,115 @@ export const AccidentFilters: React.FC<AccidentFiltersProps> = ({
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      {/* Primera fila de filtros */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">
+          <Filter className="w-4 h-4 text-[#18D043]" />
+          Filtros rápidos
+        </div>
+      </div>
+
+      {/* Filtros principales compactos */}
+      <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
         <SearchableSelect
           options={lineaVidaOptions}
           value={getSelectedLineaVida()}
           onChange={handleLineaVidaChange}
-          placeholder="Buscar por código, cliente o ubicación..."
-          label="Línea de Vida"
+          placeholder="Buscar línea de vida..."
+          size="compact"
+          className="!min-h-10"
         />
 
         <Select
-          label="Estado"
           value={localFilters.estado || ""}
           onChange={(e) =>
             handleFilterChange("estado", e.target.value || undefined)
           }
           options={estadoOptions}
+          className="!h-10 !py-0"
         />
 
         <Select
-          label="Severidad"
           value={localFilters.severidad || ""}
           onChange={(e) =>
             handleFilterChange("severidad", e.target.value || undefined)
           }
           options={severidadOptions}
+          className="!h-10 !py-0"
         />
 
-        <Input
-          label="Fecha Desde"
-          type="date"
-          value={localFilters.fecha_desde || ""}
-          onChange={(e) =>
-            handleFilterChange("fecha_desde", e.target.value || undefined)
-          }
-        />
+        <button
+          onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+          className={`h-10 w-full inline-flex items-center justify-center rounded-xl font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 border-2 text-[#18D043] dark:text-[#18D043] hover:bg-[#18D043] hover:text-white dark:hover:bg-[#18D043] dark:hover:text-white focus:ring-[#18D043]/20 dark:focus:ring-[#18D043]/30 shadow-sm hover:shadow-lg px-2 text-sm gap-1.5 ${
+            showAdvancedFilters 
+              ? "bg-[#18D043] text-white border-[#18D043] dark:border-[#18D043]" 
+              : "border-gray-300 dark:border-gray-600"
+          }`}
+          aria-expanded={showAdvancedFilters}
+          aria-controls="accident-advanced-filters"
+        >
+          <Filter size={16} />
+          Filtros
+        </button>
       </div>
 
-      {/* Segunda fila de filtros */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Input
-          label="Fecha Hasta"
-          type="date"
-          value={localFilters.fecha_hasta || ""}
-          onChange={(e) =>
-            handleFilterChange("fecha_hasta", e.target.value || undefined)
-          }
-        />
-
-        <Input
-          label="Buscar en Descripción"
-          placeholder="Buscar en descripciones..."
-          value={localFilters.search || ""}
-          onChange={(e) =>
-            handleFilterChange("search", e.target.value || undefined)
-          }
-          icon={Search}
-        />
-
-        <div className="flex flex-col space-y-2 sm:flex-row sm:items-end sm:space-y-0 sm:space-x-3">
-          <Button
-            onClick={handleSearch}
-            disabled={loading}
-            loading={loading}
-            className="w-full sm:flex-1"
+      {/* Filtros avanzados colapsables */}
+        <div
+          id="accident-advanced-filters"
+          className={`overflow-hidden transition-[max-height] duration-300 ease-in-out ${
+            showAdvancedFilters ? "max-h-[500px] mt-1" : "max-h-0"
+          }`}
+          aria-hidden={!showAdvancedFilters}
+        >
+          <div
+            className={`grid grid-cols-1 gap-2 p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 md:grid-cols-3 transition-all duration-300 ${
+              showAdvancedFilters
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 -translate-y-2 pointer-events-none"
+            }`}
           >
-            Buscar
-          </Button>
+          <Input
+            label="Fecha Desde"
+            type="date"
+            value={localFilters.fecha_desde || ""}
+            onChange={(e) =>
+              handleFilterChange("fecha_desde", e.target.value || undefined)
+            }
+            className="!h-10 !py-0 !text-sm"
+          />
 
-          <Button
-            variant="outline"
-            onClick={handleClearFilters}
-            disabled={loading}
-            icon={X}
-            className="w-full sm:w-auto"
-          >
-            <span className="hidden sm:inline">Limpiar Filtros</span>
-            <span className="sm:hidden">Limpiar</span>
-          </Button>
+          <Input
+            label="Fecha Hasta"
+            type="date"
+            value={localFilters.fecha_hasta || ""}
+            onChange={(e) =>
+              handleFilterChange("fecha_hasta", e.target.value || undefined)
+            }
+            className="!h-10 !py-0 !text-sm"
+          />
+
+          <Input
+            label="Buscar en Descripción"
+            placeholder="Buscar en descripciones..."
+            value={localFilters.search || ""}
+            onChange={(e) =>
+              handleFilterChange("search", e.target.value || undefined)
+            }
+            icon={Search}
+            className="!h-10 !py-0 !text-sm"
+          />
+
+          <div className="flex items-end md:col-span-3">
+            <Button
+              variant="outline"
+              onClick={handleClearFilters}
+              disabled={loading}
+              icon={X}
+              className="w-full"
+            >
+              Limpiar Filtros
+            </Button>
+          </div>
         </div>
       </div>
     </div>

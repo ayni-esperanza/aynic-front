@@ -1,469 +1,493 @@
-import React, { useState } from "react";
-import {
-  Search,
-  Filter,
-  Menu,
-  X,
-  RotateCcw,
-  Download,
-  XCircle,
-  CheckSquare,
-  Trash2,
-} from "lucide-react";
-import { usePurchaseOrders } from "../hooks";
-import { purchaseOrderService } from "../services";
-import { useAuth } from "../../../shared/hooks/useAuth";
+import React, { useState } from 'react';
+import { Plus, Search, Filter, CheckCircle, XCircle, Clock, CheckSquare, FileText, Building, User, DollarSign, Calendar, Trash2, Save } from 'lucide-react';
+import { usePurchaseOrders } from '../hooks';
+import { PurchaseOrder, PurchaseOrderStatus, PurchaseOrderType } from '../types';
+import { PurchaseOrderForm } from './PurchaseOrderForm';
+import { useModalClose } from '../../../shared/hooks/useModalClose';
+
+const statusColors = {
+  [PurchaseOrderStatus.PENDING]: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+  [PurchaseOrderStatus.APPROVED]: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+  [PurchaseOrderStatus.REJECTED]: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+  [PurchaseOrderStatus.COMPLETED]: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+  [PurchaseOrderStatus.CANCELLED]: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+};
+
+const statusIcons = {
+  [PurchaseOrderStatus.PENDING]: Clock,
+  [PurchaseOrderStatus.APPROVED]: CheckCircle,
+  [PurchaseOrderStatus.REJECTED]: XCircle,
+  [PurchaseOrderStatus.COMPLETED]: CheckSquare,
+  [PurchaseOrderStatus.CANCELLED]: XCircle,
+};
+
+const typeLabels = {
+  [PurchaseOrderType.LINEA_VIDA]: 'Línea de Vida',
+  [PurchaseOrderType.EQUIPOS]: 'Equipos',
+  [PurchaseOrderType.ACCESORIOS]: 'Accesorios',
+  [PurchaseOrderType.SERVICIOS]: 'Servicios',
+};
 
 export const PurchaseOrderList: React.FC = () => {
-  const { purchaseOrders, loading, error, fetchPurchaseOrders } =
-    usePurchaseOrders();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
-  const { user, isAdmin } = useAuth();
+  const { purchaseOrders, loading, error, deletePurchaseOrder, createPurchaseOrder, updatePurchaseOrder } = usePurchaseOrders();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<PurchaseOrderStatus | ''>('');
+  const [typeFilter, setTypeFilter] = useState<PurchaseOrderType | ''>('');
+  const [showFormModal, setShowFormModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<PurchaseOrder | null>(null);
+  const [editData, setEditData] = useState<any>({});
+  const [hasChanges, setHasChanges] = useState(false);
 
-  // Estado para controlar filtros móviles
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const filteredOrders = purchaseOrders.filter(order => {
+    const matchesSearch = order.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         order.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         order.proveedor?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = !statusFilter || order.estado === statusFilter;
+    const matchesType = !typeFilter || order.tipo === typeFilter;
 
-  // Estados para el modal de error
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-
-  const filteredOrders = purchaseOrders.filter((order) => {
-    const target = `${order.numero} ${
-      order.termino_referencias || ""
-    }`.toLowerCase();
-    return target.includes(searchTerm.toLowerCase());
+    return matchesSearch && matchesStatus && matchesType;
   });
 
-  // Función para verificar si una orden puede ser eliminada
-  const checkIfOrderCanBeDeleted = async (
-    orderId: number
-  ): Promise<boolean> => {
+  const handleViewOrder = (order: PurchaseOrder) => {
+    setSelectedOrder(order);
+    setEditData({
+      codigo: order.codigo,
+      descripcion: order.descripcion,
+      tipo: order.tipo,
+      monto_total: order.monto_total,
+      proveedor: order.proveedor || '',
+      fecha_requerida: order.fecha_requerida || '',
+      observaciones: order.observaciones || '',
+    });
+    setHasChanges(false);
+    setShowDetailModal(true);
+  };
+
+  const handleCloseDetailModal = () => {
+    setShowDetailModal(false);
+  };
+
+  const detailModalRef = useModalClose({
+    isOpen: showDetailModal,
+    onClose: handleCloseDetailModal,
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setEditData((prev: any) => ({
+      ...prev,
+      [name]: name === 'monto_total' ? parseFloat(value) || 0 : value,
+    }));
+    setHasChanges(true);
+  };
+
+  const handleSaveChanges = async () => {
+    if (!selectedOrder) return;
+    
     try {
-      const response = await purchaseOrderService.canDelete(orderId);
-      return response.canDelete;
+      await updatePurchaseOrder(selectedOrder.id, editData);
+      setShowDetailModal(false);
+      setHasChanges(false);
     } catch (error) {
-      // Si hay error en la verificación, asumir que no se puede eliminar por seguridad
-      console.error("Error verificando si se puede eliminar:", error);
-      return false;
+      console.error('Error al actualizar:', error);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!isAdmin) return;
-
-    // Verificar primero si se puede eliminar
-    const canDelete = await checkIfOrderCanBeDeleted(id);
-
-    if (!canDelete) {
-      setErrorMessage(
-        "No se puede eliminar esta orden de compra porque existen registros asociados a ella. Primero debe eliminar o modificar los registros que hacen referencia a esta orden."
-      );
-      setShowErrorModal(true);
-      return;
-    }
-
-    if (
-      confirm(
-        "¿Estás seguro de que deseas eliminar esta orden de compra? Esta acción no se puede deshacer."
-      )
-    ) {
+    if (window.confirm('¿Estás seguro de que quieres eliminar esta orden de compra?')) {
       try {
-        setIsDeleting(true);
-        await purchaseOrderService.delete(id);
-        await fetchPurchaseOrders();
-      } catch (error: any) {
-        console.error("Error al eliminar la orden de compra:", error);
-        setErrorMessage("Error inesperado al eliminar la orden de compra.");
-        setShowErrorModal(true);
-      } finally {
-        setIsDeleting(false);
+        await deletePurchaseOrder(id);
+        setShowDetailModal(false);
+      } catch (error) {
+        console.error('Error al eliminar:', error);
       }
     }
   };
 
-  const handleClearFilters = () => {
-    setSearchTerm("");
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="px-4 py-4 mx-auto w-full max-w-7xl sm:px-6 lg:px-8 sm:py-6">
-          <div className="flex flex-col justify-center items-center space-y-4 h-48 sm:h-64">
-            <div className="relative">
-              <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-4 border-[#18D043]/20 border-t-[#18D043]"></div>
-            </div>
-            <p className="text-sm font-medium text-center text-gray-600 sm:text-base">
-              Cargando órdenes de compra...
-            </p>
-          </div>
-        </div>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#18D043] border-t-transparent"></div>
+        <span className="ml-3 text-gray-600 dark:text-gray-400">Cargando órdenes de compra...</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="px-4 py-4 mx-auto w-full max-w-7xl sm:px-6 lg:px-8 sm:py-6">
-          <div className="flex flex-col justify-center items-center space-y-4 h-48 sm:h-64">
-            <div className="flex justify-center items-center w-12 h-12 bg-red-100 rounded-full sm:w-16 sm:h-16">
-              <XCircle className="w-6 h-6 text-red-600 sm:w-8 sm:h-8" />
-            </div>
-            <div className="px-4 text-center">
-              <p className="mb-2 text-base font-medium text-gray-900 sm:text-lg">
-                Error al cargar las órdenes
-              </p>
-              <p className="mb-4 text-sm text-gray-600 sm:text-base">{error}</p>
-            </div>
-          </div>
+      <div className="text-center py-8">
+        <div className="text-red-600 dark:text-red-400 mb-4">
+          <XCircle size={48} className="mx-auto" />
         </div>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Error al cargar</h3>
+        <p className="text-gray-600 dark:text-gray-400">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="px-4 py-4 mx-auto w-full max-w-7xl sm:px-6 lg:px-8 sm:py-6">
-        <div className="space-y-4 sm:space-y-6 lg:space-y-8">
-          {/* Header Responsive */}
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex-1">
-              <h1 className="flex items-center space-x-2 text-xl font-bold text-gray-900 sm:text-2xl lg:text-3xl">
-                <CheckSquare className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-[#18D043] flex-shrink-0" />
-                <span className="truncate">Órdenes de Compra</span>
-              </h1>
-              <p className="mt-1 text-sm text-gray-600 sm:text-base">
-                Gestiona las órdenes de compra del sistema
-              </p>
-            </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Órdenes de Compra</h1>
+          <p className="text-gray-600 dark:text-gray-400">Gestiona las órdenes de compra del sistema</p>
+        </div>
+        <button
+          onClick={() => setShowFormModal(true)}
+          className="inline-flex items-center px-4 py-2 bg-[#18D043] text-white rounded-lg hover:bg-[#16a34a] transition-colors"
+        >
+          <Plus size={20} className="mr-2" />
+          Nueva Orden
+        </button>
+      </div>
 
-            {/* Botón de filtros móviles */}
-            <div className="flex gap-2 items-center sm:hidden">
-              <button
-                onClick={() => setShowMobileFilters(!showMobileFilters)}
-                className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#18D043] focus:border-transparent flex-shrink-0"
-              >
-                {showMobileFilters ? (
-                  <X size={16} className="mr-2" />
-                ) : (
-                  <Menu size={16} className="mr-2" />
-                )}
-                Filtros
-              </button>
+      {/* Filtros */}
+      <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">
+            <Filter className="w-4 h-4 text-[#18D043]" />
+            Filtros rápidos
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Buscar
+            </label>
+            <div className="relative">
+              <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+              <input
+                type="text"
+                placeholder="Código, descripción o proveedor..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+              />
             </div>
           </div>
-
-          {/* Filtros Responsive */}
-          <div className="p-4 bg-white rounded-lg border border-gray-200 sm:p-6">
-            {/* Filtros Desktop */}
-            <div className="hidden sm:block">
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {/* Búsqueda */}
-                  <div className="relative">
-                    <Search
-                      size={20}
-                      className="absolute left-3 top-1/2 text-gray-400 transform -translate-y-1/2"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Código, descripción o proveedor..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent"
-                    />
-                  </div>
-
-                  {/* Filtros simplificados sin enums */}
-                  <div />
-                  <div />
-                </div>
-
-                <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-                  <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
-                    <button
-                      onClick={handleClearFilters}
-                      className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#18D043] focus:border-transparent w-full sm:w-auto justify-center"
-                    >
-                      <RotateCcw size={16} className="mr-2" />
-                      Limpiar Filtros
-                    </button>
-                  </div>
-
-                  <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
-                    <button
-                      onClick={() => window.location.reload()}
-                      className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#18D043] focus:border-transparent w-full sm:w-auto justify-center"
-                    >
-                      <RotateCcw size={16} className="mr-2" />
-                      Recargar
-                    </button>
-                    <button
-                      onClick={() => {
-                        /* TODO: Implementar exportación */
-                      }}
-                      className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#18D043] focus:border-transparent w-full sm:w-auto justify-center"
-                    >
-                      <Download size={16} className="mr-2" />
-                      Exportar CSV
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Filtros Móviles - Simplificados */}
-            <div
-              className={`sm:hidden ${showMobileFilters ? "block" : "hidden"}`}
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Estado
+            </label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as PurchaseOrderStatus | '')}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
-              <div className="space-y-4">
-                <div className="space-y-3">
-                  {/* Búsqueda */}
-                  <div className="relative">
-                    <Search
-                      size={20}
-                      className="absolute left-3 top-1/2 text-gray-400 transform -translate-y-1/2"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Código, descripción o proveedor..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      onClick={handleClearFilters}
-                      className="inline-flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#18D043] focus:border-transparent"
-                    >
-                      <RotateCcw size={16} className="mr-2" />
-                      Limpiar
-                    </button>
-                    <button
-                      onClick={() => window.location.reload()}
-                      className="inline-flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#18D043] focus:border-transparent"
-                    >
-                      <RotateCcw size={16} className="mr-2" />
-                      Recargar
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-2">
-                    <button
-                      onClick={() => {
-                        /* TODO: Implementar exportación */
-                      }}
-                      className="inline-flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#18D043] focus:border-transparent"
-                    >
-                      <Download size={16} className="mr-2" />
-                      Exportar CSV
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+              <option value="" className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">Todos los estados</option>
+              <option value={PurchaseOrderStatus.PENDING} className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">Pendiente</option>
+              <option value={PurchaseOrderStatus.APPROVED} className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">Aprobada</option>
+              <option value={PurchaseOrderStatus.REJECTED} className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">Rechazada</option>
+              <option value={PurchaseOrderStatus.COMPLETED} className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">Completada</option>
+              <option value={PurchaseOrderStatus.CANCELLED} className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">Cancelada</option>
+            </select>
           </div>
 
-          {/* Lista de órdenes */}
-          <div className="p-4 bg-white rounded-lg border border-gray-200 sm:p-6">
-            <div className="flex justify-between items-center mb-4 sm:mb-6">
-              <h2 className="flex items-center space-x-2 text-base font-semibold text-gray-900 sm:text-lg">
-                <CheckSquare className="w-4 h-4 sm:w-5 sm:h-5 text-[#18D043] flex-shrink-0" />
-                <span>Lista de Órdenes</span>
-              </h2>
-            </div>
-
-            {/* Tabla Desktop */}
-            <div className="hidden overflow-x-auto lg:block">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                      Nº Orden
-                    </th>
-                    <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                      Término y Referencias
-                    </th>
-                    <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                      Creado
-                    </th>
-                    {isAdmin && (
-                      <th className="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase">
-                        Acciones
-                      </th>
-                    )}
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredOrders.map((order) => (
-                    <tr key={order.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-medium text-gray-900">
-                          {order.numero}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div
-                          className="max-w-xl text-sm text-gray-900 truncate"
-                          title={order.termino_referencias || ""}
-                        >
-                          {order.termino_referencias || "—"}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-600">
-                          {order.created_at
-                            ? new Date(order.created_at).toLocaleDateString()
-                            : "—"}
-                        </span>
-                      </td>
-                      {isAdmin && (
-                        <td className="px-6 py-4 text-right whitespace-nowrap">
-                          <button
-                            onClick={() => handleDelete(order.id)}
-                            disabled={isDeleting}
-                            className="text-red-600 transition-colors hover:text-red-800"
-                            title="Eliminar orden de compra"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </td>
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Cards Móviles */}
-            <div className="space-y-3 lg:hidden">
-              {filteredOrders.map((order) => (
-                <div
-                  key={order.id}
-                  className="p-4 bg-white rounded-lg border border-gray-200 transition-shadow hover:shadow-md"
-                >
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-medium text-gray-900 truncate">
-                        {order.numero}
-                      </h3>
-                      <p className="mt-1 text-xs text-gray-500">
-                        Orden vinculada
-                      </p>
-                    </div>
-                    <span className="text-xs text-gray-500">
-                      {order.created_at
-                        ? new Date(order.created_at).toLocaleDateString()
-                        : ""}
-                    </span>
-                  </div>
-
-                  <p className="mb-3 text-sm text-gray-600 line-clamp-2">
-                    {order.termino_referencias || "—"}
-                  </p>
-
-                  <div className="flex justify-between items-center mb-3 text-xs text-gray-500">
-                    <span>
-                      ID:{" "}
-                      <span className="font-medium text-gray-900">
-                        #{order.id}
-                      </span>
-                    </span>
-                    <span>
-                      {order.created_at
-                        ? new Date(order.created_at).toLocaleDateString()
-                        : "—"}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-500">&nbsp;</span>
-                    <div className="flex items-center space-x-2">
-                      {isAdmin && (
-                        <button
-                          onClick={() => handleDelete(order.id)}
-                          disabled={isDeleting}
-                          className="p-1 text-red-600 transition-colors hover:text-red-800"
-                          title="Eliminar orden de compra"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {filteredOrders.length === 0 && (
-              <div className="flex flex-col justify-center items-center space-y-4 h-48 sm:h-64">
-                <div className="flex justify-center items-center w-12 h-12 bg-gray-100 rounded-full sm:w-16 sm:h-16">
-                  <Filter className="w-6 h-6 text-gray-400 sm:w-8 sm:h-8" />
-                </div>
-                <div className="px-4 text-center">
-                  <p className="mb-2 text-base font-medium text-gray-900 sm:text-lg">
-                    No se encontraron órdenes
-                  </p>
-                  <p className="text-sm text-gray-600 sm:text-base">
-                    {searchTerm
-                      ? "Intenta ajustar los filtros de búsqueda"
-                      : "No hay órdenes de compra registradas aún"}
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Info pie */}
-          <div className="flex justify-center items-center">
-            <div className="flex flex-col items-center px-3 py-2 space-y-2 text-xs text-gray-500 bg-gray-50 rounded-full sm:flex-row sm:space-y-0 sm:space-x-4 sm:px-4">
-              <div className="flex items-center space-x-1">
-                <div className="w-2 h-2 bg-[#18D043] rounded-full flex-shrink-0"></div>
-                <span>Datos en tiempo real</span>
-              </div>
-              <div className="hidden w-1 h-1 bg-gray-300 rounded-full sm:block"></div>
-              <div className="flex items-center space-x-1">
-                <span className="text-center sm:text-left">
-                  Última actualización: {new Date().toLocaleTimeString()}
-                </span>
-              </div>
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Tipo
+            </label>
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value as PurchaseOrderType | '')}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            >
+              <option value="" className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">Todos los tipos</option>
+              <option value={PurchaseOrderType.LINEA_VIDA} className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">Línea de Vida</option>
+              <option value={PurchaseOrderType.EQUIPOS} className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">Equipos</option>
+              <option value={PurchaseOrderType.ACCESORIOS} className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">Accesorios</option>
+              <option value={PurchaseOrderType.SERVICIOS} className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">Servicios</option>
+            </select>
           </div>
         </div>
       </div>
 
-      {/* Modal de error */}
-      {showErrorModal && (
-        <div className="flex fixed inset-0 z-50 justify-center items-center p-4 bg-black bg-opacity-50">
-          <div className="p-6 w-full max-w-md bg-white rounded-lg">
-            <div className="flex items-center mb-4 space-x-3">
-              <div className="flex-shrink-0">
-                <XCircle className="w-8 h-8 text-red-600" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-medium text-gray-900">
-                  No se puede eliminar
-                </h3>
-              </div>
-            </div>
+      {/* Lista */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div>
+          <table className="w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Código
+                </th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Descripción
+                </th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Tipo
+                </th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Estado
+                </th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Monto
+                </th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Solicitante
+                </th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Fecha
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              {filteredOrders.map((order) => {
+                const StatusIcon = statusIcons[order.estado];
+                return (
+                  <tr 
+                    key={order.id} 
+                    onClick={() => handleViewOrder(order)}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+                  >
+                    <td className="px-4 py-2 whitespace-nowrap">
+                      <span className="text-xs font-medium text-gray-900 dark:text-white">{order.codigo}</span>
+                    </td>
+                    <td className="px-4 py-2">
+                      <div className="text-xs text-gray-900 dark:text-white max-w-xs truncate" title={order.descripcion}>
+                        {order.descripcion}
+                      </div>
+                    </td>
+                    <td className="px-4 py-2 whitespace-nowrap">
+                      <span className="text-xs text-gray-600 dark:text-gray-400">{typeLabels[order.tipo]}</span>
+                    </td>
+                    <td className="px-4 py-2 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${statusColors[order.estado]}`}>
+                        <StatusIcon size={13} className="mr-1" />
+                        {order.estado}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2 whitespace-nowrap">
+                      <span className="text-xs font-medium text-gray-900 dark:text-white">
+                        ${order.monto_total.toLocaleString()}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2 whitespace-nowrap">
+                      <span className="text-xs text-gray-600 dark:text-gray-400">{order.solicitante.nombre}</span>
+                    </td>
+                    <td className="px-4 py-2 whitespace-nowrap">
+                      <span className="text-xs text-gray-600 dark:text-gray-400">
+                        {new Date(order.fecha_creacion).toLocaleDateString()}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
 
-            <div className="mb-6">
-              <p className="text-sm text-gray-600">{errorMessage}</p>
+        {filteredOrders.length === 0 && (
+          <div className="text-center py-12">
+            <div className="text-gray-400 dark:text-gray-500 mb-4">
+              <Filter size={48} className="mx-auto" />
             </div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No se encontraron órdenes</h3>
+            <p className="text-gray-600 dark:text-gray-400">
+              {searchTerm || statusFilter || typeFilter 
+                ? 'Intenta ajustar los filtros de búsqueda'
+                : 'No hay órdenes de compra registradas aún'
+              }
+            </p>
+          </div>
+        )}
+      </div>
 
-            <div className="flex justify-end">
+      {/* Modal de formulario */}
+      <PurchaseOrderForm 
+        isOpen={showFormModal}
+        onClose={() => setShowFormModal(false)}
+        onSuccess={() => {
+          setShowFormModal(false);
+        }}
+        onCreatePurchaseOrder={createPurchaseOrder}
+      />
+
+      {/* Modal de detalle */}
+      {showDetailModal && selectedOrder && (
+        <div
+          ref={detailModalRef}
+          className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          style={{ margin: 0 }}
+        >
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl">
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-500 to-blue-600">
+              <div className="flex items-center space-x-2">
+                <FileText className="w-5 h-5 text-white" />
+                <div>
+                  <h2 className="text-base font-bold text-white">Detalle de Orden de Compra</h2>
+                  <p className="text-xs text-blue-100">{selectedOrder.codigo}</p>
+                </div>
+              </div>
               <button
-                onClick={() => setShowErrorModal(false)}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md border border-transparent shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                onClick={handleCloseDetailModal}
+                className="text-white transition-colors hover:text-blue-200"
               >
-                Entendido
+                <XCircle size={20} />
               </button>
+            </div>
+
+            {/* Contenido */}
+            <div className="p-4 space-y-3">
+              {/* Fila 1: Código, Tipo y Monto (3 columnas) */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                    Código
+                  </label>
+                  <input
+                    type="text"
+                    name="codigo"
+                    value={editData.codigo || ''}
+                    onChange={handleInputChange}
+                    className="w-full h-[38px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                    <Building className="w-4 h-4 inline mr-1" />
+                    Tipo
+                  </label>
+                  <select
+                    name="tipo"
+                    value={editData.tipo || ''}
+                    onChange={handleInputChange}
+                    className="w-full h-[38px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    <option value={PurchaseOrderType.LINEA_VIDA}>Línea de Vida</option>
+                    <option value={PurchaseOrderType.EQUIPOS}>Equipos</option>
+                    <option value={PurchaseOrderType.ACCESORIOS}>Accesorios</option>
+                    <option value={PurchaseOrderType.SERVICIOS}>Servicios</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                    <DollarSign className="w-4 h-4 inline mr-1" />
+                    Monto Total
+                  </label>
+                  <input
+                    type="number"
+                    name="monto_total"
+                    value={editData.monto_total || 0}
+                    onChange={handleInputChange}
+                    step="0.01"
+                    min="0"
+                    className="w-full h-[38px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              {/* Fila 2: Fecha Requerida y Proveedor (2 columnas) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                    Fecha Requerida
+                  </label>
+                  <input
+                    type="date"
+                    name="fecha_requerida"
+                    value={editData.fecha_requerida || ''}
+                    onChange={handleInputChange}
+                    className="w-full h-[38px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                    Proveedor
+                  </label>
+                  <input
+                    type="text"
+                    name="proveedor"
+                    value={editData.proveedor || ''}
+                    onChange={handleInputChange}
+                    className="w-full h-[38px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              {/* Fila 3: Descripción (ancho completo) */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  Descripción
+                </label>
+                <textarea
+                  name="descripcion"
+                  value={editData.descripcion || ''}
+                  onChange={handleInputChange}
+                  rows={3}
+                  className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+
+              {/* Fila 4: Observaciones (ancho completo) */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  Observaciones
+                </label>
+                <textarea
+                  name="observaciones"
+                  value={editData.observaciones || ''}
+                  onChange={handleInputChange}
+                  rows={2}
+                  className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+
+              {/* Info adicional: Estado, Solicitante y Fecha de Creación (solo lectura) */}
+              <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                      Estado
+                    </label>
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${statusColors[selectedOrder.estado]}`}>
+                      {React.createElement(statusIcons[selectedOrder.estado], { size: 14, className: 'mr-1' })}
+                      {selectedOrder.estado}
+                    </span>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                      <User className="w-4 h-4 inline mr-1" />
+                      Solicitante
+                    </label>
+                    <p className="text-sm text-gray-900 dark:text-white py-1">{selectedOrder.solicitante.nombre}</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                      <Calendar className="w-4 h-4 inline mr-1" />
+                      Fecha de Creación
+                    </label>
+                    <p className="text-sm text-gray-900 dark:text-white py-1">{new Date(selectedOrder.fecha_creacion).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer con botón eliminar y guardar */}
+            <div className="flex items-center justify-between space-x-3 px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+              <button
+                onClick={() => handleDelete(selectedOrder.id)}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center text-sm"
+              >
+                <Trash2 size={16} className="mr-2" />
+                Eliminar
+              </button>
+              
+              {hasChanges && (
+                <button
+                  onClick={handleSaveChanges}
+                  disabled={loading}
+                  className="px-4 py-2 bg-[#18D043] text-white rounded-lg hover:bg-[#16a34a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-sm"
+                >
+                  <Save size={16} className="mr-2" />
+                  Guardar Cambios
+                </button>
+              )}
             </div>
           </div>
         </div>
