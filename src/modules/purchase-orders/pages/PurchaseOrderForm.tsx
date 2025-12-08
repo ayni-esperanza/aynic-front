@@ -104,7 +104,7 @@ export const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
 
   return (
     <div ref={modalRef} className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" style={{ margin: 0 }}>
-      <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl">
+      <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-500 to-blue-600">
           <div className="flex items-center space-x-2">
@@ -136,7 +136,7 @@ export const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
               name="codigo"
               value={formData.codigo}
               onChange={handleInputChange}
-              className={`w-full px-3 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
+              className={`w-full h-[38px] px-3 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
                 errors.codigo ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
               }`}
               placeholder="OC-2024-001"
@@ -158,7 +158,7 @@ export const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
               name="tipo"
               value={formData.tipo}
               onChange={handleInputChange}
-              className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full h-[38px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               <option value={PurchaseOrderType.LINEA_VIDA}>Línea de Vida</option>
               <option value={PurchaseOrderType.EQUIPOS}>Equipos</option>
@@ -169,7 +169,7 @@ export const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
 
           {/* Descripción */}
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
               Descripción <span className="text-red-500">*</span>
             </label>
             <textarea
@@ -177,14 +177,14 @@ export const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
               value={formData.descripcion}
               onChange={handleInputChange}
               rows={3}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
+              className={`w-full px-3 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
                 errors.descripcion ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
               }`}
               placeholder="Describe detalladamente lo que se necesita comprar..."
             />
             {errors.descripcion && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center">
-                <AlertCircle size={14} className="mr-1" />
+              <p className="mt-0.5 text-xs text-red-600 flex items-center">
+                <AlertCircle size={12} className="mr-1" />
                 {errors.descripcion}
               </p>
             )}
@@ -192,11 +192,11 @@ export const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
 
           {/* Monto Total */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
               Monto Total <span className="text-red-500">*</span>
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400">$</span>
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-500 dark:text-gray-400">$</span>
               <input
                 type="number"
                 name="monto_total"
@@ -204,15 +204,15 @@ export const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
                 onChange={handleInputChange}
                 step="0.01"
                 min="0"
-                className={`w-full pl-8 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
+                className={`w-full h-[38px] pl-8 pr-3 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
                   errors.monto_total ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
                 }`}
                 placeholder="0.00"
               />
             </div>
             {errors.monto_total && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center">
-                <AlertCircle size={14} className="mr-1" />
+              <p className="mt-0.5 text-xs text-red-600 flex items-center">
+                <AlertCircle size={12} className="mr-1" />
                 {errors.monto_total}
               </p>
             )}
@@ -228,7 +228,7 @@ export const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
               name="fecha_requerida"
               value={formData.fecha_requerida}
               onChange={handleInputChange}
-              className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full h-[38px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
 
@@ -242,7 +242,7 @@ export const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
               name="proveedor"
               value={formData.proveedor}
               onChange={handleInputChange}
-              className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full h-[38px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="Nombre del proveedor"
             />
           </div>
