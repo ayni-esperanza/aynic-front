@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Search, Filter, CheckCircle, XCircle, Clock, CheckSquare, FileText, Building, User, DollarSign, Calendar, Trash2, Save, AlertCircle } from 'lucide-react';
+import { Plus, Search, Filter, CheckCircle, XCircle, Clock, CheckSquare, FileText, Building, User, DollarSign, Calendar, Trash2, Save } from 'lucide-react';
 import { usePurchaseOrders } from '../hooks';
 import { PurchaseOrder, PurchaseOrderStatus, PurchaseOrderType } from '../types';
 import { PurchaseOrderForm } from './PurchaseOrderForm';
@@ -311,7 +311,8 @@ export const PurchaseOrderList: React.FC = () => {
       {showDetailModal && selectedOrder && (
         <div
           ref={detailModalRef}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
+          className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-4 bg-black bg-opacity-50"
+          style={{ margin: 0 }}
         >
           <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl">
             {/* Header */}

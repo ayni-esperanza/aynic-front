@@ -1279,7 +1279,8 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose }) => {
       {showNewClientForm && (
         <div
           ref={newClientModalRef}
-          className="fixed inset-0 z-[60] flex items-center justify-center px-4 bg-black/70 backdrop-blur-sm"
+          className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center px-4 bg-black/70 backdrop-blur-sm"
+          style={{ margin: 0, padding: '1rem' }}
         >
           <div className="relative w-full max-w-md p-6 bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700">
             <button

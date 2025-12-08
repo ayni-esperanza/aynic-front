@@ -158,7 +158,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   );
 
   // Hook para actualizar metadatos
-  const { loading: updatingMetadata, execute: updateMetadata } = useApi(
+  const { loading: updatingMetadata } = useApi(
     (...args: unknown[]) => {
       const { recordId, description } = args[0] as {
         recordId: string;
@@ -621,7 +621,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
       {/* Modal para ver imagen completa */}
       {showImageModal && currentImage && (
-        <div ref={imageModalRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
+        <div ref={imageModalRef} className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-4 bg-black/80" style={{ margin: 0 }}>
           <div className="relative max-w-4xl max-h-full">
             <Button
                className="absolute z-10 text-white top-4 right-4 bg-black/50 hover:bg-black/70"

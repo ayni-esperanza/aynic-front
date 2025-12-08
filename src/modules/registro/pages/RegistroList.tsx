@@ -1557,7 +1557,8 @@ export const RegistroList: React.FC = () => {
       {showCreateModal && (
         <div
           ref={createModalRef}
-          className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 bg-black/70 backdrop-blur-sm"
+          className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center px-4 py-6 bg-black/70 backdrop-blur-sm"
+          style={{ margin: 0 }}
         >
           <div className="relative w-full max-w-[min(90vw,_950px)] max-h-[88vh] overflow-y-auto rounded-2xl bg-white dark:bg-gray-900 shadow-2xl border border-white/10 dark:border-gray-700/60 flex">
             <RegistroForm onClose={handleCloseCreateModal} />

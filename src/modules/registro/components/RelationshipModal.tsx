@@ -95,7 +95,7 @@ export const RelationshipModal: React.FC<RelationshipModalProps> = ({
 
       const result = await relationshipService.createRelationship(payload);
       success("Éxito", result.message);
-      onSuccess();
+      onSuccess?.();
     } catch (err: any) {
       error("Error", err.message || "Error al crear las líneas derivadas");
     } finally {
@@ -106,7 +106,7 @@ export const RelationshipModal: React.FC<RelationshipModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div ref={modalRef} className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" style={{ margin: 0 }}>
       <div className="w-full max-w-4xl max-h-[92vh] overflow-y-auto bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-2xl">
         {/* Header */}
         <div className="p-5 sm:p-6 bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 rounded-t-2xl">

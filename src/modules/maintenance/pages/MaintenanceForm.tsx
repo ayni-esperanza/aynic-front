@@ -234,7 +234,7 @@ export const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+    <div ref={modalRef} className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-4 bg-black bg-opacity-50" style={{ margin: 0 }}>
       <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-500 to-blue-600">

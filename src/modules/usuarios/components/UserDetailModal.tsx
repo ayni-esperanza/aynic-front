@@ -105,7 +105,7 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
   if (!isOpen || !user) return null;
 
   return (
-    <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div ref={modalRef} className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" style={{ margin: 0 }}>
       <div className="w-full max-w-[min(85vw,_780px)] max-h-[85vh] overflow-y-auto bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-2xl flex flex-col">
         {/* Header */}
         <div className="flex-shrink-0 flex items-start justify-between p-4 sm:p-5 border-b border-gray-200 dark:border-gray-800">

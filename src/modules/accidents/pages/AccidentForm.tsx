@@ -223,7 +223,7 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div ref={modalRef} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+    <div ref={modalRef} className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-4 bg-black bg-opacity-50" style={{ margin: 0 }}>
       <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl">
         {/* Header reducido y modal más ancha */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-red-500 to-red-600">
