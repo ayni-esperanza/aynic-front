@@ -621,7 +621,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
       {/* Modal para ver imagen completa */}
       {showImageModal && currentImage && (
-        <div ref={imageModalRef} className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-4 bg-black/80" style={{ margin: 0 }}>
+        <div ref={imageModalRef} className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" style={{ margin: 0 }}>
           <div className="relative max-w-4xl max-h-full">
             <Button
                className="absolute z-10 text-white top-4 right-4 bg-black/50 hover:bg-black/70"

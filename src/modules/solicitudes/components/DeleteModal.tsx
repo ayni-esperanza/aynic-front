@@ -74,7 +74,7 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({
   if (!isOpen || !record) return null;
 
   return (
-    <div ref={modalRef} className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50" style={{ margin: 0 }}>
+    <div ref={modalRef} className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm" style={{ margin: 0 }}>
       <div className="w-full max-w-md p-6 bg-white shadow-xl rounded-xl">
         <div className="text-center">
           <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full">

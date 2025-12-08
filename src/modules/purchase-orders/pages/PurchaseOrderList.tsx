@@ -311,7 +311,7 @@ export const PurchaseOrderList: React.FC = () => {
       {showDetailModal && selectedOrder && (
         <div
           ref={detailModalRef}
-          className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-4 bg-black bg-opacity-50"
+          className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
           style={{ margin: 0 }}
         >
           <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl">

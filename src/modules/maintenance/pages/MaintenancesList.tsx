@@ -36,7 +36,7 @@ const ImagePreviewModal: React.FC<{
   if (!open) return null;
   const modalRef = useModalClose({ isOpen: open, onClose });
   return (
-    <div ref={modalRef} className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-4 bg-black/80" style={{ margin: 0 }}>
+    <div ref={modalRef} className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" style={{ margin: 0 }}>
       <div className="relative max-w-5xl max-h-full">
         <Button
           className="absolute z-10 text-white top-3 right-3 bg-black/60 hover:bg-black/80"
@@ -76,7 +76,7 @@ const MaintenanceDetailModal: React.FC<{
   const isLengthIncrease = lengthChange > 0;
 
   return (
-    <div ref={modalRef} className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-4 bg-black bg-opacity-50" style={{ margin: 0 }}>
+    <div ref={modalRef} className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" style={{ margin: 0 }}>
       <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-green-500 to-green-600">
