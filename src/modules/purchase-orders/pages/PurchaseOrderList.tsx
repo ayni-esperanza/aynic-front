@@ -333,9 +333,9 @@ export const PurchaseOrderList: React.FC = () => {
             </div>
 
             {/* Contenido */}
-            <div className="p-4 space-y-4">
-              {/* Información básica */}
-              <div className="grid grid-cols-2 gap-4">
+            <div className="p-4 space-y-3">
+              {/* Fila 1: Código, Tipo y Monto (3 columnas) */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
                     Código
@@ -345,34 +345,9 @@ export const PurchaseOrderList: React.FC = () => {
                     name="codigo"
                     value={editData.codigo || ''}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="w-full h-[38px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                    Estado
-                  </label>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[selectedOrder.estado]}`}>
-                    {React.createElement(statusIcons[selectedOrder.estado], { size: 14, className: 'mr-1' })}
-                    {selectedOrder.estado}
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                  Descripción
-                </label>
-                <textarea
-                  name="descripcion"
-                  value={editData.descripcion || ''}
-                  onChange={handleInputChange}
-                  rows={3}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
                     <Building className="w-4 h-4 inline mr-1" />
@@ -382,7 +357,7 @@ export const PurchaseOrderList: React.FC = () => {
                     name="tipo"
                     value={editData.tipo || ''}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="w-full h-[38px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
                     <option value={PurchaseOrderType.LINEA_VIDA}>Línea de Vida</option>
                     <option value={PurchaseOrderType.EQUIPOS}>Equipos</option>
@@ -402,54 +377,54 @@ export const PurchaseOrderList: React.FC = () => {
                     onChange={handleInputChange}
                     step="0.01"
                     min="0"
-                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="w-full h-[38px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              {/* Fila 2: Fecha Requerida y Proveedor (2 columnas) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                    <User className="w-4 h-4 inline mr-1" />
-                    Solicitante
+                    Fecha Requerida
                   </label>
-                  <p className="text-sm text-gray-900 dark:text-white px-3 py-2">{selectedOrder.solicitante.nombre}</p>
+                  <input
+                    type="date"
+                    name="fecha_requerida"
+                    value={editData.fecha_requerida || ''}
+                    onChange={handleInputChange}
+                    className="w-full h-[38px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                    <Calendar className="w-4 h-4 inline mr-1" />
-                    Fecha de Creación
+                    Proveedor
                   </label>
-                  <p className="text-sm text-gray-900 dark:text-white px-3 py-2">{new Date(selectedOrder.fecha_creacion).toLocaleDateString()}</p>
+                  <input
+                    type="text"
+                    name="proveedor"
+                    value={editData.proveedor || ''}
+                    onChange={handleInputChange}
+                    className="w-full h-[38px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
                 </div>
               </div>
 
+              {/* Fila 3: Descripción (ancho completo) */}
               <div>
                 <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                  Proveedor
+                  Descripción
                 </label>
-                <input
-                  type="text"
-                  name="proveedor"
-                  value={editData.proveedor || ''}
+                <textarea
+                  name="descripcion"
+                  value={editData.descripcion || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  rows={3}
+                  className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                  Fecha Requerida
-                </label>
-                <input
-                  type="date"
-                  name="fecha_requerida"
-                  value={editData.fecha_requerida || ''}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
-
+              {/* Fila 4: Observaciones (ancho completo) */}
               <div>
                 <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
                   Observaciones
@@ -458,9 +433,38 @@ export const PurchaseOrderList: React.FC = () => {
                   name="observaciones"
                   value={editData.observaciones || ''}
                   onChange={handleInputChange}
-                  rows={3}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  rows={2}
+                  className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
+              </div>
+
+              {/* Info adicional: Estado, Solicitante y Fecha de Creación (solo lectura) */}
+              <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                      Estado
+                    </label>
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${statusColors[selectedOrder.estado]}`}>
+                      {React.createElement(statusIcons[selectedOrder.estado], { size: 14, className: 'mr-1' })}
+                      {selectedOrder.estado}
+                    </span>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                      <User className="w-4 h-4 inline mr-1" />
+                      Solicitante
+                    </label>
+                    <p className="text-sm text-gray-900 dark:text-white py-1">{selectedOrder.solicitante.nombre}</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                      <Calendar className="w-4 h-4 inline mr-1" />
+                      Fecha de Creación
+                    </label>
+                    <p className="text-sm text-gray-900 dark:text-white py-1">{new Date(selectedOrder.fecha_creacion).toLocaleDateString()}</p>
+                  </div>
+                </div>
               </div>
             </div>
 

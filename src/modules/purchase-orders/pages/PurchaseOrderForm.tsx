@@ -125,7 +125,8 @@ export const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
 
         {/* Formulario */}
         <form onSubmit={handleSubmit} className="p-4 space-y-3">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {/* Fila 1: Código, Tipo y Monto (3 columnas) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {/* Código */}
           <div>
             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -167,29 +168,6 @@ export const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
             </select>
           </div>
 
-          {/* Descripción */}
-          <div className="md:col-span-2">
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Descripción <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              name="descripcion"
-              value={formData.descripcion}
-              onChange={handleInputChange}
-              rows={3}
-              className={`w-full px-3 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
-                errors.descripcion ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
-              }`}
-              placeholder="Describe detalladamente lo que se necesita comprar..."
-            />
-            {errors.descripcion && (
-              <p className="mt-0.5 text-xs text-red-600 flex items-center">
-                <AlertCircle size={12} className="mr-1" />
-                {errors.descripcion}
-              </p>
-            )}
-          </div>
-
           {/* Monto Total */}
           <div>
             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -217,7 +195,10 @@ export const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
               </p>
             )}
           </div>
+        </div>
 
+        {/* Fila 2: Fecha Requerida y Proveedor (2 columnas) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {/* Fecha Requerida */}
           <div>
             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -246,21 +227,44 @@ export const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({
               placeholder="Nombre del proveedor"
             />
           </div>
+        </div>
 
-          {/* Observaciones */}
-          <div className="md:col-span-2">
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Observaciones
-            </label>
-            <textarea
-              name="observaciones"
-              value={formData.observaciones}
-              onChange={handleInputChange}
-              rows={2}
-              className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              placeholder="Observaciones adicionales..."
-            />
-          </div>
+        {/* Fila 3: Descripción (ancho completo) */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Descripción <span className="text-red-500">*</span>
+          </label>
+          <textarea
+            name="descripcion"
+            value={formData.descripcion}
+            onChange={handleInputChange}
+            rows={3}
+            className={`w-full px-3 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
+              errors.descripcion ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+            }`}
+            placeholder="Describe detalladamente lo que se necesita comprar..."
+          />
+          {errors.descripcion && (
+            <p className="mt-0.5 text-xs text-red-600 flex items-center">
+              <AlertCircle size={12} className="mr-1" />
+              {errors.descripcion}
+            </p>
+          )}
+        </div>
+
+        {/* Fila 4: Observaciones (ancho completo) */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Observaciones
+          </label>
+          <textarea
+            name="observaciones"
+            value={formData.observaciones}
+            onChange={handleInputChange}
+            rows={2}
+            className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            placeholder="Observaciones adicionales..."
+          />
         </div>
 
         {/* Botones */}
