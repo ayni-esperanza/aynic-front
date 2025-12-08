@@ -246,6 +246,9 @@ export const RegistroList: React.FC = () => {
 
   const handleCloseCreateModal = useCallback(() => {
     setShowCreateModal(false);
+  }, []);
+
+  const handleCreateSuccess = useCallback(() => {
     refreshDataCallback();
   }, [refreshDataCallback]);
 
@@ -961,7 +964,7 @@ export const RegistroList: React.FC = () => {
       </div>
 
       {/* Estadísticas rápidas */}
-      <div className="grid grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
         <div
           className="cursor-pointer hover:shadow-md active:scale-95 transition-all duration-200"
           onClick={() => {
@@ -1092,83 +1095,86 @@ export const RegistroList: React.FC = () => {
               Filtros rápidos
             </div>
           </div>
-          {/* Top bar: filtros + botones en una sola fila */}
-          <div className="flex items-center gap-2">
-            {/* Código */}
-            <div className="flex-1 min-w-0">
-              <div className="relative">
-                <Search
-                  className="absolute text-gray-400 -translate-y-1/2 left-2 top-1/2"
-                  size={16}
-                  aria-hidden
-                />
-                <Input
-                  id="f-codigo"
-                  placeholder="Código..."
-                  value={searchTerm}
-                  onChange={handleTextFilterChange("codigo", setSearchTerm)}
-                  className="h-9 pl-8 text-sm border-gray-300 dark:border-gray-600 focus:border-[#18D043] focus:ring-[#18D043]/20"
-                />
+          {/* Top bar: filtros + botones */}
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-2">
+            {/* Contenedor de inputs de filtro */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-1 gap-2">
+              {/* Código */}
+              <div className="flex-1 min-w-0">
+                <div className="relative">
+                  <Search
+                    className="absolute text-gray-400 -translate-y-1/2 left-2 top-1/2"
+                    size={16}
+                    aria-hidden
+                  />
+                  <Input
+                    id="f-codigo"
+                    placeholder="Código..."
+                    value={searchTerm}
+                    onChange={handleTextFilterChange("codigo", setSearchTerm)}
+                    className="h-9 pl-8 text-sm border-gray-300 dark:border-gray-600 focus:border-[#18D043] focus:ring-[#18D043]/20"
+                  />
+                </div>
               </div>
-            </div>
 
-            {/* Código Placa */}
-            <div className="flex-1 min-w-0">
-              <div className="relative">
-                <Search
-                  className="absolute text-gray-400 -translate-y-1/2 left-2 top-1/2"
-                  size={16}
-                  aria-hidden
-                />
-                <Input
-                  id="f-codigo-placa"
-                  placeholder="Código placa..."
-                  value={codigoPlacaFilter}
-                  onChange={handleTextFilterChange(
-                    "codigo_placa",
-                    setCodigoPlacaFilter
-                  )}
-                  className="h-9 pl-8 text-sm border-gray-300 dark:border-gray-600 focus:border-[#18D043] focus:ring-[#18D043]/20"
-                />
+              {/* Código Placa */}
+              <div className="flex-1 min-w-0">
+                <div className="relative">
+                  <Search
+                    className="absolute text-gray-400 -translate-y-1/2 left-2 top-1/2"
+                    size={16}
+                    aria-hidden
+                  />
+                  <Input
+                    id="f-codigo-placa"
+                    placeholder="Código placa..."
+                    value={codigoPlacaFilter}
+                    onChange={handleTextFilterChange(
+                      "codigo_placa",
+                      setCodigoPlacaFilter
+                    )}
+                    className="h-9 pl-8 text-sm border-gray-300 dark:border-gray-600 focus:border-[#18D043] focus:ring-[#18D043]/20"
+                  />
+                </div>
               </div>
-            </div>
 
-            {/* Empresa */}
-            <div className="flex-1 min-w-0">
-              <div className="relative">
-                <Search
-                  className="absolute text-gray-400 -translate-y-1/2 left-2 top-1/2"
-                  size={16}
-                  aria-hidden
-                />
-                <Input
-                  id="f-empresa"
-                  placeholder="Empresa..."
-                  value={empresaFilter}
-                  onChange={handleTextFilterChange(
-                    "empresa",
-                    setEmpresaFilter
-                  )}
-                  className="h-9 pl-8 text-sm border-gray-300 dark:border-gray-600 focus:border-[#18D043] focus:ring-[#18D043]/20"
-                />
+              {/* Empresa */}
+              <div className="flex-1 min-w-0">
+                <div className="relative">
+                  <Search
+                    className="absolute text-gray-400 -translate-y-1/2 left-2 top-1/2"
+                    size={16}
+                    aria-hidden
+                  />
+                  <Input
+                    id="f-empresa"
+                    placeholder="Empresa..."
+                    value={empresaFilter}
+                    onChange={handleTextFilterChange(
+                      "empresa",
+                      setEmpresaFilter
+                    )}
+                    className="h-9 pl-8 text-sm border-gray-300 dark:border-gray-600 focus:border-[#18D043] focus:ring-[#18D043]/20"
+                  />
+                </div>
               </div>
-            </div>
 
-            {/* Área */}
-            <div className="flex-1 min-w-0">
-              <div className="relative">
-                <Search
-                  className="absolute text-gray-400 -translate-y-1/2 left-2 top-1/2"
-                  size={16}
-                  aria-hidden
-                />
-                <Input
-                  id="f-area"
-                  placeholder="Área..."
-                  value={areaFilter}
-                  onChange={handleTextFilterChange("area", setAreaFilter)}
-                  className="h-9 pl-8 text-sm border-gray-300 dark:border-gray-600 focus:border-[#18D043] focus:ring-[#18D043]/20"
-                />
+              {/* Área */}
+              <div className="flex-1 min-w-0">
+                <div className="relative">
+                  <Search
+                    className="absolute text-gray-400 -translate-y-1/2 left-2 top-1/2"
+                    size={16}
+                    aria-hidden
+                  />
+                  <Input
+                    id="f-area"
+                    placeholder="Área..."
+                    value={areaFilter}
+                    onChange={handleTextFilterChange("area", setAreaFilter)}
+                    className="h-9 pl-8 text-sm border-gray-300 dark:border-gray-600 focus:border-[#18D043] focus:ring-[#18D043]/20"
+                  />
+                </div>
               </div>
             </div>
 
@@ -1291,9 +1297,9 @@ export const RegistroList: React.FC = () => {
                   : "opacity-0 -translate-y-2 pointer-events-none"
               }`}
             >
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Estado */}
-                <div className="md:col-span-4">
+                <div>
                   <label className="block mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
                     Estado
                   </label>
@@ -1313,7 +1319,7 @@ export const RegistroList: React.FC = () => {
                 </div>
 
                 {/* Equipo */}
-                <div className="md:col-span-4">
+                <div>
                   <label className="block mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
                     Equipo
                   </label>
@@ -1328,7 +1334,7 @@ export const RegistroList: React.FC = () => {
                 </div>
 
                 {/* Ubicación */}
-                <div className="md:col-span-4">
+                <div>
                   <label className="block mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
                     Ubicación
                   </label>
@@ -1343,7 +1349,7 @@ export const RegistroList: React.FC = () => {
                 </div>
 
                 {/* Tipo de Anclaje */}
-                <div className="md:col-span-4">
+                <div>
                   <label className="block mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
                     Tipo de Anclaje
                   </label>
@@ -1365,7 +1371,7 @@ export const RegistroList: React.FC = () => {
                 </div>
 
                 {/* Fechas */}
-                <div className="md:col-span-4">
+                <div>
                   <label className="block mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
                     Fecha instalación (desde)
                   </label>
@@ -1378,7 +1384,7 @@ export const RegistroList: React.FC = () => {
                   />
                 </div>
 
-                <div className="md:col-span-4">
+                <div>
                   <label className="block mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
                     Fecha instalación (hasta)
                   </label>
@@ -1390,9 +1396,10 @@ export const RegistroList: React.FC = () => {
                     min={installDateFrom || undefined}
                   />
                 </div>
+              </div>
 
                 {/* Acciones */}
-                <div className="flex items-center justify-end gap-2 md:col-span-12">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 mt-4">
                   {(searchTerm ||
                     codigoPlacaFilter ||
                     equipoFilter ||
@@ -1432,7 +1439,6 @@ export const RegistroList: React.FC = () => {
                       </Button>
                     )}
                 </div>
-              </div>
             </div>
           </div>
         </div>
@@ -1561,7 +1567,7 @@ export const RegistroList: React.FC = () => {
           style={{ margin: 0 }}
         >
           <div className="relative w-full max-w-[min(90vw,_950px)] max-h-[88vh] overflow-y-auto rounded-2xl bg-white dark:bg-gray-900 shadow-2xl border border-white/10 dark:border-gray-700/60 flex">
-            <RegistroForm onClose={handleCloseCreateModal} />
+            <RegistroForm onClose={handleCloseCreateModal} onSuccess={handleCreateSuccess} />
           </div>
         </div>
       )}

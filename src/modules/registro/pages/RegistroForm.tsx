@@ -256,9 +256,10 @@ const HierarchicalLineTypeSelect: React.FC<{
 
 interface RegistroFormProps {
   onClose?: () => void;
+  onSuccess?: () => void;
 }
 
-export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose }) => {
+export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose, onSuccess }) => {
   const navigate = useNavigate();
   const { success, error: showError } = useToast();
 
@@ -387,6 +388,7 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose }) => {
           "Registro creado exitosamente",
           "Ahora puedes agregar una imagen o finalizar"
         );
+        onSuccess?.();
       },
       onError: (err) => showError("Error al guardar", err),
     }
