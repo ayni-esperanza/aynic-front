@@ -25,7 +25,7 @@ export interface ApiError {
 }
 
 const API_CONFIG = {
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000",
+  baseURL: (import.meta.env.VITE_API_URL || "http://localhost:3001") + "/v1",
   timeout: 10000,
   retries: 3,
 };
