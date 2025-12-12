@@ -89,13 +89,7 @@ export const useUserData = (initialFilters?: UserFilters) => {
 
   const handleDeleteUser = useCallback(
     async (userId: string, userName: string) => {
-      if (
-        confirm(
-          `¿Estás seguro de que quieres eliminar al usuario "${userName}"?`
-        )
-      ) {
-        await deleteUser(userId);
-      }
+      await deleteUser(userId);
     },
     [deleteUser]
   );

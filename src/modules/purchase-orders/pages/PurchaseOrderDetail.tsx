@@ -32,13 +32,11 @@ export const PurchaseOrderDetail: React.FC = () => {
   const handleDelete = async () => {
     if (!purchaseOrder) return;
     
-    if (window.confirm('¿Estás seguro de que quieres eliminar esta orden de compra?')) {
-      try {
-        await purchaseOrderService.delete(purchaseOrder.id);
-        navigate('/ordenes-compra');
-      } catch (error) {
-        console.error('Error al eliminar:', error);
-      }
+    try {
+      await purchaseOrderService.delete(purchaseOrder.id);
+      navigate('/ordenes-compra');
+    } catch (error) {
+      console.error('Error al eliminar:', error);
     }
   };
 
