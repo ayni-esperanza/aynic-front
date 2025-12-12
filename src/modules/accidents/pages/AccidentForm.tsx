@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Button } from '../../../shared/components/ui/Button';
 import { Input } from '../../../shared/components/ui/Input';
 import { SearchableSelect } from '../../../shared/components/ui/SearchableSelect';
-import { X, Upload, Trash2 } from "lucide-react";
+import { ImageUpload } from '../../../shared/components/common/ImageUpload';
+import { X, Upload, Trash2, Info } from "lucide-react";
 import { useToast } from '../../../shared/components/ui/Toast';
 import { useModalClose } from '../../../shared/hooks/useModalClose';
 import { accidentService } from "../services/accidentService";
@@ -29,9 +30,9 @@ interface AccidentFormProps {
 interface FormData {
   linea_vida_id: string | null;
   fecha_accidente: string;
-  descripcion: string;
-  lesiones: string;
-  medidas_correctivas: string;
+  descripcion_incidente: string;
+  persona_involucrada: string;
+  acciones_correctivas: string;
   severidad: SeveridadAccidente;
 }
 
@@ -46,15 +47,16 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
   const { success, error } = useToast();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Partial<FormData>>({});
+  const [createdAccidentId, setCreatedAccidentId] = useState<string | null>(null);
 
   const modalRef = useModalClose({ isOpen, onClose });
 
   const [formData, setFormData] = useState<FormData>({
     linea_vida_id: null,
     fecha_accidente: "",
-    descripcion: "",
-    lesiones: "",
-    medidas_correctivas: "",
+    descripcion_incidente: "",
+    persona_involucrada: "",
+    acciones_correctivas: "",
     severidad: SeveridadAccidente.LEVE,
   });
 
@@ -69,20 +71,22 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
           fecha_accidente: new Date(accident.fecha_accidente)
             .toISOString()
             .split("T")[0],
-          descripcion: accident.descripcion || "",
-          lesiones: accident.lesiones || "",
-          medidas_correctivas: accident.medidas_correctivas || "",
+          descripcion_incidente: accident.descripcion || "",
+          persona_involucrada: accident.lesiones || "",
+          acciones_correctivas: accident.medidas_correctivas || "",
           severidad: accident.severidad,
         });
+        setCreatedAccidentId(null);
       } else {
         setFormData({
           linea_vida_id: null,
           fecha_accidente: "",
-          descripcion: "",
-          lesiones: "",
-          medidas_correctivas: "",
+          descripcion_incidente: "",
+          persona_involucrada: "",
+          acciones_correctivas: "",
           severidad: SeveridadAccidente.LEVE,
         });
+        setCreatedAccidentId(null);
       }
       setErrors({});
     }
@@ -114,19 +118,19 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
       }
     }
 
-    if (!formData.descripcion || !formData.descripcion.trim()) {
-      newErrors.descripcion = "La descripción es obligatoria";
-    } else if (formData.descripcion.length > 2000) {
-      newErrors.descripcion =
+    if (!formData.descripcion_incidente || !formData.descripcion_incidente.trim()) {
+      newErrors.descripcion_incidente = "La descripción es obligatoria";
+    } else if (formData.descripcion_incidente.length > 2000) {
+      newErrors.descripcion_incidente =
         "La descripción no puede exceder 2000 caracteres";
     }
 
     if (
-      formData.medidas_correctivas &&
-      formData.medidas_correctivas.length > 2000
+      formData.acciones_correctivas &&
+      formData.acciones_correctivas.length > 2000
     ) {
-      newErrors.medidas_correctivas =
-        "Las medidas correctivas no pueden exceder 2000 caracteres";
+      newErrors.acciones_correctivas =
+        "Las acciones correctivas no pueden exceder 2000 caracteres";
     }
 
     setErrors(newErrors);
@@ -144,25 +148,25 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
 
     try {
       const submitData: CreateAccidentDto = {
-        linea_vida_id: formData.linea_vida_id!,
+        linea_vida_id: Number(formData.linea_vida_id!),
         fecha_accidente: formData.fecha_accidente,
-        descripcion: formData.descripcion,
-        lesiones: formData.lesiones || undefined,
-        medidas_correctivas: formData.medidas_correctivas || undefined,
+        descripcion_incidente: formData.descripcion_incidente,
+        persona_involucrada: formData.persona_involucrada || undefined,
+        acciones_correctivas: formData.acciones_correctivas || undefined,
         severidad: formData.severidad,
-        estado: accident?.estado || EstadoAccidente.REPORTADO,
       };
 
       if (isEditing) {
-        await accidentService.updateAccident(accident.id, { ...submitData, id: accident.id });
+        await accidentService.updateAccident(accident.id, { ...submitData, id: accident.id } as any);
         success("Éxito", "Accidente actualizado correctamente");
+        onSuccess();
+        onClose();
       } else {
-        await accidentService.createAccident(submitData);
+        const newAccident = await accidentService.createAccident(submitData);
         success("Éxito", "Accidente registrado correctamente");
+        setCreatedAccidentId(newAccident.id);
+        // No cerrar ni llamar onSuccess aquí, dejar que el usuario agregue evidencias si quiere
       }
-
-      onSuccess();
-      onClose();
     } catch (err: any) {
       error("Error", err?.message || "Error al procesar el accidente");
     } finally {
@@ -214,11 +218,6 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
       color: "bg-red-100 text-red-700 border-red-300",
     },
   ];
-
-  const handleFileUpload = () => {
-    // TODO: Implementar upload de archivos
-    console.log("Upload de evidencias");
-  };
 
   if (!isOpen) return null;
 
@@ -290,12 +289,12 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
           <div>
             <div className="grid grid-cols-1 gap-0.5 lg:grid-cols-2">
               <Input
-                label="Lesiones o Daños"
-                value={formData.lesiones}
+                label="Persona Involucrada"
+                value={formData.persona_involucrada}
                 onChange={(e) =>
-                  handleChange("lesiones", e.target.value)
+                  handleChange("persona_involucrada", e.target.value)
                 }
-                placeholder="Describe lesiones o daños (opcional)"
+                placeholder="Nombre de la persona (opcional)"
                 className="!py-2.5 !h-11"
               />
 
@@ -325,16 +324,16 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
               Descripción del Incidente <span className="text-red-500">*</span>
             </label>
             <textarea
-              value={formData.descripcion}
+              value={formData.descripcion_incidente}
               onChange={(e) =>
-                handleChange("descripcion", e.target.value)
+                handleChange("descripcion_incidente", e.target.value)
               }
               placeholder="Describe detalladamente lo que ocurrió durante el accidente..."
               className={`w-full px-3 py-2 border-2 rounded-lg transition-all duration-200 resize-none text-sm
                 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400
                 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500
                 ${
-                  errors.descripcion
+                  errors.descripcion_incidente
                     ? "border-red-300 dark:border-red-600"
                     : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500"
                 }
@@ -343,33 +342,33 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
               maxLength={2000}
             />
             <div className="flex justify-between mt-1">
-              {errors.descripcion && (
+              {errors.descripcion_incidente && (
                 <p className="text-sm text-red-600">
-                  {errors.descripcion}
+                  {errors.descripcion_incidente}
                 </p>
               )}
               <p className="ml-auto text-xs text-gray-500 dark:text-gray-400">
-                {formData.descripcion.length}/2000 caracteres
+                {formData.descripcion_incidente.length}/2000 caracteres
               </p>
             </div>
           </div>
 
-          {/* Medidas Correctivas */}
+          {/* Acciones Correctivas */}
           <div>
             <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-              Medidas Correctivas Tomadas/Propuestas
+              Acciones Correctivas Tomadas/Propuestas
             </label>
             <textarea
-              value={formData.medidas_correctivas}
+              value={formData.acciones_correctivas}
               onChange={(e) =>
-                handleChange("medidas_correctivas", e.target.value)
+                handleChange("acciones_correctivas", e.target.value)
               }
-              placeholder="Describe las medidas correctivas implementadas o que se planean implementar..."
+              placeholder="Describe las acciones correctivas implementadas o que se planean implementar..."
               className={`w-full px-3 py-2 border-2 rounded-lg transition-all duration-200 resize-none text-sm
                 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400
                 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500
                 ${
-                  errors.medidas_correctivas
+                  errors.acciones_correctivas
                     ? "border-red-300 dark:border-red-600"
                     : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500"
                 }
@@ -378,38 +377,43 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
               maxLength={2000}
             />
             <div className="flex justify-between mt-1">
-              {errors.medidas_correctivas && (
+              {errors.acciones_correctivas && (
                 <p className="text-sm text-red-600">
-                  {errors.medidas_correctivas}
+                  {errors.acciones_correctivas}
                 </p>
               )}
               <p className="ml-auto text-xs text-gray-500 dark:text-gray-400">
-                {formData.medidas_correctivas.length}/2000 caracteres
+                {formData.acciones_correctivas.length}/2000 caracteres
               </p>
             </div>
           </div>
 
           {/* Evidencias */}
           <div>
-            <div>
-              <label className="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
-                Evidencias Fotográficas o Documentales
-              </label>
-              <div
-                className="p-1 text-center transition-colors border-2 border-gray-300 dark:border-gray-600 border-dashed cursor-pointer rounded-md hover:border-gray-400 dark:hover:border-gray-500 bg-white dark:bg-gray-700/40"
-                onClick={handleFileUpload}
-              >
-                <div className="flex flex-col items-center">
-                  <Upload className="w-4 h-4 mb-0 text-gray-400 dark:text-gray-300" />
-                  <p className="font-medium text-gray-600 dark:text-gray-200 text-[10px]">
-                    Haga clic para seleccionar archivos
-                  </p>
-                  <p className="mt-0 text-[9px] text-gray-500 dark:text-gray-400">
-                    PNG, JPG, PDF hasta 5MB por archivo
-                  </p>
-                </div>
+            <label className="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
+              Evidencias Fotográficas o Documentales
+            </label>
+            {(isEditing && accident) || createdAccidentId ? (
+              <ImageUpload
+                recordId={createdAccidentId || accident?.id || ''}
+                recordCode={`ACCIDENTE-${createdAccidentId || accident?.id}`}
+                onImageUploaded={() => {
+                  success("Éxito", "Imagen subida correctamente");
+                }}
+                onImageDeleted={() => {
+                  success("Éxito", "Imagen eliminada correctamente");
+                }}
+                disabled={loading}
+                className="mt-2"
+              />
+            ) : (
+              <div className="p-4 text-center bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <Info className="w-5 h-5 mx-auto mb-2 text-blue-600 dark:text-blue-400" />
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  Después de registrar el accidente podrás agregar evidencias fotográficas
+                </p>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Botones */}
@@ -432,18 +436,25 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
               <Button
                 type="button"
                 variant="outline"
-                onClick={onClose}
+                onClick={() => {
+                  if (createdAccidentId) {
+                    onSuccess();
+                  }
+                  onClose();
+                }}
                 disabled={loading}
               >
-                Cancelar
+                {createdAccidentId ? "Finalizar" : "Cancelar"}
               </Button>
-              <Button
-                type="submit"
-                loading={loading}
-                className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
-              >
-                {isEditing ? "Actualizar Accidente" : "Registrar Accidente"}
-              </Button>
+              {!createdAccidentId && (
+                <Button
+                  type="submit"
+                  loading={loading}
+                  className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
+                >
+                  {isEditing ? "Actualizar Accidente" : "Registrar Accidente"}
+                </Button>
+              )}
             </div>
           </div>
         </form>

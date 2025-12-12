@@ -282,17 +282,17 @@ export const AccidentsList: React.FC = () => {
       render: (value) => `#${value}`,
     },
     {
-      key: "lineaVida",
+      key: "linea_vida_codigo",
       label: "Línea de Vida",
       sortable: false,
       render: (value, record) => (
         <div>
           <div className="font-medium text-gray-900 dark:text-white">
-            {record.lineaVida?.codigo || `ID: ${record.linea_vida_id}`}
+            {record.linea_vida_codigo || `ID: ${record.linea_vida_id}`}
           </div>
-          {record.lineaVida?.cliente && (
-            <div className="text-sm text-gray-500">
-              {record.lineaVida.cliente}
+          {record.linea_vida_cliente && (
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              {record.linea_vida_cliente}
             </div>
           )}
         </div>
@@ -305,19 +305,19 @@ export const AccidentsList: React.FC = () => {
       render: (value) => formatDate(value as Date),
     },
     {
-      key: "descripcion_incidente",
+      key: "descripcion",
       label: "Descripción",
       sortable: false,
       render: (value) => (
         <div className="max-w-xs">
-          <p className="truncate" title={value as string}>
+          <p className="truncate text-gray-900 dark:text-white" title={value as string}>
             {value as string}
           </p>
         </div>
       ),
     },
     {
-      key: "persona_involucrada",
+      key: "lesiones",
       label: "Persona Involucrada",
       sortable: false,
       render: (value) => value || "-",

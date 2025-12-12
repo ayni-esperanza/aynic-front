@@ -392,11 +392,11 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           <div className="p-4">
             <div className="flex items-start justify-between mb-3">
               <div className="flex-1">
-                <h4 className="mb-1 font-medium text-gray-900">
+                <h4 className="mb-1 font-medium text-gray-900 dark:text-white">
                   {currentImage.original_name}
                 </h4>
                 {currentImage.description && (
-                  <p className="mb-2 text-sm text-gray-600">
+                  <p className="mb-2 text-sm text-gray-600 dark:text-gray-300">
                     {currentImage.description}
                   </p>
                 )}
@@ -420,7 +420,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             </div>
 
             {currentImage.compression_info && (
-              <div className="p-2 text-xs text-gray-500 rounded bg-gray-50">
+              <div className="p-2 text-xs text-gray-500 dark:text-gray-400 rounded bg-gray-50 dark:bg-gray-700">
                 <div className="flex items-center mb-1 space-x-1">
                   <Info size={12} />
                   <span className="font-medium">
@@ -451,7 +451,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
       {/* Vista previa del archivo seleccionado - NO MOSTRAR EN READONLY */}
       {!readOnly && previewFile && (
-        <Card className="border-blue-200 bg-blue-50">
+        <Card className="border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20">
           <div className="p-4">
             <div className="flex items-center justify-between mb-4">
               <h4 className="font-medium text-blue-900">
@@ -484,7 +484,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                 <div>
                   <label className="block mb-1 text-sm font-medium text-blue-900">
                     Descripción{" "}
-                    <span className="text-gray-500">(opcional)</span>
+                    <span className="text-gray-500 dark:text-gray-400">(opcional)</span>
                   </label>
                   <Input
                     value={description}
@@ -548,22 +548,22 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             {loadingImage ? (
               <div className="space-y-4">
                 <LoadingSpinner size="lg" />
-                <p className="text-gray-600">Verificando imagen...</p>
+                <p className="text-gray-600 dark:text-gray-300">Verificando imagen...</p>
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="flex items-center justify-center w-16 h-16 mx-auto bg-gray-100 rounded-full">
-                  <ImageIcon className="w-8 h-8 text-gray-400" />
+                <div className="flex items-center justify-center w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-700 rounded-full">
+                  <ImageIcon className="w-8 h-8 text-gray-400 dark:text-gray-500" />
                 </div>
 
                 <div>
-                  <h4 className="mb-2 text-lg font-medium text-gray-900">
+                  <h4 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">
                     Subir imagen del registro
                   </h4>
-                  <p className="mb-4 text-gray-600">
+                  <p className="mb-4 text-gray-600 dark:text-gray-300">
                     Arrastra una imagen aquí o haz clic para seleccionar
                   </p>
-                  <p className="mb-4 text-sm text-gray-500">
+                  <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
                     Formatos admitidos: JPG, JPEG, PNG • Máximo 10MB
                     <br />
                     La imagen será comprimida automáticamente para optimizar el
@@ -592,15 +592,15 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
       {/* MENSAJE CUANDO NO HAY IMAGEN EN MODO READONLY */}
       {readOnly && !currentImage && (
-        <Card className="border-2 border-gray-300 border-dashed">
+        <Card className="border-2 border-gray-300 dark:border-gray-600 border-dashed">
           <div className="p-16 text-center">
-            <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full">
-              <ImageIcon className="w-10 h-10 text-gray-400" />
+            <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 bg-gray-100 dark:bg-gray-700 rounded-full">
+              <ImageIcon className="w-10 h-10 text-gray-400 dark:text-gray-500" />
             </div>
-            <h4 className="mb-3 text-xl font-medium text-gray-900">
+            <h4 className="mb-3 text-xl font-medium text-gray-900 dark:text-white">
               Sin imagen disponible
             </h4>
-            <p className="max-w-sm mx-auto text-gray-500">
+            <p className="max-w-sm mx-auto text-gray-500 dark:text-gray-400">
               No se ha asociado ninguna imagen a este registro.
             </p>
           </div>

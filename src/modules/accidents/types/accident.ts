@@ -16,21 +16,26 @@ export enum SeveridadAccidente {
 export interface BackendAccident {
   id: number;
   linea_vida_id: number | null;
-  linea_vida_codigo: string | null;
-  linea_vida_cliente: string | null;
-  linea_vida_ubicacion: string | null;
   fecha_accidente: string;
-  descripcion: string;
+  descripcion_incidente: string;
   estado: string;
   severidad: string;
-  lesiones: string | null;
-  testigos: string | null;
-  medidas_correctivas: string | null;
-  fecha_investigacion: string | null;
-  investigador: string | null;
-  conclusiones: string | null;
-  created_at: string;
-  updated_at: string;
+  persona_involucrada: string | null;
+  acciones_correctivas: string | null;
+  evidencias_urls: string | null;
+  fecha_creacion: string;
+  reportado_por: number | null;
+  lineaVida?: {
+    id: number;
+    codigo: string;
+    cliente: string;
+    ubicacion: string;
+  };
+  usuario?: {
+    id: number;
+    nombre: string;
+    apellidos: string;
+  };
 }
 
 export interface BackendAccidentStatistics {
@@ -71,21 +76,22 @@ export interface Accident {
   conclusiones: string | null;
   created_at: string;
   updated_at: string;
+  usuario?: {
+    id: number;
+    nombre: string;
+    apellidos: string;
+  };
 }
 
 // DTO para crear accidente
 export interface CreateAccidentDto {
-  linea_vida_id: string;
+  linea_vida_id: number;
   fecha_accidente: string;
-  descripcion: string;
-  estado: EstadoAccidente;
-  severidad: SeveridadAccidente;
-  lesiones?: string;
-  testigos?: string;
-  medidas_correctivas?: string;
-  fecha_investigacion?: string;
-  investigador?: string;
-  conclusiones?: string;
+  descripcion_incidente: string;
+  persona_involucrada?: string;
+  acciones_correctivas?: string;
+  evidencias_urls?: string[];
+  severidad?: SeveridadAccidente;
 }
 
 // DTO para actualizar accidente
