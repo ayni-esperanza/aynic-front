@@ -69,7 +69,7 @@ const TableRow = <T extends Record<string, unknown>>({
           return (
             <td
               key={String(column.key)}
-              className={`${cellBaseClass} whitespace-nowrap transition-all duration-200 group-hover:scale-[1.01] ${
+              className={`${cellBaseClass} whitespace-nowrap ${
                 colIndex === 0 ? firstColumnClass : otherColumnClass
               } ${column.width ? String(column.width) : ""}`}
             >
