@@ -4,6 +4,7 @@ import { Card } from '../../../shared/components/ui/Card';
 import { Badge } from '../../../shared/components/ui/Badge';
 import { DataTable } from '../../../shared/components/common/DataTable';
 import { useToast } from '../../../shared/components/ui/Toast';
+import { ConfirmDeleteModal } from '../../../shared/components/ui/ConfirmDeleteModal';
 import { AccidentStats } from "../components/AccidentStats";
 import { AccidentFilters } from "../components/AccidentFilters";
 import { AccidentForm } from "./AccidentForm";
@@ -42,6 +43,9 @@ export const AccidentsList: React.FC = () => {
   const [selectedAccident, setSelectedAccident] = useState<
     Accident | undefined
   >();
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [accidentToDelete, setAccidentToDelete] = useState<number | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Función para cargar accidentes
   const loadAccidents = async (newFilters?: FilterType) => {
@@ -182,22 +186,26 @@ export const AccidentsList: React.FC = () => {
   };
 
   const handleDeleteAccident = async (accidentId: number) => {
-    if (
-      !confirm(
-        `¿Estás seguro de que deseas eliminar el accidente #${accidentId}?`
-      )
-    ) {
-      return;
-    }
+    setAccidentToDelete(accidentId);
+    setShowConfirmDelete(true);
+  };
 
+  const handleConfirmDelete = async () => {
+    if (!accidentToDelete) return;
+
+    setDeleting(true);
     try {
-      await accidentService.deleteAccident(accidentId);
+      await accidentService.deleteAccident(accidentToDelete);
       success("Éxito", "Accidente eliminado correctamente");
       loadAccidents();
       setShowForm(false);
       setSelectedAccident(undefined);
     } catch (err) {
       error("Error", "No se pudo eliminar el accidente");
+    } finally {
+      setDeleting(false);
+      setShowConfirmDelete(false);
+      setAccidentToDelete(null);
     }
   };
 
@@ -393,6 +401,20 @@ export const AccidentsList: React.FC = () => {
         onSuccess={handleFormSuccess}
         onDelete={handleDeleteAccident}
         lineasVida={lineasVida}
+      />
+
+      {/* Modal de confirmación de eliminación */}
+      <ConfirmDeleteModal
+        isOpen={showConfirmDelete}
+        onClose={() => {
+          setShowConfirmDelete(false);
+          setAccidentToDelete(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        loading={deleting}
+        title="Eliminar Accidente"
+        message="¿Estás seguro de que deseas eliminar este accidente?"
+        itemName={accidentToDelete ? `#${accidentToDelete}` : undefined}
       />
     </div>
   );

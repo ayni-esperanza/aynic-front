@@ -9,21 +9,39 @@ interface RegistroDetailModalProps {
   registroId: string;
   onDelete: (registro: DataRecord) => void;
   onCreateDerivadas: (registro: DataRecord) => void;
+  registro?: DataRecord;
+  deleting?: boolean;
 }
 
 export const RegistroDetailModal: React.FC<RegistroDetailModalProps> = ({
   isOpen,
   onClose,
   registroId,
+  onDelete,
+  registro,
+  deleting = false,
 }) => {
   const modalRef = useModalClose({ isOpen, onClose });
+
+  const handleDelete = () => {
+    if (registro) {
+      onClose(); // Cerrar la modal principal primero
+      onDelete(registro);
+    }
+  };
 
   if (!isOpen) return null;
 
   return (
     <div ref={modalRef} className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center px-4 py-6 bg-black/70 backdrop-blur-sm" style={{ margin: 0 }}>
-      <div className="relative w-full max-w-[min(90vw,_950px)] max-h-[88vh] overflow-y-auto rounded-2xl bg-white dark:bg-gray-900 shadow-2xl border border-white/10 dark:border-gray-700/60 flex">
-        <EditarRegistroForm registroId={registroId} onClose={onClose} />
+      <div className="relative w-full max-w-[min(90vw,_950px)] max-h-[88vh] overflow-y-auto rounded-2xl bg-white dark:bg-gray-900 shadow-2xl border border-white/10 dark:border-gray-700/60 flex flex-col">
+        <EditarRegistroForm 
+          registroId={registroId} 
+          onClose={onClose}
+          onDelete={handleDelete}
+          deleting={deleting}
+          showDeleteButton={true}
+        />
       </div>
     </div>
   );

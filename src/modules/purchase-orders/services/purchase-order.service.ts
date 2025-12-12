@@ -3,8 +3,6 @@ import {
   PurchaseOrder,
   CreatePurchaseOrderData,
   UpdatePurchaseOrderData,
-  PurchaseOrderStatus,
-  PurchaseOrderType,
 } from '../types';
 
 const BASE_URL = '/purchase-orders';
@@ -22,12 +20,21 @@ export const purchaseOrderService = {
 
   // Crear una nueva orden de compra
   async create(data: CreatePurchaseOrderData): Promise<PurchaseOrder> {
-    return await apiClient.post<PurchaseOrder>(BASE_URL, data);
+    // Solo enviamos campos permitidos por el backend
+    const payload: CreatePurchaseOrderData = {
+      numero: data.numero,
+      termino_referencias: data.termino_referencias ?? null,
+    };
+    return await apiClient.post<PurchaseOrder>(BASE_URL, payload);
   },
 
   // Actualizar una orden de compra
   async update(id: number, data: UpdatePurchaseOrderData): Promise<PurchaseOrder> {
-    return await apiClient.patch<PurchaseOrder>(`${BASE_URL}/${id}`, data);
+    const payload: UpdatePurchaseOrderData = {
+      numero: data.numero,
+      termino_referencias: data.termino_referencias ?? null,
+    };
+    return await apiClient.patch<PurchaseOrder>(`${BASE_URL}/${id}`, payload);
   },
 
   // Eliminar una orden de compra
@@ -35,33 +42,5 @@ export const purchaseOrderService = {
     await apiClient.delete(`${BASE_URL}/${id}`);
   },
 
-  // Obtener órdenes por estado
-  async getByStatus(status: PurchaseOrderStatus): Promise<PurchaseOrder[]> {
-    return await apiClient.get<PurchaseOrder[]>(`${BASE_URL}/status/${status}`);
-  },
-
-  // Obtener órdenes por tipo
-  async getByType(type: PurchaseOrderType): Promise<PurchaseOrder[]> {
-    return await apiClient.get<PurchaseOrder[]>(`${BASE_URL}/type/${type}`);
-  },
-
-  // Aprobar una orden de compra
-  async approve(id: number): Promise<PurchaseOrder> {
-    return this.update(id, { estado: PurchaseOrderStatus.APPROVED });
-  },
-
-  // Rechazar una orden de compra
-  async reject(id: number): Promise<PurchaseOrder> {
-    return this.update(id, { estado: PurchaseOrderStatus.REJECTED });
-  },
-
-  // Completar una orden de compra
-  async complete(id: number): Promise<PurchaseOrder> {
-    return this.update(id, { estado: PurchaseOrderStatus.COMPLETED });
-  },
-
-  // Cancelar una orden de compra
-  async cancel(id: number): Promise<PurchaseOrder> {
-    return this.update(id, { estado: PurchaseOrderStatus.CANCELLED });
-  },
+  // Métodos adicionales removidos porque el backend no los soporta actualmente
 };

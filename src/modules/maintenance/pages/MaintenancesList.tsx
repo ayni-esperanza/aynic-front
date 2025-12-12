@@ -6,6 +6,7 @@ import { Card } from '../../../shared/components/ui/Card';
 import { useToast } from '../../../shared/components/ui/Toast';
 import { usePaginatedApi, useMutation, useApi } from '../../../shared/hooks/useApi';
 import { useModalClose } from '../../../shared/hooks/useModalClose';
+import { ConfirmDeleteModal } from '../../../shared/components/ui/ConfirmDeleteModal';
 import { maintenanceService } from "../services/maintenanceService";
 import { formatDate, formatDateTime } from "../../../shared/utils/formatters";
 import { MaintenanceForm } from "./MaintenanceForm";
@@ -66,6 +67,8 @@ const MaintenanceDetailModal: React.FC<{
   onDelete?: (id: number) => void;
   deleting?: boolean;
 }> = ({ maintenance, open, onClose, onDelete, deleting }) => {
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  
   if (!open || !maintenance) return null;
   const modalRef = useModalClose({ isOpen: open, onClose });
 
@@ -75,136 +78,152 @@ const MaintenanceDetailModal: React.FC<{
     : 0;
   const isLengthIncrease = lengthChange > 0;
 
+  const handleConfirmDelete = () => {
+    if (onDelete) {
+      onDelete(maintenance.id);
+      setShowConfirmDelete(false);
+    }
+  };
+
   return (
-    <div ref={modalRef} className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" style={{ margin: 0 }}>
-      <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-green-500 to-green-600">
-          <div>
-            <h2 className="text-base font-bold text-white">Detalle de Mantenimiento</h2>
-            <p className="text-xs text-green-100">{formatDate(maintenance.maintenance_date)}</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-white transition-colors hover:text-green-200"
-            disabled={deleting}
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="p-4 space-y-4">
-          {/* Línea de Vida */}
-          {maintenance.record && (
-            <Card>
-              <div className="flex items-center mb-3 space-x-2">
-                <Building className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Línea de Vida</h3>
-              </div>
-              <div className="space-y-2">
-                <div>
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Código</p>
-                  <p className="text-sm text-gray-900 dark:text-white">{maintenance.record.codigo}</p>
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Cliente</p>
-                  <p className="text-sm text-gray-900 dark:text-white">{maintenance.record.cliente}</p>
-                </div>
-                {maintenance.record.ubicacion && (
-                  <div>
-                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Ubicación</p>
-                    <p className="text-sm text-gray-900 dark:text-white">{maintenance.record.ubicacion}</p>
-                  </div>
-                )}
-              </div>
-            </Card>
-          )}
-
-          {/* Descripción */}
-          {maintenance.description && (
-            <Card>
-              <div className="flex items-center mb-3 space-x-2">
-                <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Descripción</h3>
-              </div>
-              <p className="text-sm text-gray-700 dark:text-gray-300">{maintenance.description}</p>
-            </Card>
-          )}
-
-          {/* Cambio de longitud */}
-          {hasLengthChange && (
-            <Card>
-              <div className="flex items-center mb-3 space-x-2">
-                {isLengthIncrease ? (
-                  <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
-                ) : (
-                  <TrendingDown className="w-4 h-4 text-red-600 dark:text-red-400" />
-                )}
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Cambio de Longitud</h3>
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                <div className="text-center">
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Anterior</p>
-                  <p className="text-lg font-bold text-gray-900 dark:text-white">{maintenance.previous_length_meters}m</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Nueva</p>
-                  <p className="text-lg font-bold text-gray-900 dark:text-white">{maintenance.new_length_meters}m</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Cambio</p>
-                  <p className={`text-lg font-bold ${isLengthIncrease ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                    {isLengthIncrease ? '+' : ''}{lengthChange.toFixed(1)}m
-                  </p>
-                </div>
-              </div>
-            </Card>
-          )}
-
-          {/* Registrado por */}
-          <Card>
-            <div className="flex items-center mb-3 space-x-2">
-              <User className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Registrado por</h3>
+    <>
+      <div ref={modalRef} className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" style={{ margin: 0 }}>
+        <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl">
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-green-500 to-green-600">
+            <div>
+              <h2 className="text-base font-bold text-white">Detalle de Mantenimiento</h2>
+              <p className="text-xs text-green-100">{formatDate(maintenance.maintenance_date)}</p>
             </div>
-            <div className="space-y-1">
-              <p className="text-sm text-gray-900 dark:text-white">
-                {maintenance.user ? `${maintenance.user.nombre} ${maintenance.user.apellidos}` : 'Sistema'}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{formatDateTime(maintenance.created_at)}</p>
-            </div>
-          </Card>
-        </div>
-
-        {/* Footer */}
-        <div className="flex justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            disabled={deleting}
-          >
-            Cerrar
-          </Button>
-          {onDelete && (
-            <Button
-              variant="danger"
-              size="sm"
-              icon={Trash2}
-              onClick={() => {
-                if (window.confirm(`¿Eliminar mantenimiento del ${formatDate(maintenance.maintenance_date)}?`)) {
-                  onDelete(maintenance.id);
-                }
-              }}
+            <button
+              onClick={onClose}
+              className="text-white transition-colors hover:text-green-200"
               disabled={deleting}
             >
-              {deleting ? 'Eliminando...' : 'Eliminar'}
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="p-4 space-y-4">
+            {/* Línea de Vida */}
+            {maintenance.record && (
+              <Card>
+                <div className="flex items-center mb-3 space-x-2">
+                  <Building className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Línea de Vida</h3>
+                </div>
+                <div className="space-y-2">
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Código</p>
+                    <p className="text-sm text-gray-900 dark:text-white">{maintenance.record.codigo}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Cliente</p>
+                    <p className="text-sm text-gray-900 dark:text-white">{maintenance.record.cliente}</p>
+                  </div>
+                  {maintenance.record.ubicacion && (
+                    <div>
+                      <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Ubicación</p>
+                      <p className="text-sm text-gray-900 dark:text-white">{maintenance.record.ubicacion}</p>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            )}
+
+            {/* Descripción */}
+            {maintenance.description && (
+              <Card>
+                <div className="flex items-center mb-3 space-x-2">
+                  <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Descripción</h3>
+                </div>
+                <p className="text-sm text-gray-700 dark:text-gray-300">{maintenance.description}</p>
+              </Card>
+            )}
+
+            {/* Cambio de longitud */}
+            {hasLengthChange && (
+              <Card>
+                <div className="flex items-center mb-3 space-x-2">
+                  {isLengthIncrease ? (
+                    <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+                  ) : (
+                    <TrendingDown className="w-4 h-4 text-red-600 dark:text-red-400" />
+                  )}
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Cambio de Longitud</h3>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="text-center">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Anterior</p>
+                    <p className="text-lg font-bold text-gray-900 dark:text-white">{maintenance.previous_length_meters}m</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Nueva</p>
+                    <p className="text-lg font-bold text-gray-900 dark:text-white">{maintenance.new_length_meters}m</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Cambio</p>
+                    <p className={`text-lg font-bold ${isLengthIncrease ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                      {isLengthIncrease ? '+' : ''}{lengthChange.toFixed(1)}m
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            )}
+
+            {/* Registrado por */}
+            <Card>
+              <div className="flex items-center mb-3 space-x-2">
+                <User className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Registrado por</h3>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm text-gray-900 dark:text-white">
+                  {maintenance.user ? `${maintenance.user.nombre} ${maintenance.user.apellidos}` : 'Sistema'}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{formatDateTime(maintenance.created_at)}</p>
+              </div>
+            </Card>
+          </div>
+
+          {/* Footer */}
+          <div className="flex justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              disabled={deleting}
+            >
+              Cerrar
             </Button>
-          )}
+            {onDelete && (
+              <Button
+                variant="danger"
+                size="sm"
+                icon={Trash2}
+                onClick={() => setShowConfirmDelete(true)}
+                disabled={deleting}
+              >
+                {deleting ? 'Eliminando...' : 'Eliminar'}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Modal de confirmación */}
+      <ConfirmDeleteModal
+        isOpen={showConfirmDelete}
+        onClose={() => setShowConfirmDelete(false)}
+        onConfirm={handleConfirmDelete}
+        loading={deleting}
+        title="Eliminar Mantenimiento"
+        message="¿Estás seguro de que deseas eliminar este mantenimiento del"
+        itemName={formatDate(maintenance.maintenance_date)}
+      />
+    </>
   );
 };
 /* ================================================ */

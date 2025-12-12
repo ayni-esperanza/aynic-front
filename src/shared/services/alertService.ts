@@ -412,16 +412,15 @@ class AlertService {
       );
       return this.mapBackendStatsToFrontend(response);
     } catch (error) {
+      // Propaga errores relevantes para que el UI pueda mostrarlos
+      if (error instanceof ApiClientError && error.status === 403) {
+        throw new Error(
+          "No tienes permisos para ver el dashboard de alertas. Solicita acceso de administrador."
+        );
+      }
+
       console.error("Error fetching dashboard summary:", error);
-      // Retornar datos por defecto en caso de error
-      return {
-        total: 0,
-        noLeidas: 0,
-        porTipo: [],
-        porPrioridad: [],
-        recientes: [],
-        criticas: [],
-      };
+      throw error;
     }
   }
 

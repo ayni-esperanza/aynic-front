@@ -9,6 +9,7 @@ export * from './ui/Select';
 export * from './ui/LoadingSpinner';
 export * from './ui/Toast';
 export * from './ui/SearchableSelect';
+export * from './ui/ConfirmDeleteModal';
 
 // Componentes comunes
 export * from './common/DataTable';

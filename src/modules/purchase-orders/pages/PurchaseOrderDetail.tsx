@@ -1,31 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Edit, Trash2, CheckCircle, XCircle, Clock, CheckSquare, User, Calendar, DollarSign, Package, FileText } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, XCircle, Calendar, FileText } from 'lucide-react';
 import { purchaseOrderService } from '../services';
-import { PurchaseOrder, PurchaseOrderStatus, PurchaseOrderType } from '../types';
-
-const statusColors = {
-  [PurchaseOrderStatus.PENDING]: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-  [PurchaseOrderStatus.APPROVED]: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-  [PurchaseOrderStatus.REJECTED]: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-  [PurchaseOrderStatus.COMPLETED]: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-  [PurchaseOrderStatus.CANCELLED]: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
-};
-
-const statusIcons = {
-  [PurchaseOrderStatus.PENDING]: Clock,
-  [PurchaseOrderStatus.APPROVED]: CheckCircle,
-  [PurchaseOrderStatus.REJECTED]: XCircle,
-  [PurchaseOrderStatus.COMPLETED]: CheckSquare,
-  [PurchaseOrderStatus.CANCELLED]: XCircle,
-};
-
-const typeLabels = {
-  [PurchaseOrderType.LINEA_VIDA]: 'Línea de Vida',
-  [PurchaseOrderType.EQUIPOS]: 'Equipos',
-  [PurchaseOrderType.ACCESORIOS]: 'Accesorios',
-  [PurchaseOrderType.SERVICIOS]: 'Servicios',
-};
+import { PurchaseOrder } from '../types';
 
 export const PurchaseOrderDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -92,8 +69,6 @@ export const PurchaseOrderDetail: React.FC = () => {
     );
   }
 
-  const StatusIcon = statusIcons[purchaseOrder.estado];
-
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
@@ -107,7 +82,7 @@ export const PurchaseOrderDetail: React.FC = () => {
           </button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Orden de Compra</h1>
-            <p className="text-gray-600 dark:text-gray-400">Detalles de la orden {purchaseOrder.codigo}</p>
+            <p className="text-gray-600 dark:text-gray-400">Detalles de la orden {purchaseOrder.numero || 'Sin código'}</p>
           </div>
         </div>
         
@@ -136,112 +111,46 @@ export const PurchaseOrderDetail: React.FC = () => {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Código</label>
-              <p className="text-lg font-semibold text-gray-900 dark:text-white">{purchaseOrder.codigo}</p>
+              <p className="text-lg font-semibold text-gray-900 dark:text-white">{purchaseOrder.numero || '—'}</p>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Estado</label>
-              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusColors[purchaseOrder.estado]}`}>
-                <StatusIcon size={16} className="mr-2" />
-                {purchaseOrder.estado}
-              </span>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Tipo</label>
-              <p className="text-gray-900 dark:text-white flex items-center">
-                <Package size={16} className="mr-2 text-gray-500 dark:text-gray-400" />
-                {typeLabels[purchaseOrder.tipo]}
-              </p>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Monto Total</label>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
-                <DollarSign size={20} className="mr-2 text-green-600 dark:text-green-400" />
-                ${purchaseOrder.monto_total.toLocaleString()}
-              </p>
+              <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Términos / Referencias</label>
+              <p className="text-gray-900 dark:text-white">{purchaseOrder.termino_referencias || '—'}</p>
             </div>
           </div>
 
           {/* Columna derecha */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Solicitante</label>
-              <p className="text-gray-900 dark:text-white flex items-center">
-                <User size={16} className="mr-2 text-gray-500 dark:text-gray-400" />
-                {purchaseOrder.solicitante.nombre}
-              </p>
-            </div>
-            
-            {purchaseOrder.aprobador && (
-              <div>
-                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Aprobador</label>
-                <p className="text-gray-900 dark:text-white flex items-center">
-                  <User size={16} className="mr-2 text-gray-500 dark:text-gray-400" />
-                  {purchaseOrder.aprobador.nombre}
-                </p>
-              </div>
-            )}
-            
-            <div>
               <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Fecha de Creación</label>
               <p className="text-gray-900 dark:text-white flex items-center">
                 <Calendar size={16} className="mr-2 text-gray-500 dark:text-gray-400" />
-                {new Date(purchaseOrder.fecha_creacion).toLocaleDateString()}
+                {purchaseOrder.created_at ? new Date(purchaseOrder.created_at).toLocaleDateString() : '—'}
               </p>
             </div>
-            
-            {purchaseOrder.fecha_aprobacion && (
-              <div>
-                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Fecha de Aprobación</label>
-                <p className="text-gray-900 dark:text-white flex items-center">
-                  <Calendar size={16} className="mr-2 text-gray-500 dark:text-gray-400" />
-                  {new Date(purchaseOrder.fecha_aprobacion).toLocaleDateString()}
-                </p>
-              </div>
-            )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Actualizada el</label>
+              <p className="text-gray-900 dark:text-white flex items-center">
+                <Calendar size={16} className="mr-2 text-gray-500 dark:text-gray-400" />
+                {purchaseOrder.updated_at ? new Date(purchaseOrder.updated_at).toLocaleDateString() : '—'}
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Descripción */}
+      {/* Descripción básica */}
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
         <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
           <FileText size={20} className="mr-2 text-gray-500 dark:text-gray-400" />
-          Descripción
+          Detalle
         </h3>
-        <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{purchaseOrder.descripcion}</p>
+        <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+          {purchaseOrder.termino_referencias || 'Sin términos registrados'}
+        </p>
       </div>
-
-      {/* Información adicional */}
-      {(purchaseOrder.proveedor || purchaseOrder.observaciones || purchaseOrder.fecha_requerida) && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Información Adicional</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {purchaseOrder.proveedor && (
-              <div>
-                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Proveedor</label>
-                <p className="text-gray-900 dark:text-white">{purchaseOrder.proveedor}</p>
-              </div>
-            )}
-            
-            {purchaseOrder.fecha_requerida && (
-              <div>
-                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Fecha Requerida</label>
-                <p className="text-gray-900 dark:text-white">{new Date(purchaseOrder.fecha_requerida).toLocaleDateString()}</p>
-              </div>
-            )}
-            
-            {purchaseOrder.observaciones && (
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Observaciones</label>
-                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{purchaseOrder.observaciones}</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -1,65 +1,35 @@
 import React, { useState } from 'react';
-import { Plus, Search, Filter, CheckCircle, XCircle, Clock, CheckSquare, FileText, Building, User, DollarSign, Calendar, Trash2, Save } from 'lucide-react';
+import { Plus, Search, Filter, XCircle, FileText, Trash2, Save } from 'lucide-react';
 import { usePurchaseOrders } from '../hooks';
-import { PurchaseOrder, PurchaseOrderStatus, PurchaseOrderType } from '../types';
+import { PurchaseOrder } from '../types';
 import { PurchaseOrderForm } from './PurchaseOrderForm';
 import { useModalClose } from '../../../shared/hooks/useModalClose';
+import { ConfirmDeleteModal } from '../../../shared/components/ui/ConfirmDeleteModal';
 
-const statusColors = {
-  [PurchaseOrderStatus.PENDING]: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-  [PurchaseOrderStatus.APPROVED]: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-  [PurchaseOrderStatus.REJECTED]: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-  [PurchaseOrderStatus.COMPLETED]: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-  [PurchaseOrderStatus.CANCELLED]: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
-};
-
-const statusIcons = {
-  [PurchaseOrderStatus.PENDING]: Clock,
-  [PurchaseOrderStatus.APPROVED]: CheckCircle,
-  [PurchaseOrderStatus.REJECTED]: XCircle,
-  [PurchaseOrderStatus.COMPLETED]: CheckSquare,
-  [PurchaseOrderStatus.CANCELLED]: XCircle,
-};
-
-const typeLabels = {
-  [PurchaseOrderType.LINEA_VIDA]: 'Línea de Vida',
-  [PurchaseOrderType.EQUIPOS]: 'Equipos',
-  [PurchaseOrderType.ACCESORIOS]: 'Accesorios',
-  [PurchaseOrderType.SERVICIOS]: 'Servicios',
-};
+// Sin estados/tipos porque el backend solo expone numero y termino_referencias
 
 export const PurchaseOrderList: React.FC = () => {
   const { purchaseOrders, loading, error, deletePurchaseOrder, createPurchaseOrder, updatePurchaseOrder } = usePurchaseOrders();
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<PurchaseOrderStatus | ''>('');
-  const [typeFilter, setTypeFilter] = useState<PurchaseOrderType | ''>('');
   const [showFormModal, setShowFormModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<PurchaseOrder | null>(null);
-  const [editData, setEditData] = useState<any>({});
+  const [editData, setEditData] = useState<Partial<PurchaseOrder>>({});
   const [hasChanges, setHasChanges] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const filteredOrders = purchaseOrders.filter(order => {
-    const matchesSearch = order.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.proveedor?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = !statusFilter || order.estado === statusFilter;
-    const matchesType = !typeFilter || order.tipo === typeFilter;
-
-    return matchesSearch && matchesStatus && matchesType;
+    const matchesSearch = (order.numero?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+                         (order.termino_referencias?.toLowerCase() || '').includes(searchTerm.toLowerCase());
+    return matchesSearch;
   });
 
   const handleViewOrder = (order: PurchaseOrder) => {
     setSelectedOrder(order);
     setEditData({
-      codigo: order.codigo,
-      descripcion: order.descripcion,
-      tipo: order.tipo,
-      monto_total: order.monto_total,
-      proveedor: order.proveedor || '',
-      fecha_requerida: order.fecha_requerida || '',
-      observaciones: order.observaciones || '',
+      numero: order.numero || '',
+      termino_referencias: order.termino_referencias || '',
     });
     setHasChanges(false);
     setShowDetailModal(true);
@@ -74,20 +44,29 @@ export const PurchaseOrderList: React.FC = () => {
     onClose: handleCloseDetailModal,
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setEditData((prev: any) => ({
+    setEditData((prev) => ({
       ...prev,
-      [name]: name === 'monto_total' ? parseFloat(value) || 0 : value,
+      [name]: value,
     }));
     setHasChanges(true);
   };
 
   const handleSaveChanges = async () => {
     if (!selectedOrder) return;
-    
+    const payload: Partial<PurchaseOrder> = {
+      numero: (editData.numero || '').trim(),
+      termino_referencias: (editData.termino_referencias || '').trim(),
+    };
+
+    if (!payload.numero) {
+      alert('El código es obligatorio.');
+      return;
+    }
+
     try {
-      await updatePurchaseOrder(selectedOrder.id, editData);
+      await updatePurchaseOrder(selectedOrder.id, payload);
       setShowDetailModal(false);
       setHasChanges(false);
     } catch (error) {
@@ -95,14 +74,22 @@ export const PurchaseOrderList: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar esta orden de compra?')) {
-      try {
-        await deletePurchaseOrder(id);
-        setShowDetailModal(false);
-      } catch (error) {
-        console.error('Error al eliminar:', error);
-      }
+  const handleDelete = async () => {
+    setShowConfirmDelete(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedOrder) return;
+    
+    setDeleting(true);
+    try {
+      await deletePurchaseOrder(selectedOrder.id);
+      setShowDetailModal(false);
+    } catch (error) {
+      console.error('Error al eliminar:', error);
+    } finally {
+      setDeleting(false);
+      setShowConfirmDelete(false);
     }
   };
 
@@ -152,7 +139,7 @@ export const PurchaseOrderList: React.FC = () => {
             Filtros rápidos
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Buscar
@@ -161,47 +148,12 @@ export const PurchaseOrderList: React.FC = () => {
               <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
               <input
                 type="text"
-                placeholder="Código, descripción o proveedor..."
+                placeholder="Código o términos de referencia..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
               />
             </div>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Estado
-            </label>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as PurchaseOrderStatus | '')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            >
-              <option value="" className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">Todos los estados</option>
-              <option value={PurchaseOrderStatus.PENDING} className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">Pendiente</option>
-              <option value={PurchaseOrderStatus.APPROVED} className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">Aprobada</option>
-              <option value={PurchaseOrderStatus.REJECTED} className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">Rechazada</option>
-              <option value={PurchaseOrderStatus.COMPLETED} className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">Completada</option>
-              <option value={PurchaseOrderStatus.CANCELLED} className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">Cancelada</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Tipo
-            </label>
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value as PurchaseOrderType | '')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            >
-              <option value="" className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">Todos los tipos</option>
-              <option value={PurchaseOrderType.LINEA_VIDA} className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">Línea de Vida</option>
-              <option value={PurchaseOrderType.EQUIPOS} className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">Equipos</option>
-              <option value={PurchaseOrderType.ACCESORIOS} className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">Accesorios</option>
-              <option value={PurchaseOrderType.SERVICIOS} className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">Servicios</option>
-            </select>
           </div>
         </div>
       </div>
@@ -216,28 +168,19 @@ export const PurchaseOrderList: React.FC = () => {
                   Código
                 </th>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Descripción
+                  Términos/Referencias
                 </th>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Tipo
-                </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Estado
-                </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Monto
-                </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Solicitante
-                </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Fecha
+                  Creada el
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {filteredOrders.map((order) => {
-                const StatusIcon = statusIcons[order.estado];
+                const fechaRaw = order.created_at || order.updated_at;
+                const fechaCreacion = fechaRaw ? new Date(fechaRaw).toLocaleDateString() : '—';
+                const codigo = order.numero ?? '—';
+                const descripcion = order.termino_referencias ?? '—';
                 return (
                   <tr 
                     key={order.id} 
@@ -245,34 +188,15 @@ export const PurchaseOrderList: React.FC = () => {
                     className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
                   >
                     <td className="px-4 py-2 whitespace-nowrap">
-                      <span className="text-xs font-medium text-gray-900 dark:text-white">{order.codigo}</span>
+                      <span className="text-xs font-medium text-gray-900 dark:text-white">{codigo}</span>
                     </td>
                     <td className="px-4 py-2">
-                      <div className="text-xs text-gray-900 dark:text-white max-w-xs truncate" title={order.descripcion}>
-                        {order.descripcion}
+                      <div className="text-xs text-gray-900 dark:text-white max-w-xs truncate" title={descripcion}>
+                        {descripcion}
                       </div>
                     </td>
                     <td className="px-4 py-2 whitespace-nowrap">
-                      <span className="text-xs text-gray-600 dark:text-gray-400">{typeLabels[order.tipo]}</span>
-                    </td>
-                    <td className="px-4 py-2 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${statusColors[order.estado]}`}>
-                        <StatusIcon size={13} className="mr-1" />
-                        {order.estado}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2 whitespace-nowrap">
-                      <span className="text-xs font-medium text-gray-900 dark:text-white">
-                        ${order.monto_total.toLocaleString()}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2 whitespace-nowrap">
-                      <span className="text-xs text-gray-600 dark:text-gray-400">{order.solicitante.nombre}</span>
-                    </td>
-                    <td className="px-4 py-2 whitespace-nowrap">
-                      <span className="text-xs text-gray-600 dark:text-gray-400">
-                        {new Date(order.fecha_creacion).toLocaleDateString()}
-                      </span>
+                      <span className="text-xs text-gray-600 dark:text-gray-400">{fechaCreacion}</span>
                     </td>
                   </tr>
                 );
@@ -288,10 +212,9 @@ export const PurchaseOrderList: React.FC = () => {
             </div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No se encontraron órdenes</h3>
             <p className="text-gray-600 dark:text-gray-400">
-              {searchTerm || statusFilter || typeFilter 
-                ? 'Intenta ajustar los filtros de búsqueda'
-                : 'No hay órdenes de compra registradas aún'
-              }
+              {searchTerm
+                ? 'Intenta ajustar la búsqueda'
+                : 'No hay órdenes de compra registradas aún'}
             </p>
           </div>
         )}
@@ -309,6 +232,12 @@ export const PurchaseOrderList: React.FC = () => {
 
       {/* Modal de detalle */}
       {showDetailModal && selectedOrder && (
+        (() => {
+          const numero = editData.numero ?? selectedOrder.numero ?? '';
+          const termino = editData.termino_referencias ?? selectedOrder.termino_referencias ?? '';
+          const fechaCreacion = selectedOrder.created_at ? new Date(selectedOrder.created_at).toLocaleDateString() : '—';
+          const fechaActualizacion = selectedOrder.updated_at ? new Date(selectedOrder.updated_at).toLocaleDateString() : '—';
+          return (
         <div
           ref={detailModalRef}
           className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
@@ -321,7 +250,7 @@ export const PurchaseOrderList: React.FC = () => {
                 <FileText className="w-5 h-5 text-white" />
                 <div>
                   <h2 className="text-base font-bold text-white">Detalle de Orden de Compra</h2>
-                  <p className="text-xs text-blue-100">{selectedOrder.codigo}</p>
+                    <p className="text-xs text-blue-100">{selectedOrder.numero || 'Sin código'}</p>
                 </div>
               </div>
               <button
@@ -334,136 +263,45 @@ export const PurchaseOrderList: React.FC = () => {
 
             {/* Contenido */}
             <div className="p-4 space-y-3">
-              {/* Fila 1: Código, Tipo y Monto (3 columnas) */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
                     Código
                   </label>
                   <input
                     type="text"
-                    name="codigo"
-                    value={editData.codigo || ''}
+                    name="numero"
+                    value={numero}
                     onChange={handleInputChange}
                     className="w-full h-[38px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                    <Building className="w-4 h-4 inline mr-1" />
-                    Tipo
-                  </label>
-                  <select
-                    name="tipo"
-                    value={editData.tipo || ''}
-                    onChange={handleInputChange}
-                    className="w-full h-[38px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  >
-                    <option value={PurchaseOrderType.LINEA_VIDA}>Línea de Vida</option>
-                    <option value={PurchaseOrderType.EQUIPOS}>Equipos</option>
-                    <option value={PurchaseOrderType.ACCESORIOS}>Accesorios</option>
-                    <option value={PurchaseOrderType.SERVICIOS}>Servicios</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                    <DollarSign className="w-4 h-4 inline mr-1" />
-                    Monto Total
-                  </label>
-                  <input
-                    type="number"
-                    name="monto_total"
-                    value={editData.monto_total || 0}
-                    onChange={handleInputChange}
-                    step="0.01"
-                    min="0"
-                    className="w-full h-[38px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
-              </div>
-
-              {/* Fila 2: Fecha Requerida y Proveedor (2 columnas) */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                    Fecha Requerida
-                  </label>
-                  <input
-                    type="date"
-                    name="fecha_requerida"
-                    value={editData.fecha_requerida || ''}
-                    onChange={handleInputChange}
-                    className="w-full h-[38px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                    Proveedor
+                    Términos / Referencias
                   </label>
                   <input
                     type="text"
-                    name="proveedor"
-                    value={editData.proveedor || ''}
+                    name="termino_referencias"
+                    value={termino}
                     onChange={handleInputChange}
                     className="w-full h-[38px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
               </div>
 
-              {/* Fila 3: Descripción (ancho completo) */}
-              <div>
-                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                  Descripción
-                </label>
-                <textarea
-                  name="descripcion"
-                  value={editData.descripcion || ''}
-                  onChange={handleInputChange}
-                  rows={3}
-                  className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
-
-              {/* Fila 4: Observaciones (ancho completo) */}
-              <div>
-                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                  Observaciones
-                </label>
-                <textarea
-                  name="observaciones"
-                  value={editData.observaciones || ''}
-                  onChange={handleInputChange}
-                  rows={2}
-                  className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#18D043] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
-
-              {/* Info adicional: Estado, Solicitante y Fecha de Creación (solo lectura) */}
-              <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                      Estado
-                    </label>
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${statusColors[selectedOrder.estado]}`}>
-                      {React.createElement(statusIcons[selectedOrder.estado], { size: 14, className: 'mr-1' })}
-                      {selectedOrder.estado}
-                    </span>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                      <User className="w-4 h-4 inline mr-1" />
-                      Solicitante
-                    </label>
-                    <p className="text-sm text-gray-900 dark:text-white py-1">{selectedOrder.solicitante.nombre}</p>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                      <Calendar className="w-4 h-4 inline mr-1" />
-                      Fecha de Creación
-                    </label>
-                    <p className="text-sm text-gray-900 dark:text-white py-1">{new Date(selectedOrder.fecha_creacion).toLocaleDateString()}</p>
-                  </div>
+              <div className="pt-3 border-t border-gray-200 dark:border-gray-700 grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                    Creada el
+                  </label>
+                  <p className="text-sm text-gray-900 dark:text-white py-1">{fechaCreacion}</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                    Actualizada el
+                  </label>
+                  <p className="text-sm text-gray-900 dark:text-white py-1">{fechaActualizacion}</p>
                 </div>
               </div>
             </div>
@@ -471,11 +309,12 @@ export const PurchaseOrderList: React.FC = () => {
             {/* Footer con botón eliminar y guardar */}
             <div className="flex items-center justify-between space-x-3 px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
               <button
-                onClick={() => handleDelete(selectedOrder.id)}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center text-sm"
+                onClick={handleDelete}
+                disabled={deleting}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Trash2 size={16} className="mr-2" />
-                Eliminar
+                {deleting ? 'Eliminando...' : 'Eliminar'}
               </button>
               
               {hasChanges && (
@@ -491,7 +330,20 @@ export const PurchaseOrderList: React.FC = () => {
             </div>
           </div>
         </div>
+          );
+        })()
       )}
+
+      {/* Modal de confirmación de eliminación */}
+      <ConfirmDeleteModal
+        isOpen={showConfirmDelete}
+        onClose={() => setShowConfirmDelete(false)}
+        onConfirm={handleConfirmDelete}
+        loading={deleting}
+        title="Eliminar Orden de Compra"
+        message="¿Estás seguro de que deseas eliminar esta orden de compra?"
+        itemName={selectedOrder?.numero}
+      />
     </div>
   );
 };

@@ -29,11 +29,6 @@ export type {
   PurchaseOrder,
   CreatePurchaseOrderData,
   UpdatePurchaseOrderData,
-  PurchaseOrderFilters,
-  PurchaseOrderStats,
-  PurchaseOrderStatus,
-  PurchaseOrderType,
-  User,
 } from './types';
 
 // Default export para lazy loading

@@ -9,6 +9,7 @@ import {
   Plus,
   Check,
   Camera,
+  Trash2,
 } from "lucide-react";
 import { Button } from '../../../shared/components/ui/Button';
 import { Card } from '../../../shared/components/ui/Card';
@@ -233,9 +234,18 @@ const HierarchicalLineTypeSelect: React.FC<{
 interface EditarRegistroFormProps {
   onClose?: () => void;
   registroId?: string;
+  onDelete?: () => void;
+  deleting?: boolean;
+  showDeleteButton?: boolean;
 }
 
-export const EditarRegistroForm: React.FC<EditarRegistroFormProps> = ({ onClose, registroId }) => {
+export const EditarRegistroForm: React.FC<EditarRegistroFormProps> = ({ 
+  onClose, 
+  registroId,
+  onDelete,
+  deleting = false,
+  showDeleteButton = false,
+}) => {
   const navigate = useNavigate();
   const { id: routeId } = useParams<{ id?: string }>();
   const recordId = registroId ?? routeId;
@@ -1277,7 +1287,21 @@ export const EditarRegistroForm: React.FC<EditarRegistroFormProps> = ({ onClose,
 
             {/* BOTONES */}
             <div className={`flex justify-between border-t border-gray-200 dark:border-gray-700 ${footerSpacingClass}`}>
-              <div>
+              <div className="flex gap-2">
+                {/* Botón de eliminar */}
+                {showDeleteButton && onDelete && (
+                  <Button
+                    type="button"
+                    variant="danger"
+                    onClick={onDelete}
+                    icon={Trash2}
+                    disabled={updating || deleting}
+                    size={buttonSizeClass as "sm" | "md" | "lg"}
+                  >
+                    {deleting ? 'Eliminando...' : 'Eliminar'}
+                  </Button>
+                )}
+                
                 {/* Solo mostrar "Anterior" si no estamos en el paso 4 con imagen subida */}
                 {currentStep > 1 && !(currentStep === 4 && hasImage) && (
                   <Button

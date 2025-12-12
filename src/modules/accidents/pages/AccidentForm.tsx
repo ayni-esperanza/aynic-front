@@ -392,19 +392,19 @@ export const AccidentForm: React.FC<AccidentFormProps> = ({
           {/* Evidencias */}
           <div>
             <div>
-              <label className="block mb-2 text-sm font-semibold text-gray-700">
+              <label className="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
                 Evidencias Fotográficas o Documentales
               </label>
               <div
-                className="p-1 text-center transition-colors border-2 border-gray-300 border-dashed cursor-pointer rounded-md hover:border-gray-400"
+                className="p-1 text-center transition-colors border-2 border-gray-300 dark:border-gray-600 border-dashed cursor-pointer rounded-md hover:border-gray-400 dark:hover:border-gray-500 bg-white dark:bg-gray-700/40"
                 onClick={handleFileUpload}
               >
                 <div className="flex flex-col items-center">
-                  <Upload className="w-4 h-4 mb-0 text-gray-400" />
-                  <p className="font-medium text-gray-600 text-[10px]">
+                  <Upload className="w-4 h-4 mb-0 text-gray-400 dark:text-gray-300" />
+                  <p className="font-medium text-gray-600 dark:text-gray-200 text-[10px]">
                     Haga clic para seleccionar archivos
                   </p>
-                  <p className="mt-0 text-[9px] text-gray-500">
+                  <p className="mt-0 text-[9px] text-gray-500 dark:text-gray-400">
                     PNG, JPG, PDF hasta 5MB por archivo
                   </p>
                 </div>

@@ -41,15 +41,15 @@ const JsonDataView: React.FC<{
     <div className="mt-3">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center space-x-2 text-sm font-medium text-gray-600 hover:text-gray-800"
+        className="flex items-center space-x-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
       >
         {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
         <span>{title}</span>
       </button>
 
       {isExpanded && (
-        <div className="p-3 mt-2 border rounded-lg bg-gray-50">
-          <pre className="overflow-x-auto text-xs text-gray-800 whitespace-pre-wrap">
+        <div className="p-3 mt-2 border dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700">
+          <pre className="overflow-x-auto text-xs text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
             {JSON.stringify(data, null, 2)}
           </pre>
         </div>
@@ -104,7 +104,7 @@ const MovementHistoryItem: React.FC<{
   };
 
   return (
-    <div className="p-4 transition-shadow bg-white border border-gray-200 rounded-lg hover:shadow-md">
+    <div className="p-4 transition-shadow bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md">
       <div className="flex items-start justify-between">
         <div className="flex items-start space-x-3">
           {/* Icono de acción */}
@@ -123,19 +123,19 @@ const MovementHistoryItem: React.FC<{
                 {movement.action_label}
               </Badge>
               {movement.record_code && (
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-gray-500 dark:text-gray-400">
                   {movement.record_code}
                 </span>
               )}
             </div>
 
             {/* Descripción */}
-            <p className="mt-1 font-medium text-gray-900">
+            <p className="mt-1 font-medium text-gray-900 dark:text-white">
               {movement.description}
             </p>
 
             {/* Metadatos */}
-            <div className="flex items-center mt-2 space-x-4 text-sm text-gray-500">
+            <div className="flex items-center mt-2 space-x-4 text-sm text-gray-500 dark:text-gray-400">
               <span className="flex items-center space-x-1">
                 <Users size={14} />
                 <span>{movement.user_display_name}</span>
@@ -145,7 +145,7 @@ const MovementHistoryItem: React.FC<{
                 <span>{movement.formatted_date}</span>
               </span>
               {movement.ip_address && (
-                <span className="px-2 py-1 text-xs bg-gray-100 rounded">
+                <span className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 dark:text-gray-300 rounded">
                   IP: {movement.ip_address}
                 </span>
               )}
@@ -168,7 +168,7 @@ const MovementHistoryItem: React.FC<{
 
       {/* Detalles expandibles */}
       {showDetails && (
-        <div className="pt-4 mt-4 border-t border-gray-200">
+        <div className="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
           <JsonDataView
             title="Ver datos eliminados"
             data={movement.previous_values}
@@ -180,14 +180,14 @@ const MovementHistoryItem: React.FC<{
 
           {movement.changed_fields && movement.changed_fields.length > 0 && (
             <div className="mt-3">
-              <h4 className="mb-2 text-sm font-medium text-gray-600">
+              <h4 className="mb-2 text-sm font-medium text-gray-600 dark:text-gray-300">
                 Campos modificados:
               </h4>
               <div className="flex flex-wrap gap-1">
                 {movement.changed_fields.map((field, index) => (
                   <span
                     key={index}
-                    className="px-2 py-1 text-xs text-blue-800 bg-blue-100 rounded"
+                    className="px-2 py-1 text-xs text-blue-800 dark:text-blue-200 bg-blue-100 dark:bg-blue-900 rounded"
                   >
                     {field}
                   </span>
@@ -205,10 +205,10 @@ const MovementHistoryItem: React.FC<{
 
           {movement.user_agent && (
             <div className="mt-3">
-              <h4 className="mb-1 text-sm font-medium text-gray-600">
+              <h4 className="mb-1 text-sm font-medium text-gray-600 dark:text-gray-300">
                 Navegador:
               </h4>
-              <p className="p-2 font-mono text-xs text-gray-500 rounded bg-gray-50">
+              <p className="p-2 font-mono text-xs text-gray-500 dark:text-gray-400 rounded bg-gray-50 dark:bg-gray-700">
                 {movement.user_agent}
               </p>
             </div>
@@ -254,10 +254,10 @@ const PaginationComponent: React.FC<PaginationComponentProps> = React.memo(
     }
 
     return (
-      <div className="flex flex-col items-center justify-between px-6 py-4 mt-6 space-y-4 bg-white border border-gray-200 shadow-sm sm:flex-row sm:space-y-0 rounded-xl">
+      <div className="flex flex-col items-center justify-between px-6 py-4 mt-6 space-y-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm sm:flex-row sm:space-y-0 rounded-xl">
         {/* Información de registros */}
         <div className="flex items-center space-x-4">
-          <div className="px-3 py-2 text-sm text-gray-700 rounded-lg bg-gray-50">
+          <div className="px-3 py-2 text-sm text-gray-700 dark:text-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700">
             <span className="font-medium">
               {Math.min(
                 (pagination.currentPage - 1) * 10 + 1,
@@ -265,18 +265,18 @@ const PaginationComponent: React.FC<PaginationComponentProps> = React.memo(
               )}{" "}
               - {Math.min(pagination.currentPage * 10, pagination.totalItems)}
             </span>
-            <span className="text-gray-500"> de </span>
+            <span className="text-gray-500 dark:text-gray-400"> de </span>
             <span className="font-medium">{pagination.totalItems}</span>
-            <span className="text-gray-500"> registros</span>
+            <span className="text-gray-500 dark:text-gray-400"> registros</span>
           </div>
 
-          <div className="px-3 py-2 text-sm text-gray-500 rounded-lg bg-blue-50">
+          <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-300 rounded-lg bg-blue-50 dark:bg-blue-900/30">
             Página{" "}
-            <span className="font-medium text-blue-600">
+            <span className="font-medium text-blue-600 dark:text-blue-400">
               {pagination.currentPage}
             </span>{" "}
             de{" "}
-            <span className="font-medium text-blue-600">
+            <span className="font-medium text-blue-600 dark:text-blue-400">
               {pagination.totalPages}
             </span>
           </div>
@@ -303,12 +303,12 @@ const PaginationComponent: React.FC<PaginationComponentProps> = React.memo(
                 <button
                   onClick={() => handlePageChange(1)}
                   disabled={loading}
-                  className="px-3 py-2 text-sm font-medium text-gray-700 transition-all duration-200 rounded-lg hover:bg-gray-100 disabled:opacity-50"
+                  className="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 transition-all duration-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
                 >
                   1
                 </button>
                 {startPage > 2 && (
-                  <span className="px-2 text-sm text-gray-500">...</span>
+                  <span className="px-2 text-sm text-gray-500 dark:text-gray-400">...</span>
                 )}
               </>
             )}
@@ -322,7 +322,7 @@ const PaginationComponent: React.FC<PaginationComponentProps> = React.memo(
                 className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 ${
                   pageNumber === pagination.currentPage
                     ? "bg-gradient-to-r from-[#18D043] to-[#16a34a] text-white shadow-lg shadow-[#18D043]/25"
-                    : "text-gray-700 hover:bg-gray-100"
+                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 }`}
               >
                 {pageNumber}
@@ -333,12 +333,12 @@ const PaginationComponent: React.FC<PaginationComponentProps> = React.memo(
             {endPage < totalPages && (
               <>
                 {endPage < totalPages - 1 && (
-                  <span className="px-2 text-sm text-gray-500">...</span>
+                  <span className="px-2 text-sm text-gray-500 dark:text-gray-400">...</span>
                 )}
                 <button
                   onClick={() => handlePageChange(totalPages)}
                   disabled={loading}
-                  className="px-3 py-2 text-sm font-medium text-gray-700 transition-all duration-200 rounded-lg hover:bg-gray-100 disabled:opacity-50"
+                  className="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 transition-all duration-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
                 >
                   {totalPages}
                 </button>
@@ -778,7 +778,7 @@ export const HistorialList: React.FC = () => {
             <div className="relative">
               <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#18D043]/20 border-t-[#18D043]"></div>
             </div>
-            <p className="ml-4 font-medium text-gray-600">
+            <p className="ml-4 font-medium text-gray-600 dark:text-gray-300">
               Cargando movimientos...
             </p>
           </div>
@@ -786,14 +786,14 @@ export const HistorialList: React.FC = () => {
 
         {error && (
           <div className="flex flex-col items-center justify-center h-64 space-y-4">
-            <div className="flex items-center justify-center w-16 h-16 bg-red-100 rounded-full">
+            <div className="flex items-center justify-center w-16 h-16 bg-red-100 dark:bg-red-900/40 rounded-full">
               <span className="text-2xl">⚠️</span>
             </div>
             <div className="text-center">
-              <p className="mb-2 text-lg font-medium text-gray-900">
+              <p className="mb-2 text-lg font-medium text-gray-900 dark:text-white">
                 Error al cargar el historial
               </p>
-              <p className="mb-4 text-gray-600">{error}</p>
+              <p className="mb-4 text-gray-600 dark:text-gray-400">{error}</p>
               <Button onClick={handleRetry} variant="outline">
                 Reintentar
               </Button>

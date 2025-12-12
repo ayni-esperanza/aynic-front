@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { purchaseOrderService } from '../services';
-import { PurchaseOrder, PurchaseOrderStatus, PurchaseOrderType } from '../types';
+import { PurchaseOrder } from '../types';
 
 export const usePurchaseOrders = () => {
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
@@ -66,22 +66,6 @@ export const usePurchaseOrders = () => {
     }
   }, []);
 
-  const approvePurchaseOrder = useCallback(async (id: number) => {
-    return updatePurchaseOrder(id, { estado: PurchaseOrderStatus.APPROVED });
-  }, [updatePurchaseOrder]);
-
-  const rejectPurchaseOrder = useCallback(async (id: number) => {
-    return updatePurchaseOrder(id, { estado: PurchaseOrderStatus.REJECTED });
-  }, [updatePurchaseOrder]);
-
-  const completePurchaseOrder = useCallback(async (id: number) => {
-    return updatePurchaseOrder(id, { estado: PurchaseOrderStatus.COMPLETED });
-  }, [updatePurchaseOrder]);
-
-  const cancelPurchaseOrder = useCallback(async (id: number) => {
-    return updatePurchaseOrder(id, { estado: PurchaseOrderStatus.CANCELLED });
-  }, [updatePurchaseOrder]);
-
   useEffect(() => {
     fetchPurchaseOrders();
   }, [fetchPurchaseOrders]);
@@ -94,9 +78,5 @@ export const usePurchaseOrders = () => {
     createPurchaseOrder,
     updatePurchaseOrder,
     deletePurchaseOrder,
-    approvePurchaseOrder,
-    rejectPurchaseOrder,
-    completePurchaseOrder,
-    cancelPurchaseOrder,
   };
 };

@@ -457,7 +457,7 @@ export const RegistroList: React.FC = () => {
 
     return (
       <div className="flex flex-col items-center justify-center px-4 py-16">
-        <div className="flex items-center justify-center w-20 h-20 mb-6 bg-gray-100 rounded-full">
+        <div className="flex items-center justify-center w-20 h-20 mb-6 bg-gray-100 dark:bg-gray-800 rounded-full">
           <span className="text-3xl">🔍</span>
         </div>
         <div className="max-w-md text-center">
@@ -466,17 +466,17 @@ export const RegistroList: React.FC = () => {
           </h3>
           {hasActiveFilters ? (
             <div className="space-y-2">
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 No hay registros que coincidan con los criterios de búsqueda
                 aplicados.
               </p>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 Intenta ajustar o eliminar algunos filtros para obtener más
                 resultados.
               </p>
             </div>
           ) : (
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-400">
               No hay registros de líneas de vida disponibles en el sistema.
             </p>
           )}
@@ -538,7 +538,7 @@ export const RegistroList: React.FC = () => {
             <div>
               <div className="font-semibold text-gray-900 dark:text-white">{String(value)}</div>
               {recordImages.has(registro.id) && (
-                <div className="text-xs text-orange-600">Con imagen</div>
+                <div className="text-xs text-orange-600 dark:text-orange-400">Con imagen</div>
               )}
             </div>
           </div>
@@ -655,7 +655,7 @@ export const RegistroList: React.FC = () => {
         render: (value: any) => {
           if (!value) {
             return (
-              <span className="text-xs italic text-gray-400">No seleccionado</span>
+              <span className="text-xs italic text-gray-400 dark:text-gray-500">No seleccionado</span>
             );
           }
           
@@ -745,10 +745,10 @@ export const RegistroList: React.FC = () => {
           if (!value) {
             return (
               <div className="text-sm">
-                <div className="font-medium text-gray-400">
+                <div className="font-medium text-gray-400 dark:text-gray-500">
                   No registrada
                 </div>
-                <div className="text-xs text-gray-400">
+                <div className="text-xs text-gray-400 dark:text-gray-500">
                   Sin fecha
                 </div>
               </div>
@@ -766,7 +766,7 @@ export const RegistroList: React.FC = () => {
                 {formatDate(fecha)}
               </div>
               <div
-                className={`text-xs ${isVencido ? "text-red-500" : "text-gray-500"
+                className={`text-xs ${isVencido ? "text-red-500 dark:text-red-400" : "text-gray-500 dark:text-gray-400"
                   }`}
               >
                 {isVencido ? "Vencido" : "Programado"}
@@ -919,7 +919,7 @@ export const RegistroList: React.FC = () => {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <LoadingSpinner size="lg" />
-          <p className="mt-4 text-gray-600">Cargando registros...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Cargando registros...</p>
         </div>
       </div>
     );
@@ -1578,9 +1578,10 @@ export const RegistroList: React.FC = () => {
           isOpen={showDetailModal}
           onClose={handleCloseDetailModal}
           registroId={selectedRecord.id}
+          registro={selectedRecord}
+          deleting={deleting}
           onDelete={(registro) => {
             handleDeleteRegistro(registro);
-            setShowDetailModal(false);
           }}
           onCreateDerivadas={(registro) => {
             handleCreateDerivadas(registro);
