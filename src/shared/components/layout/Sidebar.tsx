@@ -276,9 +276,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
       <div className="flex items-center justify-between p-2.5 border-b border-gray-200 dark:border-gray-700">
         {!isCollapsed ? (
           <>
-            <h1 className="text-base font-bold text-gray-900 dark:text-white">
-              AyniLine
-            </h1>
+            <div className="flex items-center gap-2">
+              <img 
+                src="/favicon.png" 
+                alt="Logo" 
+                className="w-6 h-6"
+              />
+              <h1 className="text-base font-bold text-gray-900 dark:text-white">
+                Líneas de Vida 
+              </h1>
+            </div>
             <button
               onClick={onToggle}
               className="p-1.5 transition-all duration-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 group"
