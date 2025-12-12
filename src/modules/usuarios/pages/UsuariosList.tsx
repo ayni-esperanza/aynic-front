@@ -140,25 +140,6 @@ export const UsuariosList: React.FC = () => {
           return <Badge variant={variants[rol]}>{labels[rol]}</Badge>;
         },
       },
-      {
-        key: "apellidos",
-        label: "Apellidos",
-        render: (value: any) =>
-          value ? (
-            <span className="text-gray-900 dark:text-white">{String(value)}</span>
-          ) : (
-            <span className="text-sm text-gray-400">-</span>
-          ),
-      },
-      {
-        key: "activo",
-        label: "Estado",
-        render: (value: any) => (
-          <Badge variant={value ? "success" : "secondary"}>
-            {value ? "Activo" : "Inactivo"}
-          </Badge>
-        ),
-      },
     ],
     []
   );
