@@ -18,14 +18,14 @@ import { Input } from '../../../shared/components/ui/Input';
 import { Select } from '../../../shared/components/ui/Select';
 import { useToast } from '../../../shared/components/ui/Toast';
 import { SearchableSelect } from '../../../shared/components/ui/SearchableSelect';
-import {
-  movementHistoryService,
-  type MovementHistory,
-  type MovementFilters,
-  type MovementStatistics,
-  type ActionOption,
-  type MovementAction,
-} from "../services/movementHistoryService";
+import { movementHistoryService } from "../services/movementHistoryService";
+import type {
+  MovementHistory,
+  MovementFilters,
+  MovementStatistics,
+  ActionOption,
+  MovementAction,
+} from "../types/movement";
 
 // Componente para mostrar datos JSON expandibles
 const JsonDataView: React.FC<{
@@ -184,7 +184,7 @@ const MovementHistoryItem: React.FC<{
                 Campos modificados:
               </h4>
               <div className="flex flex-wrap gap-1">
-                {movement.changed_fields.map((field, index) => (
+                {movement.changed_fields.map((field: string, index: number) => (
                   <span
                     key={index}
                     className="px-2 py-1 text-xs text-blue-800 dark:text-blue-200 bg-blue-100 dark:bg-blue-900 rounded"
@@ -254,11 +254,11 @@ const PaginationComponent: React.FC<PaginationComponentProps> = React.memo(
     }
 
     return (
-      <div className="flex flex-col items-center justify-between px-6 py-4 mt-6 space-y-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm sm:flex-row sm:space-y-0 rounded-xl">
+      <div className="flex flex-col items-center justify-between px-4 py-3 mt-6 space-y-3 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-700 border-t border-gray-200 dark:border-gray-600 shadow-sm sm:flex-row sm:space-y-0 rounded-lg">
         {/* Información de registros */}
-        <div className="flex items-center space-x-4">
-          <div className="px-3 py-2 text-sm text-gray-700 dark:text-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700">
-            <span className="font-medium">
+        <div className="flex items-center space-x-3">
+          <div className="px-2.5 py-1.5 text-xs text-gray-700 dark:text-gray-200 rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600">
+            <span className="font-semibold">
               {Math.min(
                 (pagination.currentPage - 1) * 10 + 1,
                 pagination.totalItems
@@ -266,31 +266,31 @@ const PaginationComponent: React.FC<PaginationComponentProps> = React.memo(
               - {Math.min(pagination.currentPage * 10, pagination.totalItems)}
             </span>
             <span className="text-gray-500 dark:text-gray-400"> de </span>
-            <span className="font-medium">{pagination.totalItems}</span>
+            <span className="font-semibold">{pagination.totalItems}</span>
             <span className="text-gray-500 dark:text-gray-400"> registros</span>
           </div>
 
-          <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-300 rounded-lg bg-blue-50 dark:bg-blue-900/30">
+          <div className="px-2.5 py-1.5 text-xs text-gray-600 dark:text-gray-300 rounded-md bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
             Página{" "}
-            <span className="font-medium text-blue-600 dark:text-blue-400">
+            <span className="font-semibold text-[#16a34a] dark:text-[#18D043]">
               {pagination.currentPage}
             </span>{" "}
             de{" "}
-            <span className="font-medium text-blue-600 dark:text-blue-400">
+            <span className="font-semibold text-[#16a34a] dark:text-[#18D043]">
               {pagination.totalPages}
             </span>
           </div>
         </div>
 
         {/* Controles de paginación */}
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2">
           {/* Botón Anterior */}
           <Button
             variant="outline"
             size="sm"
             onClick={() => handlePageChange(pagination.currentPage - 1)}
             disabled={pagination.currentPage === 1 || loading}
-            className="border-gray-300 hover:border-[#18D043] hover:text-[#18D043] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="border-gray-300 dark:border-gray-600 hover:border-[#18D043] hover:text-[#18D043] disabled:opacity-50 disabled:cursor-not-allowed text-xs h-8"
           >
             Anterior
           </Button>
@@ -303,12 +303,12 @@ const PaginationComponent: React.FC<PaginationComponentProps> = React.memo(
                 <button
                   onClick={() => handlePageChange(1)}
                   disabled={loading}
-                  className="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 transition-all duration-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
+                  className="px-2.5 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 transition-all duration-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
                 >
                   1
                 </button>
                 {startPage > 2 && (
-                  <span className="px-2 text-sm text-gray-500 dark:text-gray-400">...</span>
+                  <span className="px-1 text-xs text-gray-500 dark:text-gray-400">...</span>
                 )}
               </>
             )}
@@ -319,9 +319,9 @@ const PaginationComponent: React.FC<PaginationComponentProps> = React.memo(
                 key={pageNumber}
                 onClick={() => handlePageChange(pageNumber)}
                 disabled={loading}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 ${
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 disabled:opacity-50 ${
                   pageNumber === pagination.currentPage
-                    ? "bg-gradient-to-r from-[#18D043] to-[#16a34a] text-white shadow-lg shadow-[#18D043]/25"
+                    ? "bg-gradient-to-r from-[#18D043] to-[#16a34a] text-white shadow-md shadow-[#18D043]/25 scale-105"
                     : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 }`}
               >
@@ -333,12 +333,12 @@ const PaginationComponent: React.FC<PaginationComponentProps> = React.memo(
             {endPage < totalPages && (
               <>
                 {endPage < totalPages - 1 && (
-                  <span className="px-2 text-sm text-gray-500 dark:text-gray-400">...</span>
+                  <span className="px-1 text-xs text-gray-500 dark:text-gray-400">...</span>
                 )}
                 <button
                   onClick={() => handlePageChange(totalPages)}
                   disabled={loading}
-                  className="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 transition-all duration-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
+                  className="px-2.5 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 transition-all duration-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
                 >
                   {totalPages}
                 </button>
@@ -354,7 +354,7 @@ const PaginationComponent: React.FC<PaginationComponentProps> = React.memo(
             disabled={
               pagination.currentPage === pagination.totalPages || loading
             }
-            className="border-gray-300 hover:border-[#18D043] hover:text-[#18D043] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="border-gray-300 dark:border-gray-600 hover:border-[#18D043] hover:text-[#18D043] disabled:opacity-50 disabled:cursor-not-allowed text-xs h-8"
           >
             Siguiente
           </Button>
@@ -582,7 +582,7 @@ export const HistorialList: React.FC = () => {
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Historial de Movimientos
+            Historial de Actividades
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             Registro completo y detallado de todas las acciones realizadas en las
@@ -666,32 +666,35 @@ export const HistorialList: React.FC = () => {
         </div>
       )}
 
+      {/* Separador */}
+      {statistics && <div className="border-t border-gray-200 dark:border-gray-700" />}
+
       {/* FILTROS CON ROL Y USUARIO */}
-      <Card padding="md">
-        <div className="space-y-3">
+      <Card padding="sm">
+        <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">
+            <div className="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">
               <Filter className="w-4 h-4 text-[#18D043]" />
               Filtros rápidos
             </div>
           </div>
-          <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-3 lg:grid-cols-5">
+          <div className="grid grid-cols-1 gap-2 text-sm md:grid-cols-3 lg:grid-cols-5">
             {/* Búsqueda */}
             <div>
-              <label className="block mb-1 text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-gray-400">
+              <label className="block mb-0.5 text-[10px] font-semibold tracking-wide text-gray-600 uppercase dark:text-gray-400">
                 Buscar
               </label>
               <Input
                 placeholder="Descripción, código o usuario"
                 value={filters.search || ""}
                 onChange={(e) => handleFilterChange("search", e.target.value)}
-                className="h-10 text-sm"
+                className="h-9 text-sm"
               />
             </div>
 
             {/* Filtro por Usuario */}
             <div>
-              <label className="block mb-1 text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-gray-400">
+              <label className="block mb-0.5 text-[10px] font-semibold tracking-wide text-gray-600 uppercase dark:text-gray-400">
                 Usuario
               </label>
               <SearchableSelect
@@ -708,13 +711,13 @@ export const HistorialList: React.FC = () => {
                 }
                 placeholder="Filtrar por usuario"
                 size="compact"
-                className="text-sm !h-10 !min-h-10"
+                className="text-sm !h-9 !min-h-9"
               />
             </div>
 
             {/* Acción */}
             <div>
-              <label className="block mb-1 text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-gray-400">
+              <label className="block mb-0.5 text-[10px] font-semibold tracking-wide text-gray-600 uppercase dark:text-gray-400">
                 Acción
               </label>
               <Select
@@ -727,13 +730,13 @@ export const HistorialList: React.FC = () => {
                     label: option.label,
                   })),
                 ]}
-                className="h-10 text-sm"
+                className="h-9 text-sm"
               />
             </div>
 
             {/* Fecha desde */}
             <div>
-              <label className="block mb-1 text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-gray-400">
+              <label className="block mb-0.5 text-[10px] font-semibold tracking-wide text-gray-600 uppercase dark:text-gray-400">
                 Desde
               </label>
               <Input
@@ -743,13 +746,13 @@ export const HistorialList: React.FC = () => {
                   handleFilterChange("date_from", e.target.value)
                 }
                 max={today}
-                className="h-10 text-sm"
+                className="h-9 text-sm"
               />
             </div>
 
             {/* Fecha hasta */}
             <div>
-              <label className="block mb-1 text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-gray-400">
+              <label className="block mb-0.5 text-[10px] font-semibold tracking-wide text-gray-600 uppercase dark:text-gray-400">
                 Hasta
               </label>
               <Input
@@ -757,22 +760,18 @@ export const HistorialList: React.FC = () => {
                 value={filters.date_to || ""}
                 onChange={(e) => handleFilterChange("date_to", e.target.value)}
                 max={today}
-                className="h-10 text-sm"
+                className="h-9 text-sm"
               />
             </div>
           </div>
         </div>
       </Card>
 
-      {/* Lista de movimientos */}
-      <Card padding="lg">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="flex items-center space-x-2 text-lg font-semibold text-gray-900 dark:text-white">
-            <Activity className="w-5 h-5 text-[#18D043]" />
-            <span>Registro de Actividades</span>
-          </h2>
-        </div>
+      {/* Separador */}
+      <div className="border-t border-gray-200 dark:border-gray-700" />
 
+      {/* Lista de movimientos */}
+      <Card padding="md">
         {loading && (
           <div className="flex items-center justify-center h-64">
             <div className="relative">
