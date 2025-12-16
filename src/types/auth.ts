@@ -1,3 +1,10 @@
+import {
+  BACKEND_TO_FRONTEND_ROLE_MAP,
+  FRONTEND_TO_BACKEND_ROLE_MAP,
+  type BackendRole,
+  type FrontendRole,
+} from "../shared/constants/roles";
+
 export interface BackendUser {
   id: number;
   usuario: string;
@@ -5,7 +12,7 @@ export interface BackendUser {
   apellidos?: string;
   email: string;
   celular?: string;
-  rol: "ADMINISTRADOR" | "USUARIO";
+  rol: BackendRole;
   cargo?: string;
   empresa: string;
 }
@@ -15,7 +22,7 @@ export interface User extends Record<string, unknown> {
   nombre: string;
   email: string;
   telefono?: string;
-  rol: "admin" | "usuario" | "supervisor";
+  rol: FrontendRole;
   fecha_creacion: Date;
   activo: boolean;
   usuario?: string;
@@ -32,6 +39,7 @@ export interface LoginCredentials {
 export interface LoginResponse {
   access_token: string;
   user: BackendUser;
+  needsPasswordChange?: boolean;
 }
 
 export class AuthMappers {
@@ -58,27 +66,16 @@ export class AuthMappers {
    * Mapea los roles del backend a los del frontend
    */
   private static mapBackendRoleToFrontend(
-    backendRole: "ADMINISTRADOR" | "USUARIO"
-  ): "admin" | "usuario" | "supervisor" {
-    const roleMap: Record<string, "admin" | "usuario" | "supervisor"> = {
-      ADMINISTRADOR: "admin",
-      USUARIO: "usuario",
-    };
-    return roleMap[backendRole] || "usuario";
+    backendRole: BackendRole
+  ): FrontendRole {
+    return BACKEND_TO_FRONTEND_ROLE_MAP[backendRole] || "usuario";
   }
 
   /**
    * Mapea los roles del frontend a los del backend
    */
-  static mapFrontendRoleToBackend(
-    frontendRole: "admin" | "usuario" | "supervisor"
-  ): "ADMINISTRADOR" | "USUARIO" {
-    const roleMap: Record<string, "ADMINISTRADOR" | "USUARIO"> = {
-      admin: "ADMINISTRADOR",
-      supervisor: "USUARIO", // Por ahora supervisor se mapea a usuario
-      usuario: "USUARIO",
-    };
-    return roleMap[frontendRole] || "USUARIO";
+  static mapFrontendRoleToBackend(frontendRole: FrontendRole): BackendRole {
+    return FRONTEND_TO_BACKEND_ROLE_MAP[frontendRole] || "USUARIO";
   }
 
   /**

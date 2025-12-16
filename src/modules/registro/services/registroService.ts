@@ -1,9 +1,4 @@
-import {
-  apiClient,
-  ApiResponse,
-  PaginatedResponse,
-  ApiClientError,
-} from '../../../shared/services/apiClient';
+import { apiClient, ApiClientError } from '../../../shared/services/apiClient';
 import type { DataRecord } from '../types';
 
 export interface RecordFilters {
@@ -34,6 +29,7 @@ export interface CreateRecordData {
   fv_anios?: number;
   fv_meses?: number;
   fecha_instalacion?: string;
+  fecha_mantenimiento?: string;
   longitud?: number;
   observaciones?: string;
   seccion?: string;
@@ -45,6 +41,8 @@ export interface CreateRecordData {
   anclaje_tipo?: string;
   fecha_caducidad?: string;
   estado_actual?: string;
+  purchase_order_num?: string;
+  purchase_order_termino_referencias?: string;
 }
 
 export interface BackendRecord {
@@ -56,6 +54,7 @@ export interface BackendRecord {
   fv_anios?: number;
   fv_meses?: number;
   fecha_instalacion?: string;
+  fecha_mantenimiento?: string;
   longitud?: number;
   observaciones?: string;
   seccion?: string;
@@ -67,6 +66,9 @@ export interface BackendRecord {
   anclaje_tipo?: string;
   fecha_caducidad?: string;
   estado_actual?: string;
+  purchaseOrder?: { numero: string; termino_referencias?: string };
+  purchase_order_num?: string;
+  purchase_order_termino_referencias?: string;
 }
 
 export interface BackendPaginatedRecords {
@@ -178,6 +180,9 @@ class RegistroService {
       fecha_instalacion: backendRecord.fecha_instalacion
         ? new Date(backendRecord.fecha_instalacion)
         : undefined,
+      fecha_mantenimiento: backendRecord.fecha_mantenimiento
+        ? new Date(backendRecord.fecha_mantenimiento)
+        : undefined,
       longitud: backendRecord.longitud || 0,
       observaciones: backendRecord.observaciones,
       seccion: backendRecord.seccion || "",
@@ -193,15 +198,16 @@ class RegistroService {
       estado_actual: this.mapBackendStatusToFrontend(
         backendRecord.estado_actual
       ),
+      purchase_order_num: backendRecord.purchaseOrder?.numero || undefined,
+      purchase_order_termino_referencias:
+        backendRecord.purchaseOrder?.termino_referencias || undefined,
     };
   }
 
   /**
    * Mapear datos del frontend al formato del backend
    */
-  private mapFrontendToBackend(
-    frontendData: Omit<DataRecord, "id">
-  ): CreateRecordData {
+  private mapFrontendToBackend(frontendData: any): CreateRecordData {
     return {
       codigo: frontendData.codigo,
       codigo_placa: frontendData.codigo_placa || undefined,
@@ -209,9 +215,8 @@ class RegistroService {
       equipo: frontendData.equipo || undefined,
       fv_anios: frontendData.fv_anios || undefined,
       fv_meses: frontendData.fv_meses || undefined,
-      fecha_instalacion: frontendData.fecha_instalacion
-        ? new Date(frontendData.fecha_instalacion).toISOString().split("T")[0]
-        : undefined,
+      fecha_instalacion: frontendData.fecha_instalacion || undefined,
+      fecha_mantenimiento: frontendData.fecha_mantenimiento || undefined,
       longitud: frontendData.longitud || undefined,
       observaciones: frontendData.observaciones || undefined,
       seccion: frontendData.seccion || undefined,
@@ -224,9 +229,12 @@ class RegistroService {
       fecha_caducidad: frontendData.fecha_caducidad
         ? new Date(frontendData.fecha_caducidad).toISOString().split("T")[0]
         : undefined,
-      estado_actual: frontendData.estado_actual ? this.mapFrontendStatusToBackend(
-        frontendData.estado_actual
-      ) : undefined,
+      estado_actual: frontendData.estado_actual
+        ? this.mapFrontendStatusToBackend(frontendData.estado_actual)
+        : undefined,
+      purchase_order_num: frontendData.purchase_order_num || undefined,
+      purchase_order_termino_referencias:
+        frontendData.purchase_order_termino_referencias || undefined,
     };
   }
 
@@ -345,11 +353,11 @@ class RegistroService {
    */
   async updateRecord(
     id: string,
-    recordData: Partial<Omit<DataRecord, "id">>
+    recordData: any
   ): Promise<DataRecord> {
     try {
       // Solo enviar campos que realmente se están actualizando
-      const backendData: Partial<CreateRecordData> = {};
+      const backendData: Partial<CreateRecordData> = {} as any;
 
       if (recordData.codigo !== undefined)
         backendData.codigo = recordData.codigo;
@@ -366,9 +374,10 @@ class RegistroService {
       if (recordData.fv_meses !== undefined)
         backendData.fv_meses = recordData.fv_meses;
       if (recordData.fecha_instalacion !== undefined) {
-        backendData.fecha_instalacion = new Date(recordData.fecha_instalacion)
-          .toISOString()
-          .split("T")[0];
+        backendData.fecha_instalacion = recordData.fecha_instalacion as any;
+      }
+      if (recordData.fecha_mantenimiento !== undefined) {
+        backendData.fecha_mantenimiento = recordData.fecha_mantenimiento as any;
       }
       if (recordData.longitud !== undefined)
         backendData.longitud = recordData.longitud;
@@ -382,14 +391,18 @@ class RegistroService {
       if (recordData.ubicacion !== undefined)
         backendData.ubicacion = recordData.ubicacion;
       if (recordData.fecha_caducidad !== undefined) {
-        backendData.fecha_caducidad = new Date(recordData.fecha_caducidad)
-          .toISOString()
-          .split("T")[0];
+        backendData.fecha_caducidad = recordData.fecha_caducidad as any;
       }
       if (recordData.estado_actual !== undefined) {
         backendData.estado_actual = this.mapFrontendStatusToBackend(
           recordData.estado_actual
         );
+      }
+      if (recordData.purchase_order_num !== undefined) {
+        backendData.purchase_order_num = recordData.purchase_order_num;
+      }
+      if (recordData.purchase_order_termino_referencias !== undefined) {
+        backendData.purchase_order_termino_referencias = recordData.purchase_order_termino_referencias;
       }
 
       const response = await apiClient.patch<BackendRecord>(

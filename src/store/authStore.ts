@@ -12,6 +12,7 @@ interface AuthState {
   loading: boolean;
   error: string | null;
   isInitialized: boolean;
+  needsPasswordChange: boolean;
 
   // Actions
   login: (credentials: LoginCredentials) => Promise<void>;
@@ -24,6 +25,7 @@ interface AuthState {
   loadCurrentUser: () => Promise<void>; // Nueva función para cargar datos del usuario actual
   startSessionVerification: () => void;
   stopSessionVerification: () => void;
+  setNeedsPasswordChange: (needs: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -37,6 +39,7 @@ export const useAuthStore = create<AuthState>()(
         loading: false,
         error: null,
         isInitialized: false,
+        needsPasswordChange: false,
 
         // Actions
         login: async (credentials: LoginCredentials) => {
@@ -68,6 +71,7 @@ export const useAuthStore = create<AuthState>()(
               loading: false,
               error: null,
               isInitialized: true,
+              needsPasswordChange: response.needsPasswordChange || false,
             });
 
             // Después del login exitoso, cargar datos completos del usuario
@@ -75,10 +79,6 @@ export const useAuthStore = create<AuthState>()(
               await get().loadCurrentUser();
             } catch (userError) {
               // Si falla cargar el perfil, no es crítico
-              console.warn(
-                "Error loading user profile after login:",
-                userError
-              );
             }
 
             // Iniciar verificación periódica de sesión
@@ -111,7 +111,11 @@ export const useAuthStore = create<AuthState>()(
             loading: false,
             error: null,
             isInitialized: true,
+            needsPasswordChange: false,
           });
+
+          // Redirigir al login después del logout usando React Router
+          // La redirección se manejará automáticamente por ProtectedRoute
         },
 
         updateUser: (userData) => {
@@ -129,7 +133,6 @@ export const useAuthStore = create<AuthState>()(
 
         // manejo de token expirado
         handleTokenExpired: () => {
-          console.warn("Token expirado o inválido, cerrando sesión...");
 
           // Detener verificación periódica
           get().stopSessionVerification();
@@ -145,7 +148,11 @@ export const useAuthStore = create<AuthState>()(
             error:
               "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.",
             isInitialized: true,
+            needsPasswordChange: false,
           });
+
+          // Redirigir al login cuando el token expire usando React Router
+          // La redirección se manejará automáticamente por ProtectedRoute
         },
 
         // Cargar datos completos del usuario actual desde la API
@@ -154,7 +161,6 @@ export const useAuthStore = create<AuthState>()(
             const userProfile = await userService.getCurrentUserProfile();
             set({ user: userProfile });
           } catch (error) {
-            console.error("Error loading current user profile:", error);
             // Si no se carga el perfil, mantener los datos básicos del login
             throw error;
           }
@@ -195,7 +201,6 @@ export const useAuthStore = create<AuthState>()(
             get().startSessionVerification();
           } catch (error) {
             // Si falla, el token es inválido - NO mostrar error de servidor
-            console.warn("Token validacion fallo:", error);
 
             // Limpiar estado de autenticación silenciosamente
             apiClient.logout();
@@ -221,7 +226,7 @@ export const useAuthStore = create<AuthState>()(
           try {
             await get().checkAuthStatus();
           } catch (error) {
-            console.error("Error in auth initialization:", error);
+            // Error en inicialización de auth
           }
         },
 
@@ -247,6 +252,10 @@ export const useAuthStore = create<AuthState>()(
             clearInterval(intervalId);
             (window as any).sessionVerificationInterval = null;
           }
+        },
+
+        setNeedsPasswordChange: (needs: boolean) => {
+          set({ needsPasswordChange: needs });
         },
       }),
       {

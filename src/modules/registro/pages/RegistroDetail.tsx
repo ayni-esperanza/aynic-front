@@ -34,7 +34,7 @@ import {
   type ImageResponse,
 } from '../../../shared/services/imageService';
 import { ImageUpload } from '../../../shared/components/common/ImageUpload';
-import { formatDate, formatDateTime } from '../../../shared/utils/formatters';
+import { formatDate, formatDateTime, isAyniUser } from '../../../shared/utils';
 import { useAuthStore } from '../../../store/authStore';
 import type { DataRecord } from "../types/registro";
 
@@ -341,104 +341,142 @@ export const RegistroDetail: React.FC = () => {
     switch (activeTab) {
       case "general":
         return (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <div className="space-y-4">
-                <div className="flex items-center p-4 space-x-3 border border-blue-200 bg-blue-50 rounded-xl">
-                  <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-lg">
-                    <FileText className="w-5 h-5 text-blue-600" />
+          <div className="space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
+              <div className="space-y-3 sm:space-y-4">
+                {registro.purchase_order_num && (
+                  <div className="flex items-center p-3 space-x-3 border sm:p-4 border-emerald-200 bg-emerald-50 rounded-xl">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-lg sm:w-10 sm:h-10 bg-emerald-100">
+                      <span className="text-sm sm:text-lg">🧾</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium sm:text-sm text-emerald-600">
+                        Nº Orden de Compra
+                      </p>
+                      <p className="font-mono text-sm font-bold truncate sm:text-lg text-emerald-900">
+                        {registro.purchase_order_num}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-blue-600">Código</p>
-                    <p className="font-mono text-lg font-bold text-blue-900">
+                )}
+
+                {registro.purchase_order_termino_referencias && (
+                  <div className="p-3 border sm:p-4 border-emerald-200 bg-emerald-50 rounded-xl">
+                    <div className="flex items-center mb-2 space-x-2">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-emerald-100">
+                        <span className="text-sm">⚖️</span>
+                      </div>
+                      <h4 className="text-xs font-semibold sm:text-sm text-emerald-700">
+                        Término y Referencias (OC)
+                      </h4>
+                    </div>
+                    <p className="text-sm whitespace-pre-line sm:text-base text-emerald-900">
+                      {registro.purchase_order_termino_referencias}
+                    </p>
+                  </div>
+                )}
+
+                <div className="flex items-center p-3 space-x-3 border border-blue-200 sm:p-4 bg-blue-50 rounded-xl">
+                  <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-lg sm:w-10 sm:h-10">
+                    <FileText className="w-4 h-4 text-blue-600 sm:w-5 sm:h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-blue-600 sm:text-sm">
+                      Código
+                    </p>
+                    <p className="font-mono text-sm font-bold text-blue-900 truncate sm:text-lg">
                       {registro.codigo}
                     </p>
                   </div>
                 </div>
 
                 {registro.codigo_placa && (
-                  <div className="flex items-center p-4 space-x-3 border border-purple-200 bg-purple-50 rounded-xl">
-                    <div className="flex items-center justify-center w-10 h-10 bg-purple-100 rounded-lg">
-                      <span className="text-lg">🏷️</span>
+                  <div className="flex items-center p-3 space-x-3 border border-purple-200 sm:p-4 bg-purple-50 rounded-xl">
+                    <div className="flex items-center justify-center w-8 h-8 bg-purple-100 rounded-lg sm:w-10 sm:h-10">
+                      <span className="text-sm sm:text-lg">🏷️</span>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-purple-600">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-purple-600 sm:text-sm">
                         Código de Placa
                       </p>
-                      <p className="font-mono text-lg font-bold text-purple-900">
+                      <p className="font-mono text-sm font-bold text-purple-900 truncate sm:text-lg">
                         {registro.codigo_placa}
                       </p>
                     </div>
                   </div>
                 )}
 
-                <div className="flex items-center p-4 space-x-3 border border-purple-200 bg-purple-50 rounded-xl">
-                  <div className="flex items-center justify-center w-10 h-10 bg-purple-100 rounded-lg">
-                    <User className="w-5 h-5 text-purple-600" />
+                <div className="flex items-center p-3 space-x-3 border border-purple-200 sm:p-4 bg-purple-50 rounded-xl">
+                  <div className="flex items-center justify-center w-8 h-8 bg-purple-100 rounded-lg sm:w-10 sm:h-10">
+                    <User className="w-4 h-4 text-purple-600 sm:w-5 sm:h-5" />
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-purple-600">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-purple-600 sm:text-sm">
                       Cliente
                     </p>
-                    <p className="text-lg font-bold text-purple-900">
+                    <p className="text-sm font-bold text-purple-900 truncate sm:text-lg">
                       {registro.cliente}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center p-4 space-x-3 border border-green-200 bg-green-50 rounded-xl">
-                  <div className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-lg">
-                    <Zap className="w-5 h-5 text-green-600" />
+                <div className="flex items-center p-3 space-x-3 border border-green-200 sm:p-4 bg-green-50 rounded-xl">
+                  <div className="flex items-center justify-center w-8 h-8 bg-green-100 rounded-lg sm:w-10 sm:h-10">
+                    <Zap className="w-4 h-4 text-green-600 sm:w-5 sm:h-5" />
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-green-600">Equipo</p>
-                    <p className="text-lg font-bold text-green-900">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-green-600 sm:text-sm">
+                      Equipo
+                    </p>
+                    <p className="text-sm font-bold text-green-900 truncate sm:text-lg">
                       {registro.equipo}
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div className="flex items-center p-4 space-x-3 border border-orange-200 bg-orange-50 rounded-xl">
-                  <div className="flex items-center justify-center w-10 h-10 bg-orange-100 rounded-lg">
-                    <Settings className="w-5 h-5 text-orange-600" />
+              <div className="space-y-3 sm:space-y-4">
+                <div className="flex flex-col items-start p-3 space-y-3 border border-orange-200 sm:flex-row sm:items-center sm:p-4 sm:space-y-0 sm:space-x-3 bg-orange-50 rounded-xl">
+                  <div className="flex items-center justify-center flex-shrink-0 w-8 h-8 bg-orange-100 rounded-lg sm:w-10 sm:h-10">
+                    <Settings className="w-4 h-4 text-orange-600 sm:w-5 sm:h-5" />
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-orange-600">
-                      Sección
-                    </p>
-                    <p className="font-mono text-lg font-bold text-orange-900">
-                      {registro.seccion}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-orange-600">
-                      Área
-                    </p>
-                    <p className="font-mono text-lg font-bold text-orange-900">
-                      {registro.area}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-orange-600">
-                      Planta
-                    </p>
-                    <p className="font-mono text-lg font-bold text-orange-900">
-                      {registro.planta}
-                    </p>
+                  <div className="flex flex-col w-full space-y-2 sm:flex-row sm:space-y-0 sm:space-x-4">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-orange-600 sm:text-sm">
+                        Sección
+                      </p>
+                      <p className="font-mono text-sm font-bold text-orange-900 truncate sm:text-lg">
+                        {registro.seccion}
+                      </p>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-orange-600 sm:text-sm">
+                        Área
+                      </p>
+                      <p className="font-mono text-sm font-bold text-orange-900 truncate sm:text-lg">
+                        {registro.area}
+                      </p>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-orange-600 sm:text-sm">
+                        Planta
+                      </p>
+                      <p className="font-mono text-sm font-bold text-orange-900 truncate sm:text-lg">
+                        {registro.planta}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex items-center p-4 space-x-3 border border-indigo-200 bg-indigo-50 rounded-xl">
-                  <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
-                    <MapPin className="w-5 h-5 text-indigo-600" />
+                <div className="flex items-center p-3 space-x-3 border border-indigo-200 sm:p-4 bg-indigo-50 rounded-xl">
+                  <div className="flex items-center justify-center w-8 h-8 bg-indigo-100 rounded-lg sm:w-10 sm:h-10">
+                    <MapPin className="w-4 h-4 text-indigo-600 sm:w-5 sm:h-5" />
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-indigo-600">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-indigo-600 sm:text-sm">
                       Ubicación
                     </p>
-                    <p className="text-lg font-bold text-indigo-900">
+                    <p className="text-sm font-bold text-indigo-900 truncate sm:text-lg">
                       {registro.ubicacion}
                     </p>
                   </div>
@@ -447,19 +485,21 @@ export const RegistroDetail: React.FC = () => {
                 <div
                   className={
                     estadoConfig.bgColor +
-                    " p-4 rounded-xl border " +
+                    " p-3 sm:p-4 rounded-xl border " +
                     estadoConfig.borderColor
                   }
                 >
                   <div className="flex items-center space-x-3">
                     <div
-                      className={`w-10 h-10 ${estadoConfig.bgColor} rounded-lg flex items-center justify-center`}
+                      className={`w-8 h-8 sm:w-10 sm:h-10 ${estadoConfig.bgColor} rounded-lg flex items-center justify-center`}
                     >
-                      <EstadoIcon className={`w-5 h-5 ${estadoConfig.color}`} />
+                      <EstadoIcon
+                        className={`w-4 h-4 sm:w-5 sm:h-5 ${estadoConfig.color}`}
+                      />
                     </div>
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <p
-                        className={`text-sm font-medium ${estadoConfig.color}`}
+                        className={`text-xs sm:text-sm font-medium ${estadoConfig.color}`}
                       >
                         Estado Actual
                       </p>
@@ -476,12 +516,12 @@ export const RegistroDetail: React.FC = () => {
             </div>
 
             {registro.observaciones && (
-              <div className="p-6 border border-gray-200 bg-gray-50 rounded-xl">
-                <h4 className="flex items-center mb-3 space-x-2 text-lg font-semibold text-gray-900">
-                  <FileText className="w-5 h-5 text-gray-600" />
+              <div className="p-4 border border-gray-200 sm:p-6 bg-gray-50 rounded-xl">
+                <h4 className="flex items-center mb-3 space-x-2 text-base font-semibold text-gray-900 sm:text-lg">
+                  <FileText className="w-4 h-4 text-gray-600 sm:w-5 sm:h-5" />
                   <span>Observaciones</span>
                 </h4>
-                <p className="p-4 leading-relaxed text-gray-700 bg-white border border-gray-100 rounded-lg">
+                <p className="p-3 text-sm leading-relaxed text-gray-700 bg-white border border-gray-100 rounded-lg sm:p-4 sm:text-base">
                   {registro.observaciones}
                 </p>
               </div>
@@ -491,31 +531,31 @@ export const RegistroDetail: React.FC = () => {
 
       case "tecnico":
         return (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <div className="space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
               <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
-                <div className="p-6 text-center">
-                  <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-blue-200 rounded-full">
-                    <span className="text-2xl">🔗</span>
+                <div className="p-4 text-center sm:p-6">
+                  <div className="flex items-center justify-center w-12 h-12 mx-auto mb-3 bg-blue-200 rounded-full sm:w-16 sm:h-16 sm:mb-4">
+                    <span className="text-lg sm:text-2xl">🔗</span>
                   </div>
-                  <h4 className="mb-2 font-semibold text-blue-900">
+                  <h4 className="mb-2 text-sm font-semibold text-blue-900 sm:text-base">
                     Tipo de Línea
                   </h4>
-                  <p className="font-medium text-blue-700">
+                  <p className="text-sm font-medium text-blue-700 sm:text-base">
                     {registro.tipo_linea}
                   </p>
                 </div>
               </Card>
 
               <Card className="border-green-200 bg-gradient-to-br from-green-50 to-green-100">
-                <div className="p-6 text-center">
-                  <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-green-200 rounded-full">
-                    <Gauge className="w-8 h-8 text-green-600" />
+                <div className="p-4 text-center sm:p-6">
+                  <div className="flex items-center justify-center w-12 h-12 mx-auto mb-3 bg-green-200 rounded-full sm:w-16 sm:h-16 sm:mb-4">
+                    <Gauge className="w-6 h-6 text-green-600 sm:w-8 sm:h-8" />
                   </div>
-                  <h4 className="mb-2 font-semibold text-green-900">
+                  <h4 className="mb-2 text-sm font-semibold text-green-900 sm:text-base">
                     Longitud
                   </h4>
-                  <p className="text-xl font-medium text-green-700">
+                  <p className="text-lg font-medium text-green-700 sm:text-xl">
                     {registro.longitud || 0}m
                   </p>
                 </div>
@@ -523,14 +563,14 @@ export const RegistroDetail: React.FC = () => {
 
               {registro.codigo_placa && (
                 <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100">
-                  <div className="p-6 text-center">
-                    <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-purple-200 rounded-full">
-                      <span className="text-2xl">🏷️</span>
+                  <div className="p-4 text-center sm:p-6">
+                    <div className="flex items-center justify-center w-12 h-12 mx-auto mb-3 bg-purple-200 rounded-full sm:w-16 sm:h-16 sm:mb-4">
+                      <span className="text-lg sm:text-2xl">🏷️</span>
                     </div>
-                    <h4 className="mb-2 font-semibold text-purple-900">
+                    <h4 className="mb-2 text-sm font-semibold text-purple-900 sm:text-base">
                       Código de Placa
                     </h4>
-                    <p className="font-mono text-lg font-medium text-purple-700">
+                    <p className="font-mono text-sm font-medium text-purple-700 sm:text-lg">
                       {registro.codigo_placa}
                     </p>
                   </div>
@@ -538,17 +578,17 @@ export const RegistroDetail: React.FC = () => {
               )}
             </div>
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
               <Card>
-                <div className="p-6">
-                  <h4 className="flex items-center mb-4 space-x-2 text-lg font-semibold text-gray-900">
-                    <Settings className="w-5 h-5 text-gray-600" />
+                <div className="p-4 sm:p-6">
+                  <h4 className="flex items-center mb-3 space-x-2 text-base font-semibold text-gray-900 sm:mb-4 sm:text-lg">
+                    <Settings className="w-4 h-4 text-gray-600 sm:w-5 sm:h-5" />
                     <span>Especificaciones</span>
                   </h4>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                      <span className="text-gray-600">Código de Equipo:</span>
-                      <span className="px-2 py-1 font-mono font-medium bg-gray-100 rounded">
+                  <div className="space-y-3 sm:space-y-4">
+                    <div className="flex flex-col py-2 space-y-1 border-b border-gray-100 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+                      <span className="text-sm text-gray-600 sm:text-base">Código de Equipo:</span>
+                      <span className="px-2 py-1 font-mono text-xs font-medium bg-gray-100 rounded sm:text-sm">
                         {registro.equipo}
                       </span>
                     </div>
@@ -706,6 +746,46 @@ export const RegistroDetail: React.FC = () => {
                           return "Fecha no válida";
                         } catch {
                           return "Error en cálculo";
+                        }
+                      })()}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="border-teal-200 bg-gradient-to-br from-teal-50 to-cyan-100">
+                <div className="p-6">
+                  <div className="flex items-center mb-4 space-x-4">
+                    <div className="flex items-center justify-center w-12 h-12 bg-teal-200 rounded-full">
+                      <Calendar className="w-6 h-6 text-teal-600" />
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-semibold text-teal-900">
+                        Próximo Mantenimiento
+                      </h4>
+                      <p className="text-teal-600">Fecha programada</p>
+                    </div>
+                  </div>
+                  <div className="py-4 text-center">
+                    <p className="mb-2 text-3xl font-bold text-teal-900">
+                      {safeFormatDate((registro as any).fecha_mantenimiento)}
+                    </p>
+                    <p className="text-teal-700">
+                      {(() => {
+                        try {
+                          const fm = (registro as any).fecha_mantenimiento as Date | undefined;
+                          if (fm && !isNaN(fm.getTime())) {
+                            const today = new Date();
+                            const diffDays = Math.floor(
+                              (fm.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+                            );
+                            if (diffDays > 0) return `En ${diffDays} días`;
+                            if (diffDays === 0) return 'Hoy';
+                            return `Hace ${Math.abs(diffDays)} días`;
+                          }
+                          return 'Sin fecha';
+                        } catch {
+                          return 'Error en cálculo';
                         }
                       })()}
                     </p>
@@ -1201,28 +1281,29 @@ export const RegistroDetail: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="px-4 py-6 mx-auto max-w-7xl sm:px-6 lg:px-8">
         {/* Header mejorado */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+            <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
               <Button
                 variant="outline"
                 onClick={() => navigate("/registro")}
                 icon={ArrowLeft}
-                className="border-gray-300 hover:bg-gray-50"
+                className="w-full border-gray-300 hover:bg-gray-50 sm:w-auto"
               >
-                Volver
+                <span className="hidden sm:inline">Volver</span>
+                <span className="sm:hidden">← Volver</span>
               </Button>
-              <div className="flex items-center space-x-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-xl flex items-center justify-center shadow-lg">
-                  <span className="text-2xl text-white">📊</span>
+              <div className="flex items-center space-x-3 sm:space-x-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-[#18D043] to-[#16a34a] rounded-xl flex items-center justify-center shadow-lg">
+                  <span className="text-xl text-white sm:text-2xl">📊</span>
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900">
+                  <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
                     Detalle del Registro
                   </h1>
-                  <p className="flex items-center space-x-2 text-gray-600">
+                  <p className="flex flex-col space-y-1 text-sm text-gray-600 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-2 sm:text-base">
                     <span>Información completa del registro</span>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#18D043]/10 text-[#16a34a] font-mono">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#18D043]/10 text-[#16a34a] font-mono w-fit">
                       {registro.codigo}
                     </span>
                   </p>
@@ -1230,58 +1311,60 @@ export const RegistroDetail: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center space-x-3">
+            <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:space-x-3 sm:gap-0">
               <Button
                 variant="outline"
                 onClick={() => navigate(`/historial?registro=${registro.id}`)}
                 icon={Activity}
-                className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                className="w-full text-blue-600 border-blue-300 hover:bg-blue-50 sm:w-auto"
               >
-                Ver Historial
+                <span className="hidden sm:inline">Ver Historial</span>
+                <span className="sm:hidden">Historial</span>
               </Button>
               <Button
                 onClick={() => navigate(`/registro/editar/${registro.id}`)}
                 icon={Edit}
-                className="bg-gradient-to-r from-[#18D043] to-[#16a34a] hover:from-[#16a34a] hover:to-[#15803d] shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-                disabled={!(user?.empresa === 'ayni' || user?.empresa === 'Ayni' || user?.empresa === 'AYNI')}
+                className="bg-gradient-to-r from-[#18D043] to-[#16a34a] hover:from-[#16a34a] hover:to-[#15803d] shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 w-full sm:w-auto"
+                disabled={!isAyniUser(user?.empresa)}
               >
-                Editar Registro
+                <span className="hidden sm:inline">Editar Registro</span>
+                <span className="sm:hidden">Editar</span>
               </Button>
             </div>
           </div>
         </div>
 
         {/* Card principal con información destacada */}
-        <Card className="mb-8 overflow-hidden bg-white border-0 shadow-xl">
-          <div className="bg-gradient-to-r from-[#18D043] to-[#16a34a] p-6 text-white">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-6">
-                <div className="flex items-center justify-center w-20 h-20 bg-white/20 rounded-2xl">
-                  <span className="text-3xl font-bold text-white">
+        <Card className="mb-6 overflow-hidden bg-white border-0 shadow-xl sm:mb-8">
+          <div className="bg-gradient-to-r from-[#18D043] to-[#16a34a] p-4 sm:p-6 text-white">
+            <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+              <div className="flex items-center space-x-4 sm:space-x-6">
+                <div className="flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-white/20 rounded-2xl">
+                  <span className="text-2xl font-bold text-white sm:text-3xl">
                     {registro.codigo.slice(-2)}
                   </span>
                 </div>
                 <div>
-                  <h2 className="mb-1 text-2xl font-bold">{registro.codigo}</h2>
-                  <p className="text-lg text-green-100">{registro.cliente}</p>
-                  <p className="text-sm text-green-200">
+                  <h2 className="mb-1 text-xl font-bold sm:text-2xl">{registro.codigo}</h2>
+                  <p className="text-base text-green-100 sm:text-lg">{registro.cliente}</p>
+                  <p className="text-xs text-green-200 sm:text-sm">
                     {registro.equipo} • {registro.tipo_linea}
                   </p>
                 </div>
               </div>
 
-              <div className="text-right">
-                <div className="flex items-center mb-2 space-x-3">
-                  <span className="text-2xl">{estadoConfig.emoji}</span>
+              <div className="text-left sm:text-right">
+                <div className="flex items-center mb-2 space-x-2 sm:space-x-3">
+                  <span className="text-xl sm:text-2xl">{estadoConfig.emoji}</span>
                   <Badge
                     variant={estadoConfig.variant}
                     size="md"
-                    className="text-white bg-white/20 border-white/30"
+                    className={`${estadoConfig.color} ${estadoConfig.bgColor} ${estadoConfig.borderColor} font-semibold`}
                   >
                     {registro.estado_actual}
                   </Badge>
                 </div>
-                <p className="text-sm text-green-100">
+                <p className="text-xs text-green-100 sm:text-sm">
                   Instalado: {formatDate(registro.fecha_instalacion)}
                 </p>
                 {currentImage && (
@@ -1295,22 +1378,23 @@ export const RegistroDetail: React.FC = () => {
         </Card>
 
         {/* Navegación por tabs */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <div className="bg-white border-b border-gray-200 rounded-t-lg shadow-sm">
-            <nav className="flex px-6 space-x-8">
+            <nav className="flex px-3 space-x-2 overflow-x-auto sm:px-6 sm:space-x-8">
               {tabs.map((tab) => {
                 const TabIcon = tab.icon;
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 transition-colors duration-200 ${activeTab === tab.id
+                    className={`py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm flex items-center space-x-1 sm:space-x-2 transition-colors duration-200 whitespace-nowrap ${activeTab === tab.id
                       ? "border-[#18D043] text-[#16a34a]"
                       : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                       }`}
                   >
-                    <TabIcon size={16} />
-                    <span>{tab.label}</span>
+                    <TabIcon size={14} />
+                    <span className="hidden sm:inline">{tab.label}</span>
+                    <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
                     {tab.id === "imagen" && currentImage && (
                       <div className="w-2 h-2 bg-[#18D043] rounded-full"></div>
                     )}
@@ -1322,7 +1406,7 @@ export const RegistroDetail: React.FC = () => {
         </div>
 
         {/* Contenido del tab activo */}
-        <div className="p-8 bg-white border-0 rounded-b-lg shadow-xl">
+        <div className="p-4 bg-white border-0 rounded-b-lg shadow-xl sm:p-6 lg:p-8">
           {renderTabContent()}
         </div>
       </div>

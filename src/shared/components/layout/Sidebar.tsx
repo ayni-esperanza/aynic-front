@@ -278,7 +278,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
           <>
             <div className="flex items-center gap-2">
               <img 
-                src="/favicon.png" 
+                src={logoAyni}
                 alt="Logo" 
                 className="w-6 h-6"
               />

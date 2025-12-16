@@ -11,7 +11,7 @@ import logoAyni from "../assets/images/logo_ayni.png";
 export const Login: React.FC = () => {
   const navigate = useNavigate();
   const { login, loading, error, isAuthenticated, clearError } = useAuthStore();
-  const { success, error: showError } = useToast();
+  const { success } = useToast();
 
   const [formData, setFormData] = useState({
     username: "",
@@ -32,6 +32,7 @@ export const Login: React.FC = () => {
       navigate("/");
     }
   }, [isAuthenticated, navigate]);
+
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -64,7 +65,6 @@ export const Login: React.FC = () => {
       navigate("/");
     } catch (err) {
       // El error ya está manejado en el store
-      console.error("Error en login:", err);
     }
   };
 
@@ -73,6 +73,7 @@ export const Login: React.FC = () => {
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }));
     if (error) clearError();
   };
+
 
   return (
     <div className="flex items-center justify-center min-h-screen p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
@@ -184,11 +185,9 @@ export const Login: React.FC = () => {
               {loading ? "Conectando..." : "Sistema en línea"}
             </span>
           </div>
-          <p className="mt-1 text-xs text-gray-400">
-            API: {import.meta.env.VITE_API_URL || "http://localhost:3000"}
-          </p>
         </div>
       </div>
+
     </div>
   );
 };

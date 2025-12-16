@@ -6,7 +6,7 @@ export interface BackendAlert {
   tipo: "POR_VENCER" | "VENCIDO" | "CRITICO";
   registro_id: number;
   mensaje: string;
-  prioridad: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  prioridad: "low" | "medium" | "high" | "critical";
   usuario_id?: number;
   metadata?: string;
   leida: boolean;
@@ -142,6 +142,10 @@ class AlertService {
       MEDIUM: "medium",
       HIGH: "high",
       CRITICAL: "critical",
+      low: "low",
+      medium: "medium",
+      high: "high",
+      critical: "critical",
     };
     return priorityMap[backendPriority] || "medium";
   }
@@ -153,12 +157,12 @@ class AlertService {
     frontendPriority: Alert["prioridad"]
   ): string {
     const priorityMap: Record<Alert["prioridad"], string> = {
-      low: "LOW",
-      medium: "MEDIUM",
-      high: "HIGH",
-      critical: "CRITICAL",
+      low: "low",
+      medium: "medium",
+      high: "high",
+      critical: "critical",
     };
-    return priorityMap[frontendPriority] || "MEDIUM";
+    return priorityMap[frontendPriority] || "medium";
   }
 
   /**
@@ -286,7 +290,6 @@ class AlertService {
         },
       };
     } catch (error) {
-      console.error("Error fetching alerts:", error);
       throw error;
     }
   }
@@ -397,7 +400,6 @@ class AlertService {
       );
       return response;
     } catch (error) {
-      console.error("Error fetching unread count:", error);
       return { count: 0 };
     }
   }
@@ -453,7 +455,6 @@ class AlertService {
       );
       return response;
     } catch (error) {
-      console.error("Error marking all alerts as read:", error);
       throw error;
     }
   }
@@ -468,7 +469,6 @@ class AlertService {
       );
       return response.map((alert) => this.mapBackendToFrontend(alert));
     } catch (error) {
-      console.error("Error fetching critical alerts:", error);
       return [];
     }
   }
@@ -483,7 +483,6 @@ class AlertService {
       );
       return response.map((alert) => this.mapBackendToFrontend(alert));
     } catch (error) {
-      console.error("Error fetching alerts by record:", error);
       return [];
     }
   }
@@ -557,7 +556,6 @@ class AlertService {
         count: parseInt(item.count, 10),
       }));
     } catch (error) {
-      console.error("Error fetching alert stats by period:", error);
       return [];
     }
   }

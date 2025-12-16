@@ -19,9 +19,9 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(({
 }, ref) => {
   const paddingClasses = {
     none: "",
-    sm: "p-4",
-    md: "p-6",
-    lg: "p-8",
+    sm: "p-3 sm:p-4",
+    md: "p-4 sm:p-6",
+    lg: "p-6 sm:p-8",
   };
 
   const baseClasses = `bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 transition-all duration-200 ${

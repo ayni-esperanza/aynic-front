@@ -7,6 +7,8 @@ import { useToast } from "./shared/components/ui/Toast";
 import { useAuthStore } from "./store/authStore";
 import { setupTokenExpiredHandler } from "./shared/services/apiClient";
 import { LoadingSpinner } from "./shared/components/ui/LoadingSpinner";
+import { PasswordChangeHandler } from "./shared/components/PasswordChangeHandler";
+import { logger, logGlobalError, logUnhandledRejection } from "./shared/services/logger";
 
 // Global error handler setup
 const GlobalErrorHandler: React.FC<{ children: React.ReactNode }> = ({
@@ -17,7 +19,7 @@ const GlobalErrorHandler: React.FC<{ children: React.ReactNode }> = ({
   React.useEffect(() => {
     // Handle unhandled promise rejections
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      console.error("Unhandled promise rejection:", event.reason);
+      logUnhandledRejection(event.reason, event.promise);
       showError(
         "Error de aplicación",
         "Ha ocurrido un error inesperado. Por favor, recarga la página."
@@ -27,7 +29,7 @@ const GlobalErrorHandler: React.FC<{ children: React.ReactNode }> = ({
 
     // Handle global JavaScript errors
     const handleGlobalError = (event: ErrorEvent) => {
-      console.error("Global error:", event.error);
+      logGlobalError(event.error);
       showError(
         "Error de aplicación",
         "Ha ocurrido un error inesperado. Por favor, recarga la página."
@@ -60,17 +62,20 @@ const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     // Configurar el manejo de tokens expirados sin mostrar error automático
     setupTokenExpiredHandler(() => {
-      console.warn("Token caducado, manejo silencioso");
+      logger.warn("Token caducado, manejo silencioso", "Auth");
       handleTokenExpired();
     });
 
     // Inicializar autenticación
     const init = async () => {
       try {
+        logger.info("Inicializando autenticación", "Auth");
         await initializeAuth();
+        logger.info("Autenticación inicializada correctamente", "Auth");
       } catch (error) {
-        console.error(
-          "Error durante la inicialización de autenticación:",
+        logger.error(
+          "Error durante la inicialización de autenticación",
+          "Auth",
           error
         );
       }
@@ -85,24 +90,22 @@ const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({
 
 // Main App component with better error handling
 function App() {
-  console.log("App component rendering...");
+  logger.debug("App component rendering...", "App");
 
   return (
     <ErrorBoundary
       onError={(error, errorInfo) => {
         // Log to external service in production
-        console.error("App Error Boundary:", error, errorInfo);
-        if (import.meta.env.PROD) {
-          // para futuro: enviar a un servicio de logging
-        }
+        logGlobalError(error, errorInfo);
       }}
     >
       <ToastProvider>
-        <Router>
+        <Router basename="/portal">
           <GlobalErrorHandler>
             <AuthInitializer>
               <div id="app-container">
                 <AppRoutes />
+                <PasswordChangeHandler />
               </div>
             </AuthInitializer>
           </GlobalErrorHandler>

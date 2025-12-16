@@ -5,21 +5,28 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: aynic-frontend
+      # Si cambias la URL en Dokploy, deberás darle a "Rebuild" (no solo restart).
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+        VITE_APP_NAME: ${VITE_APP_NAME}
+        VITE_APP_VERSION: ${VITE_APP_VERSION}
+    
+    restart: always
+    
     ports:
-      - "8080:80"
+      - "${PORT}:${PORT}"
+    
     environment:
-      - NODE_ENV=development
-      - VITE_API_URL=http://localhost:3001
-    restart: unless-stopped
-    volumes:
-      - ./logs/nginx:/var/log/nginx
+      NODE_ENV: production
+      VITE_API_URL: ${VITE_API_URL}
+
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:80/"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+
     deploy:
       resources:
         limits:
@@ -28,6 +35,9 @@ services:
         reservations:
           memory: 256M
           cpus: '0.25'
-
-volumes:
-  nginx-logs:
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
