@@ -5,21 +5,28 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: aynic-frontend
+      # Si cambias la URL en Dokploy, deberás darle a "Rebuild" (no solo restart).
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+        VITE_APP_NAME: ${VITE_APP_NAME}
+        VITE_APP_VERSION: ${VITE_APP_VERSION}
+    
     restart: always
+    
     ports:
-      - "80"  # Puerto interno del contenedor (nginx en 80)
-    networks:
-      - dokploy-network
+      - "${PORT}:${PORT}"
+    
     environment:
-      - NODE_ENV=production
-      - VITE_API_URL=https://linea.aynisac.com/v1
+      NODE_ENV: production
+      VITE_API_URL: ${VITE_API_URL}
+
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1/"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:80/"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+
     deploy:
       resources:
         limits:
@@ -28,8 +35,9 @@ services:
         reservations:
           memory: 256M
           cpus: '0.25'
-
-# Define la red para comunicación entre contenedores
-networks:
-  dokploy-network:
-    external: true
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
