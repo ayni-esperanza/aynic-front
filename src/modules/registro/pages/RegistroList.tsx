@@ -1498,37 +1498,66 @@ export const RegistroList: React.FC = () => {
               <GridView />
               {/* Paginación para vista grid */}
               {pagination.totalPages > 1 && (
-                <div className="flex items-center justify-between mt-6">
-                  <div className="text-sm text-gray-700">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-6">
+                  <div className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">
                     Mostrando{" "}
-                    {Math.min(
-                      (pagination.currentPage - 1) * pagination.itemsPerPage +
-                      1,
-                      pagination.totalItems
-                    )}{" "}
-                    a{" "}
-                    {Math.min(
-                      pagination.currentPage * pagination.itemsPerPage,
-                      pagination.totalItems
-                    )}
-                    de {pagination.totalItems} registros
+                    <span className="font-semibold">
+                      {Math.min(
+                        (pagination.currentPage - 1) * pagination.itemsPerPage + 1,
+                        pagination.totalItems
+                      )}
+                    </span>
+                    {" "}-{" "}
+                    <span className="font-semibold">
+                      {Math.min(
+                        pagination.currentPage * pagination.itemsPerPage,
+                        pagination.totalItems
+                      )}
+                    </span>
+                    {" "}de{" "}
+                    <span className="font-semibold">{pagination.totalItems}</span>
+                    {" "}registros
                   </div>
-                  <div className="flex items-center space-x-2">
-                    {Array.from(
-                      { length: pagination.totalPages },
-                      (_, i) => i + 1
-                    ).map((page) => (
-                      <button
-                        key={page}
-                        onClick={() => handlePageChange(page)}
-                        className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${page === pagination.currentPage
-                          ? "bg-[#18D043] text-white"
-                          : "text-gray-700 hover:bg-gray-100"
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(pagination.currentPage - 1)}
+                      disabled={pagination.currentPage === 1}
+                      className="text-xs px-2 py-1"
+                    >
+                      Anterior
+                    </Button>
+                    <div className="hidden sm:flex items-center gap-1">
+                      {Array.from(
+                        { length: pagination.totalPages },
+                        (_, i) => i + 1
+                      ).map((page) => (
+                        <button
+                          key={page}
+                          onClick={() => handlePageChange(page)}
+                          className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                            page === pagination.currentPage
+                              ? "bg-[#18D043] text-white shadow-md"
+                              : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                           }`}
-                      >
-                        {page}
-                      </button>
-                    ))}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="sm:hidden text-xs font-medium text-gray-700 dark:text-gray-300 px-2">
+                      {pagination.currentPage} / {pagination.totalPages}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(pagination.currentPage + 1)}
+                      disabled={pagination.currentPage >= pagination.totalPages}
+                      className="text-xs px-2 py-1"
+                    >
+                      Siguiente
+                    </Button>
                   </div>
                 </div>
               )}

@@ -15,7 +15,6 @@ import {
   Check,
   X,
   ExternalLink,
-  ChevronRight,
   Zap,
   TrendingUp,
   TrendingDown,
@@ -346,7 +345,33 @@ export const Dashboard: React.FC = () => {
     alertService.getDashboardSummary.bind(alertService),
     {
       onSuccess: (data) => {
-        setAlertStats(data);
+        // TODO: TEMPORAL - Agregar alerta crítica hardcodeada para testing
+        const alertaHardcoded: Alert = {
+          id: "99999",
+          tipo: "critico",
+          prioridad: "critical",
+          mensaje: "⚠️ ALERTA CRÍTICA DE PRUEBA - Esta es una alerta crítica de prueba para validar el dashboard. Requiere atención inmediata del equipo de seguridad.",
+          leida: false,
+          fecha_creada: new Date(),
+          fecha_leida: undefined,
+          registro_id: "test-registro-999",
+        };
+
+        // Agregar alerta hardcoded a las listas
+        const dataConHardcode = {
+          ...data,
+          total: data.total + 1,
+          noLeidas: data.noLeidas + 1,
+          criticas: [alertaHardcoded, ...data.criticas],
+          recientes: [alertaHardcoded, ...data.recientes],
+          porPrioridad: data.porPrioridad.map(p => 
+            p.prioridad === "critical" 
+              ? { ...p, count: p.count + 1 }
+              : p
+          ),
+        };
+        
+        setAlertStats(dataConHardcode);
       },
       onError: (error) => {
         showError(
@@ -509,17 +534,7 @@ export const Dashboard: React.FC = () => {
     setCurrentPage(1);
   }, [alertFilters]);
 
-  // Calcular métricas de tendencia (simuladas por ahora)
-  const alertTrends = useMemo(() => {
-    if (!alertStats) return null;
-
-    return {
-      totalTrend: { value: "+12%", positive: false },
-      criticalTrend: { value: "-5%", positive: true },
-      unreadTrend: { value: "+8%", positive: false },
-      resolvedTrend: { value: "+15%", positive: true },
-    };
-  }, [alertStats]);
+  // Las tendencias han sido eliminadas ya que no se calculan con datos reales
 
   // Handlers para filtrar alertas al hacer clic en las cards
   const handleFilterByTotal = useCallback(() => {
@@ -583,7 +598,6 @@ export const Dashboard: React.FC = () => {
           color="blue"
           loading={loading}
           description="Todas las alertas del sistema"
-          trend={alertTrends?.totalTrend}
           onClick={handleFilterByTotal}
         />
 
@@ -594,7 +608,6 @@ export const Dashboard: React.FC = () => {
           color="red"
           loading={loading}
           description="Requieren atención inmediata"
-          trend={alertTrends?.criticalTrend}
           onClick={handleFilterByCritical}
         />
 
@@ -605,7 +618,6 @@ export const Dashboard: React.FC = () => {
           color="orange"
           loading={loading}
           description="Alertas pendientes de revisar"
-          trend={alertTrends?.unreadTrend}
           onClick={handleFilterByUnread}
         />
 
@@ -616,7 +628,6 @@ export const Dashboard: React.FC = () => {
           color="green"
           loading={loading}
           description="Alertas procesadas"
-          trend={alertTrends?.resolvedTrend}
           onClick={handleFilterByRead}
         />
       </div>
@@ -816,94 +827,21 @@ export const Dashboard: React.FC = () => {
         </Card>
       </div>
 
-      {/* Alertas Críticas */}
-      {alertStats?.criticas && alertStats.criticas.length > 0 && (
-        <Card className="border-red-200 dark:border-red-800 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20">
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="flex items-center text-lg font-semibold text-red-900 dark:text-red-100">
-                <AlertTriangle className="w-5 h-5 mr-2 text-red-600 dark:text-red-400" />
-                Alertas Críticas Activas
-                <Badge variant="danger" className="ml-2">
-                  {alertStats.criticas.length}
-                </Badge>
-              </h3>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleMarkAllAsRead}
-                className="text-red-600 dark:text-red-400 border-red-300 dark:border-red-700 hover:bg-red-50 dark:hover:bg-red-900/30"
-              >
-                Marcar todas como leídas
-              </Button>
-            </div>
-
-            <div className="space-y-3">
-              {alertStats.criticas.slice(0, 5).map((alert) => (
-                <AlertItem
-                  key={alert.id}
-                  alert={alert}
-                  onMarkAsRead={handleMarkAsRead}
-                  onViewRecord={handleViewRecord}
-                />
-              ))}
-
-              {alertStats.criticas.length > 5 && (
-                <div className="pt-3 text-center">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
-                  >
-                    Ver todas las alertas críticas ({alertStats.criticas.length}
-                    )
-                    <ChevronRight size={16} className="ml-1" />
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-        </Card>
-      )}
-
       {/* Centro de Alertas */}
       <Card ref={alertsCenterRef}>
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="flex items-center text-xl font-semibold text-gray-900 dark:text-white">
-              <Bell className="w-6 h-6 mr-2 text-[#18D043]" />
-              Centro de Gestión de Alertas
-              {alertStats && (
-                <Badge variant="primary" className="ml-2">
-                  {filteredAlerts.length} de {alertStats.total}
-                </Badge>
-              )}
-            </h3>
-
-            <div className="flex items-center space-x-3">
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={handleMarkAllAsRead}
-                disabled={!alertStats?.noLeidas}
-                className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
-              >
-                <Check size={16} className="mr-1" />
-                Marcar todas leídas
-              </Button>
-            </div>
-          </div>
-
-          {/* Filtros de Alertas */}
-          <div className="flex flex-wrap items-center gap-4 p-4 mb-6 rounded-lg bg-gray-50 dark:bg-gray-800">
-            <div className="flex items-center space-x-2">
-              <Filter size={16} className="text-gray-500 dark:text-gray-400" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Filtros:
+        <div className="p-3">
+          {/* Barra de Filtros y Acciones */}
+          <div className="p-2 mb-3 rounded-lg bg-gray-50 dark:bg-gray-800">
+            <div className="flex items-center space-x-1.5 mb-2">
+              <Filter size={14} className="text-gray-500 dark:text-gray-400" />
+              <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                FILTROS RÁPIDOS:
               </span>
             </div>
-
-            <Select
+            
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Select
               value={alertFilters.tipo}
               onChange={(e) =>
                 setAlertFilters((prev) => ({
@@ -917,7 +855,7 @@ export const Dashboard: React.FC = () => {
                 { value: "vencido", label: "🔴 Vencido" },
                 { value: "critico", label: "🚨 Crítico" },
               ]}
-              className="min-w-40"
+              className="min-w-36 text-xs"
             />
 
             <Select
@@ -935,7 +873,7 @@ export const Dashboard: React.FC = () => {
                 { value: "high", label: "🟠 Alta" },
                 { value: "critical", label: "🔴 Crítica" },
               ]}
-              className="min-w-40"
+              className="min-w-36 text-xs"
             />
 
             <Select
@@ -951,7 +889,7 @@ export const Dashboard: React.FC = () => {
                 { value: "false", label: "📬 No leídas" },
                 { value: "true", label: "📭 Leídas" },
               ]}
-              className="min-w-32"
+              className="min-w-28 text-xs"
             />
 
             {(alertFilters.tipo ||
@@ -963,12 +901,27 @@ export const Dashboard: React.FC = () => {
                 onClick={() =>
                   setAlertFilters({ tipo: "", prioridad: "", leida: "" })
                 }
-                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 px-2 py-1"
               >
-                <X size={16} className="mr-1" />
-                Limpiar filtros
+                <X size={14} className="mr-1" />
+                Limpiar
               </Button>
             )}
+            </div>
+            
+            {/* Botón Marcar todas como leídas */}
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleMarkAllAsRead}
+                  className="text-xs text-green-600 dark:text-green-400 border-green-300 dark:border-green-700 hover:bg-green-50 dark:hover:bg-green-900/30 px-2 py-1"
+                >
+                  <Check size={14} className="mr-1" />
+                  Marcar todas leídas
+                </Button>
+              </div>
+            </div>
           </div>
 
           {/* Estadísticas rápidas de filtros aplicados */}
@@ -1035,37 +988,6 @@ export const Dashboard: React.FC = () => {
             </div>
           ) : (
             <>
-              {/* Resumen de alertas filtradas */}
-              <div className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-4">
-                <div className="p-3 text-center border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800">
-                  <div className="text-lg font-bold text-gray-900 dark:text-white">
-                    {filteredAlerts.length}
-                  </div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400">Total mostradas</div>
-                </div>
-                <div className="p-3 text-center border border-red-200 dark:border-red-800 rounded-lg bg-red-50 dark:bg-red-900/20">
-                  <div className="text-lg font-bold text-red-900 dark:text-red-100">
-                    {
-                      filteredAlerts.filter((a) => a.prioridad === "critical")
-                        .length
-                    }
-                  </div>
-                  <div className="text-xs text-red-600 dark:text-red-400">Críticas</div>
-                </div>
-                <div className="p-3 text-center border border-orange-200 dark:border-orange-800 rounded-lg bg-orange-50 dark:bg-orange-900/20">
-                  <div className="text-lg font-bold text-orange-900 dark:text-orange-100">
-                    {filteredAlerts.filter((a) => !a.leida).length}
-                  </div>
-                  <div className="text-xs text-orange-600 dark:text-orange-400">No leídas</div>
-                </div>
-                <div className="p-3 text-center border border-green-200 dark:border-green-800 rounded-lg bg-green-50 dark:bg-green-900/20">
-                  <div className="text-lg font-bold text-green-900 dark:text-green-100">
-                    {filteredAlerts.filter((a) => a.leida).length}
-                  </div>
-                  <div className="text-xs text-green-600 dark:text-green-400">Procesadas</div>
-                </div>
-              </div>
-
               {/* Lista de alertas paginada */}
               <div className="space-y-4">
                 {paginatedAlerts.map((alert) => (
@@ -1125,35 +1047,7 @@ export const Dashboard: React.FC = () => {
                 </div>
               )}
 
-              {/* Acciones masivas */}
-              {filteredAlerts.some((alert) => !alert.leida) && (
-                <div className="flex items-center justify-between pt-4 mt-6 border-t border-gray-200 dark:border-gray-700">
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    {filteredAlerts.filter((a) => !a.leida).length} alertas sin
-                    leer en la vista actual
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={handleMarkAllAsRead}
-                      className="text-green-600 dark:text-green-400 border-green-300 dark:border-green-700 hover:bg-green-50 dark:hover:bg-green-900/30"
-                    >
-                      <Check size={16} className="mr-1" />
-                      Marcar todas como leídas
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => navigate("/registro")}
-                      className="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/30"
-                    >
-                      <Database size={16} className="mr-1" />
-                      Ver registros
-                    </Button>
-                  </div>
-                </div>
-              )}
+
             </>
           )}
         </div>

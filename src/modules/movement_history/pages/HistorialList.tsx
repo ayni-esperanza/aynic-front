@@ -254,28 +254,30 @@ const PaginationComponent: React.FC<PaginationComponentProps> = React.memo(
     }
 
     return (
-      <div className="flex flex-col items-center justify-between px-4 py-3 mt-6 space-y-3 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-700 border-t border-gray-200 dark:border-gray-600 shadow-sm sm:flex-row sm:space-y-0 rounded-lg">
+      <div className="flex flex-col items-center justify-between px-3 sm:px-4 py-3 mt-6 space-y-3 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-700 border-t border-gray-200 dark:border-gray-600 shadow-sm sm:flex-row sm:space-y-0 rounded-lg">
         {/* Información de registros */}
-        <div className="flex items-center space-x-3">
-          <div className="px-2.5 py-1.5 text-xs text-gray-700 dark:text-gray-200 rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600">
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:space-x-3">
+          <div className="px-2 sm:px-2.5 py-1.5 text-xs text-gray-700 dark:text-gray-200 rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600">
             <span className="font-semibold">
               {Math.min(
                 (pagination.currentPage - 1) * 10 + 1,
                 pagination.totalItems
-              )}{" "}
-              - {Math.min(pagination.currentPage * 10, pagination.totalItems)}
+              )}
+            </span>
+            <span className="text-gray-500 dark:text-gray-400"> - </span>
+            <span className="font-semibold">
+              {Math.min(pagination.currentPage * 10, pagination.totalItems)}
             </span>
             <span className="text-gray-500 dark:text-gray-400"> de </span>
             <span className="font-semibold">{pagination.totalItems}</span>
-            <span className="text-gray-500 dark:text-gray-400"> registros</span>
           </div>
 
-          <div className="px-2.5 py-1.5 text-xs text-gray-600 dark:text-gray-300 rounded-md bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-            Página{" "}
+          <div className="px-2 sm:px-2.5 py-1.5 text-xs text-gray-600 dark:text-gray-300 rounded-md bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+            <span className="text-gray-500 dark:text-gray-400">Pág </span>
             <span className="font-semibold text-[#16a34a] dark:text-[#18D043]">
               {pagination.currentPage}
-            </span>{" "}
-            de{" "}
+            </span>
+            <span className="text-gray-500 dark:text-gray-400"> / </span>
             <span className="font-semibold text-[#16a34a] dark:text-[#18D043]">
               {pagination.totalPages}
             </span>
@@ -283,7 +285,7 @@ const PaginationComponent: React.FC<PaginationComponentProps> = React.memo(
         </div>
 
         {/* Controles de paginación */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-1 sm:space-x-2">
           {/* Botón Anterior */}
           <Button
             variant="outline"
@@ -296,7 +298,7 @@ const PaginationComponent: React.FC<PaginationComponentProps> = React.memo(
           </Button>
 
           {/* Números de página */}
-          <div className="flex items-center space-x-1">
+          <div className="hidden md:flex items-center space-x-1">
             {/* Primera página si no está visible */}
             {startPage > 1 && (
               <>
