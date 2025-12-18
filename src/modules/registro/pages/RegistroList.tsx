@@ -1306,7 +1306,7 @@ export const RegistroList: React.FC = () => {
                   <Select
                     value={statusFilter}
                     onChange={handleStatusFilterChange}
-                    className="h-8"
+                    className="h-8 text-xs !py-0"
                     options={[
                       { value: "", label: "Todos los estados" },
                       { value: "activo", label: "Activo" },
@@ -1356,7 +1356,7 @@ export const RegistroList: React.FC = () => {
                   <Select
                     value={anclajeTipoFilter}
                     onChange={handleAnclajeTipoFilterChange}
-                    className="h-8"
+                    className="h-8 text-xs !py-0"
                     options={[
                       { value: "", label: "Todos los tipos" },
                       { value: "anclaje_terminal", label: "Anclaje Terminal" },
