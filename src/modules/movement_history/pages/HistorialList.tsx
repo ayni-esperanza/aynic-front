@@ -168,7 +168,7 @@ const MovementHistoryItem: React.FC<{
 
       {/* Detalles expandibles */}
       {showDetails && (
-        <div className="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="pt-4 mt-4">
           <JsonDataView
             title="Ver datos eliminados"
             data={movement.previous_values}
@@ -254,7 +254,7 @@ const PaginationComponent: React.FC<PaginationComponentProps> = React.memo(
     }
 
     return (
-      <div className="flex flex-col items-center justify-between px-3 sm:px-4 py-3 mt-6 space-y-3 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-700 border-t border-gray-200 dark:border-gray-600 shadow-sm sm:flex-row sm:space-y-0 rounded-lg">
+      <div className="flex flex-col items-center justify-between px-3 sm:px-4 py-3 mt-6 space-y-3 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-700 shadow-sm sm:flex-row sm:space-y-0 rounded-lg">
         {/* Información de registros */}
         <div className="flex flex-wrap items-center justify-center gap-2 sm:space-x-3">
           <div className="px-2 sm:px-2.5 py-1.5 text-xs text-gray-700 dark:text-gray-200 rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600">
@@ -668,9 +668,6 @@ export const HistorialList: React.FC = () => {
         </div>
       )}
 
-      {/* Separador */}
-      {statistics && <div className="border-t border-gray-200 dark:border-gray-700" />}
-
       {/* FILTROS CON ROL Y USUARIO */}
       <Card padding="sm">
         <div className="space-y-2">
@@ -768,9 +765,6 @@ export const HistorialList: React.FC = () => {
           </div>
         </div>
       </Card>
-
-      {/* Separador */}
-      <div className="border-t border-gray-200 dark:border-gray-700" />
 
       {/* Lista de movimientos */}
       <Card padding="md">
