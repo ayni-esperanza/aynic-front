@@ -709,15 +709,6 @@ export const EditarRegistroForm: React.FC<EditarRegistroFormProps> = ({
   const clienteLabelClass = isModal ? "text-[11px]" : "text-sm";
 
   // Render
-  if (loadingRegistro) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        <LoadingSpinner size="lg" />
-        <p className="ml-4 text-gray-600 dark:text-gray-400">Cargando registro...</p>
-      </div>
-    );
-  }
-
   return (
     <div className={outerContainerClass}>
       <div className={contentWrapperClass}>
