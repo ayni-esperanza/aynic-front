@@ -255,7 +255,7 @@ const AlertItem: React.FC<{
             </div>
 
             {alert.record && (
-              <div className="p-2 mb-2 bg-white dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-lg">
+              <div className="p-2 mb-2 bg-white border border-gray-100 rounded-lg dark:bg-gray-700 dark:border-gray-600">
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="flex items-center space-x-1">
                     <Database size={12} className="text-gray-400 dark:text-gray-500" />
@@ -335,48 +335,21 @@ export const Dashboard: React.FC = () => {
     prioridad: "" as Alert["prioridad"] | "",
     leida: "" as boolean | "",
   });
-  
+
   // Estados de paginación
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Hooks de API
   const { loading: loadingAlertStats, execute: loadAlertStats } = useApi(
     alertService.getDashboardSummary.bind(alertService),
     {
       onSuccess: (data) => {
-        // TODO: TEMPORAL - Agregar alerta crítica hardcodeada para testing
-        const alertaHardcoded: Alert = {
-          id: "99999",
-          tipo: "critico",
-          prioridad: "critical",
-          mensaje: "⚠️ ALERTA CRÍTICA DE PRUEBA - Esta es una alerta crítica de prueba para validar el dashboard. Requiere atención inmediata del equipo de seguridad.",
-          leida: false,
-          fecha_creada: new Date(),
-          fecha_leida: undefined,
-          registro_id: "test-registro-999",
-        };
-
-        // Agregar alerta hardcoded a las listas
-        const dataConHardcode = {
-          ...data,
-          total: data.total + 1,
-          noLeidas: data.noLeidas + 1,
-          criticas: [alertaHardcoded, ...data.criticas],
-          recientes: [alertaHardcoded, ...data.recientes],
-          porPrioridad: data.porPrioridad.map(p => 
-            p.prioridad === "critical" 
-              ? { ...p, count: p.count + 1 }
-              : p
-          ),
-        };
-        
-        setAlertStats(dataConHardcode);
+        setAlertStats(data);
       },
       onError: (error) => {
         showError(
           "Error al cargar estadísticas de alertas",
-          (typeof error === "object" && error !== null && "message" in error)
+          typeof error === "object" && error !== null && "message" in error
             ? (error as Error).message
             : String(error)
         );
@@ -540,28 +513,40 @@ export const Dashboard: React.FC = () => {
   const handleFilterByTotal = useCallback(() => {
     setAlertFilters({ tipo: "", prioridad: "", leida: "" });
     setTimeout(() => {
-      alertsCenterRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      alertsCenterRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
     }, 100);
   }, []);
 
   const handleFilterByCritical = useCallback(() => {
     setAlertFilters({ tipo: "", prioridad: "critical", leida: "" });
     setTimeout(() => {
-      alertsCenterRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      alertsCenterRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
     }, 100);
   }, []);
 
   const handleFilterByUnread = useCallback(() => {
     setAlertFilters({ tipo: "", prioridad: "", leida: false });
     setTimeout(() => {
-      alertsCenterRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      alertsCenterRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
     }, 100);
   }, []);
 
   const handleFilterByRead = useCallback(() => {
     setAlertFilters({ tipo: "", prioridad: "", leida: true });
     setTimeout(() => {
-      alertsCenterRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      alertsCenterRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
     }, 100);
   }, []);
 
@@ -694,7 +679,7 @@ export const Dashboard: React.FC = () => {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">
+                          <span className="text-sm font-medium text-gray-700 capitalize dark:text-gray-300">
                             {item.tipo.replace("_", " ")}
                           </span>
                           <span
@@ -716,7 +701,7 @@ export const Dashboard: React.FC = () => {
 
                 {(!alertStats?.porTipo || alertStats.porTipo.length === 0) && (
                   <div className="flex flex-col items-center justify-center h-24 text-center">
-                    <Bell className="w-7 h-7 mb-2 text-gray-300 dark:text-gray-600" />
+                    <Bell className="mb-2 text-gray-300 w-7 h-7 dark:text-gray-600" />
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       No hay alertas por tipo
                     </p>
@@ -792,7 +777,7 @@ export const Dashboard: React.FC = () => {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">
+                          <span className="text-sm font-medium text-gray-700 capitalize dark:text-gray-300">
                             {item.prioridad}
                           </span>
                           <span
@@ -801,7 +786,7 @@ export const Dashboard: React.FC = () => {
                             {item.count} ({percentage}%)
                           </span>
                         </div>
-                        <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
+                        <div className="w-full h-2 bg-gray-200 rounded-full dark:bg-gray-700">
                           <div
                             className={`h-2 rounded-full ${color.bg} transition-all duration-300`}
                             style={{ width: `${percentage}%` }}
@@ -815,7 +800,7 @@ export const Dashboard: React.FC = () => {
                 {(!alertStats?.porPrioridad ||
                   alertStats.porPrioridad.length === 0) && (
                   <div className="flex flex-col items-center justify-center h-24 text-center">
-                    <BarChart3 className="w-7 h-7 mb-2 text-gray-300 dark:text-gray-600" />
+                    <BarChart3 className="mb-2 text-gray-300 w-7 h-7 dark:text-gray-600" />
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       No hay alertas por prioridad
                     </p>
@@ -838,84 +823,85 @@ export const Dashboard: React.FC = () => {
                 FILTROS RÁPIDOS:
               </span>
             </div>
-            
+
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex flex-wrap items-center gap-2">
                 <Select
-              value={alertFilters.tipo}
-              onChange={(e) =>
-                setAlertFilters((prev) => ({
-                  ...prev,
-                  tipo: e.target.value as Alert["tipo"] | "",
-                }))
-              }
-              options={[
-                { value: "", label: "Todos los tipos" },
-                { value: "por_vencer", label: "🟡 Por Vencer" },
-                { value: "vencido", label: "🔴 Vencido" },
-                { value: "critico", label: "🚨 Crítico" },
-              ]}
-              className="min-w-36 text-xs"
-            />
+                  value={alertFilters.tipo}
+                  onChange={(e) =>
+                    setAlertFilters((prev) => ({
+                      ...prev,
+                      tipo: e.target.value as Alert["tipo"] | "",
+                    }))
+                  }
+                  options={[
+                    { value: "", label: "Todos los tipos" },
+                    { value: "por_vencer", label: "🟡 Por Vencer" },
+                    { value: "vencido", label: "🔴 Vencido" },
+                    { value: "critico", label: "🚨 Crítico" },
+                  ]}
+                  className="text-xs min-w-36"
+                />
 
-            <Select
-              value={alertFilters.prioridad}
-              onChange={(e) =>
-                setAlertFilters((prev) => ({
-                  ...prev,
-                  prioridad: e.target.value as Alert["prioridad"] | "",
-                }))
-              }
-              options={[
-                { value: "", label: "Todas las prioridades" },
-                { value: "low", label: "⚪ Baja" },
-                { value: "medium", label: "🔵 Media" },
-                { value: "high", label: "🟠 Alta" },
-                { value: "critical", label: "🔴 Crítica" },
-              ]}
-              className="min-w-36 text-xs"
-            />
+                <Select
+                  value={alertFilters.prioridad}
+                  onChange={(e) =>
+                    setAlertFilters((prev) => ({
+                      ...prev,
+                      prioridad: e.target.value as Alert["prioridad"] | "",
+                    }))
+                  }
+                  options={[
+                    { value: "", label: "Todas las prioridades" },
+                    { value: "low", label: "⚪ Baja" },
+                    { value: "medium", label: "🔵 Media" },
+                    { value: "high", label: "🟠 Alta" },
+                    { value: "critical", label: "🔴 Crítica" },
+                  ]}
+                  className="text-xs min-w-36"
+                />
 
-            <Select
-              value={alertFilters.leida.toString()}
-              onChange={(e) =>
-                setAlertFilters((prev) => ({
-                  ...prev,
-                  leida: e.target.value === "" ? "" : e.target.value === "true",
-                }))
-              }
-              options={[
-                { value: "", label: "Todas" },
-                { value: "false", label: "📬 No leídas" },
-                { value: "true", label: "📭 Leídas" },
-              ]}
-              className="min-w-28 text-xs"
-            />
+                <Select
+                  value={alertFilters.leida.toString()}
+                  onChange={(e) =>
+                    setAlertFilters((prev) => ({
+                      ...prev,
+                      leida:
+                        e.target.value === "" ? "" : e.target.value === "true",
+                    }))
+                  }
+                  options={[
+                    { value: "", label: "Todas" },
+                    { value: "false", label: "📬 No leídas" },
+                    { value: "true", label: "📭 Leídas" },
+                  ]}
+                  className="text-xs min-w-28"
+                />
 
-            {(alertFilters.tipo ||
-              alertFilters.prioridad ||
-              alertFilters.leida !== "") && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() =>
-                  setAlertFilters({ tipo: "", prioridad: "", leida: "" })
-                }
-                className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 px-2 py-1"
-              >
-                <X size={14} className="mr-1" />
-                Limpiar
-              </Button>
-            )}
-            </div>
-            
-            {/* Botón Marcar todas como leídas */}
+                {(alertFilters.tipo ||
+                  alertFilters.prioridad ||
+                  alertFilters.leida !== "") && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() =>
+                      setAlertFilters({ tipo: "", prioridad: "", leida: "" })
+                    }
+                    className="px-2 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                  >
+                    <X size={14} className="mr-1" />
+                    Limpiar
+                  </Button>
+                )}
+              </div>
+
+              {/* Botón Marcar todas como leídas */}
               <div className="flex items-center gap-2">
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={handleMarkAllAsRead}
-                  className="text-xs text-green-600 dark:text-green-400 border-green-300 dark:border-green-700 hover:bg-green-50 dark:hover:bg-green-900/30 px-2 py-1"
+                  className="px-2 py-1 text-xs text-green-600 border-green-300 dark:text-green-400 dark:border-green-700 hover:bg-green-50 dark:hover:bg-green-900/30"
                 >
                   <Check size={14} className="mr-1" />
                   Marcar todas leídas
@@ -928,26 +914,29 @@ export const Dashboard: React.FC = () => {
           {(alertFilters.tipo ||
             alertFilters.prioridad ||
             alertFilters.leida !== "") && (
-            <div className="flex items-center justify-between p-3 mb-4 border border-blue-200 dark:border-blue-800 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+            <div className="flex items-center justify-between p-3 mb-4 border border-blue-200 rounded-lg dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20">
               <div className="flex items-center space-x-2">
-                <Activity size={16} className="text-blue-600 dark:text-blue-400" />
+                <Activity
+                  size={16}
+                  className="text-blue-600 dark:text-blue-400"
+                />
                 <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
                   Filtros aplicados: {filteredAlerts.length} alertas encontradas
                 </span>
               </div>
               <div className="flex items-center space-x-4 text-xs text-blue-600 dark:text-blue-400">
                 {alertFilters.tipo && (
-                  <span className="px-2 py-1 bg-white dark:bg-gray-700 rounded-md">
+                  <span className="px-2 py-1 bg-white rounded-md dark:bg-gray-700">
                     Tipo: {alertFilters.tipo.replace("_", " ")}
                   </span>
                 )}
                 {alertFilters.prioridad && (
-                  <span className="px-2 py-1 bg-white dark:bg-gray-700 rounded-md">
+                  <span className="px-2 py-1 bg-white rounded-md dark:bg-gray-700">
                     Prioridad: {alertFilters.prioridad}
                   </span>
                 )}
                 {alertFilters.leida !== "" && (
-                  <span className="px-2 py-1 bg-white dark:bg-gray-700 rounded-md">
+                  <span className="px-2 py-1 bg-white rounded-md dark:bg-gray-700">
                     Estado: {alertFilters.leida ? "Leídas" : "No leídas"}
                   </span>
                 )}
@@ -959,11 +948,13 @@ export const Dashboard: React.FC = () => {
           {loading ? (
             <div className="flex items-center justify-center h-48">
               <LoadingSpinner size="lg" />
-              <span className="ml-3 text-gray-600 dark:text-gray-400">Cargando alertas...</span>
+              <span className="ml-3 text-gray-600 dark:text-gray-400">
+                Cargando alertas...
+              </span>
             </div>
           ) : filteredAlerts.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-48 text-center">
-              <div className="flex items-center justify-center w-16 h-16 mb-4 bg-gray-100 dark:bg-gray-800 rounded-full">
+              <div className="flex items-center justify-center w-16 h-16 mb-4 bg-gray-100 rounded-full dark:bg-gray-800">
                 <Bell className="w-8 h-8 text-gray-400 dark:text-gray-500" />
               </div>
               <h4 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">
@@ -1004,9 +995,14 @@ export const Dashboard: React.FC = () => {
               {totalPages > 1 && (
                 <div className="flex items-center justify-between pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
                   <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, filteredAlerts.length)} de {filteredAlerts.length} alertas
+                    Mostrando {(currentPage - 1) * itemsPerPage + 1} a{" "}
+                    {Math.min(
+                      currentPage * itemsPerPage,
+                      filteredAlerts.length
+                    )}{" "}
+                    de {filteredAlerts.length} alertas
                   </div>
-                  
+
                   <div className="flex items-center space-x-2">
                     <Button
                       size="sm"
@@ -1018,21 +1014,25 @@ export const Dashboard: React.FC = () => {
                       <ChevronLeft size={16} className="mr-1" />
                       Anterior
                     </Button>
-                    
+
                     <div className="flex items-center space-x-1">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                        <Button
-                          key={page}
-                          size="sm"
-                          variant={page === currentPage ? "primary" : "outline"}
-                          onClick={() => setCurrentPage(page)}
-                          className="w-8 h-8 p-0"
-                        >
-                          {page}
-                        </Button>
-                      ))}
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                        (page) => (
+                          <Button
+                            key={page}
+                            size="sm"
+                            variant={
+                              page === currentPage ? "primary" : "outline"
+                            }
+                            onClick={() => setCurrentPage(page)}
+                            className="w-8 h-8 p-0"
+                          >
+                            {page}
+                          </Button>
+                        )
+                      )}
                     </div>
-                    
+
                     <Button
                       size="sm"
                       variant="outline"
@@ -1046,8 +1046,6 @@ export const Dashboard: React.FC = () => {
                   </div>
                 </div>
               )}
-
-
             </>
           )}
         </div>
