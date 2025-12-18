@@ -68,9 +68,9 @@ const MaintenanceDetailModal: React.FC<{
   deleting?: boolean;
 }> = ({ maintenance, open, onClose, onDelete, deleting }) => {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const modalRef = useModalClose({ isOpen: open, onClose });
   
   if (!open || !maintenance) return null;
-  const modalRef = useModalClose({ isOpen: open, onClose });
 
   const hasLengthChange = maintenance.previous_length_meters && maintenance.new_length_meters;
   const lengthChange = hasLengthChange

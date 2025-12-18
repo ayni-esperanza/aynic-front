@@ -424,11 +424,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
 
           {/* Dropdown de alertas */}
           {showNotifications && (
-            <div className={`absolute ${isCollapsed ? 'left-full ml-2' : 'left-0'} bottom-0 z-50 w-96 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl rounded-xl`}>
-              <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-[#18D043]/5 to-green-50 dark:from-[#18D043]/10 dark:to-gray-700">
+            <div className={`absolute ${isCollapsed ? 'left-full ml-2' : 'left-0'} bottom-0 z-50 w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl rounded-lg`}>
+              <div className="p-2.5 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-[#18D043]/5 to-green-50 dark:from-[#18D043]/10 dark:to-gray-700">
                 <div className="flex items-center justify-between">
-                  <h3 className="flex items-center text-lg font-semibold text-gray-900 dark:text-white">
-                    <AlertTriangle className="w-5 h-5 mr-2 text-[#16a34a] dark:text-[#18D043]" />
+                  <h3 className="flex items-center text-sm font-semibold text-gray-900 dark:text-white">
+                    <AlertTriangle className="w-4 h-4 mr-1.5 text-[#16a34a] dark:text-[#18D043]" />
                     Alertas Activas
                   </h3>
                   {alerts.length > 0 && (
@@ -436,33 +436,33 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
                       size="sm"
                       variant="ghost"
                       onClick={handleViewDashboard}
-                      className="text-[#16a34a] hover:text-[#15803d] text-xs"
+                      className="text-[#16a34a] hover:text-[#15803d] text-xs h-6 px-2"
                     >
-                      Ver dashboard
+                      Dashboard
                     </Button>
                   )}
                 </div>
                 {unreadCount > 0 && (
-                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                    {unreadCount} alerta{unreadCount !== 1 ? "s" : ""} sin revisar
+                  <p className="mt-0.5 text-xs text-gray-600 dark:text-gray-300">
+                    {unreadCount} sin revisar
                   </p>
                 )}
               </div>
 
-              <div className="overflow-y-auto max-h-80">
+              <div className="overflow-y-auto max-h-72">
                 {loadingAlerts ? (
-                  <div className="flex items-center justify-center p-6">
-                    <LoadingSpinner size="sm" className="mr-3" />
-                    <span className="text-gray-600 dark:text-gray-300">Cargando alertas...</span>
+                  <div className="flex items-center justify-center p-4">
+                    <LoadingSpinner size="sm" className="mr-2" />
+                    <span className="text-sm text-gray-600 dark:text-gray-300">Cargando...</span>
                   </div>
                 ) : alerts.length === 0 ? (
-                  <div className="p-6 text-center">
-                    <Bell className="w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
-                    <p className="font-medium text-gray-500 dark:text-gray-400">
+                  <div className="p-4 text-center">
+                    <Bell className="w-10 h-10 mx-auto mb-2 text-gray-300 dark:text-gray-600" />
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                       No hay alertas pendientes
                     </p>
-                    <p className="mt-1 text-sm text-gray-400 dark:text-gray-500">
-                      Todas las alertas han sido revisadas
+                    <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
+                      Todas revisadas
                     </p>
                   </div>
                 ) : (
@@ -470,15 +470,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
                     {alerts.map((alert) => (
                       <div
                         key={alert.id}
-                        className={`p-4 border-l-4 transition-all duration-200 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 ${getNotificationColor(alert)}`}
+                        className={`p-2.5 border-l-3 transition-all duration-200 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 ${getNotificationColor(alert)}`}
                       >
-                        <div className="flex items-start space-x-3">
-                          <div className="flex-shrink-0 mt-1">
+                        <div className="flex items-start space-x-2">
+                          <div className="flex-shrink-0 mt-0.5">
                             {getNotificationIcon(alert)}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between mb-1">
-                              <div className="flex items-center space-x-2">
+                              <div className="flex items-center space-x-1.5">
                                 <Badge
                                   variant={
                                     alert.prioridad === "critical"
@@ -491,35 +491,35 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
                                 >
                                   {alert.tipo.replace("_", " ").toUpperCase()}
                                 </Badge>
-                                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                                <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
                               </div>
                             </div>
 
-                            <p className="mb-1 text-sm font-medium text-gray-900 dark:text-white line-clamp-2">
+                            <p className="mb-1 text-xs font-medium text-gray-900 dark:text-white line-clamp-2">
                               {alert.mensaje}
                             </p>
 
                             {alert.record && (
-                              <div className="flex items-center mb-2 space-x-3 text-xs text-gray-500 dark:text-gray-400">
+                              <div className="flex items-center mb-1.5 space-x-2 text-[10px] text-gray-500 dark:text-gray-400">
                                 <span>📋 {alert.record.codigo}</span>
                                 <span>👤 {alert.record.cliente}</span>
                               </div>
                             )}
 
                             <div className="flex items-center justify-between">
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                              <span className="text-[10px] text-gray-500 dark:text-gray-400">
                                 {formatDateTime(alert.fecha_creada)}
                               </span>
 
-                              <div className="flex items-center space-x-1">
+                              <div className="flex items-center space-x-0.5">
                                 <Button
                                   size="sm"
                                   variant="ghost"
                                   onClick={(e) => handleMarkAsRead(alert.id, e)}
-                                  className="h-6 px-2 py-1 text-xs"
+                                  className="h-5 px-1.5 py-0.5 text-xs"
                                   title="Marcar como leída"
                                 >
-                                  <Check size={12} />
+                                  <Check size={11} />
                                 </Button>
 
                                 {alert.record && (
@@ -527,10 +527,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
                                     size="sm"
                                     variant="ghost"
                                     onClick={(e) => handleViewRecord(alert.record!.id, e)}
-                                    className="h-6 px-2 py-1 text-xs"
+                                    className="h-5 px-1.5 py-0.5 text-xs"
                                     title="Ver registro"
                                   >
-                                    <ExternalLink size={12} />
+                                    <ExternalLink size={11} />
                                   </Button>
                                 )}
                               </div>
@@ -544,14 +544,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
               </div>
 
               {alerts.length > 0 && (
-                <div className="p-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+                <div className="p-2 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={handleViewDashboard}
-                    className="w-full text-[#16a34a] dark:text-[#18D043] hover:text-[#15803d] dark:hover:text-[#16a34a] font-medium"
+                    className="w-full text-[#16a34a] dark:text-[#18D043] hover:text-[#15803d] dark:hover:text-[#16a34a] font-medium text-xs h-7"
                   >
-                    Ver todas las alertas
+                    Ver todas
                   </Button>
                 </div>
               )}
