@@ -160,7 +160,7 @@ export const ReportsSection: React.FC = () => {
               icon={showFilters ? X : Filter}
               className={`w-full sm:w-auto h-8 ${
                 showFilters
-                  ? "bg-emerald-600 dark:bg-emerald-600 text-white border-emerald-600 dark:border-emerald-600"
+                  ? "bg-emerald-600 dark:bg-emerald-500 !text-white !border-white dark:!text-white dark:!border-white [&_svg]:!text-white"
                   : "border-emerald-300 dark:border-emerald-600 text-emerald-600 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/40"
               }`}
             >

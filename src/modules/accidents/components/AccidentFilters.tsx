@@ -140,7 +140,7 @@ export const AccidentFilters: React.FC<AccidentFiltersProps> = ({
           onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
           className={`h-10 w-full inline-flex items-center justify-center rounded-xl font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 border-2 text-[#18D043] dark:text-[#18D043] hover:bg-[#18D043] hover:text-white dark:hover:bg-[#18D043] dark:hover:text-white focus:ring-[#18D043]/20 dark:focus:ring-[#18D043]/30 shadow-sm hover:shadow-lg px-2 text-sm gap-1.5 ${
             showAdvancedFilters 
-              ? "bg-[#18D043] text-white border-[#18D043] dark:border-[#18D043]" 
+              ? "bg-[#18D043] !text-white !border-white [&_svg]:!text-white" 
               : "border-gray-300 dark:border-gray-600"
           }`}
           aria-expanded={showAdvancedFilters}

@@ -947,7 +947,7 @@ export const RegistroList: React.FC = () => {
             icon={FileText}
             className={
               showReports
-                ? "bg-emerald-600 text-white border-white dark:bg-emerald-500 dark:text-white dark:border-white"
+                ? "bg-emerald-600 !text-white !border-white dark:bg-emerald-500 dark:!text-white dark:!border-white [&_svg]:!text-white"
                 : "border-emerald-300 dark:border-emerald-700 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30"
             }
           >
@@ -1188,7 +1188,7 @@ export const RegistroList: React.FC = () => {
                 icon={showFilters ? SlidersHorizontal : Filter}
                 className={
                   showFilters
-                    ? "bg-[#18D043] text-white border-[#18D043] h-8"
+                    ? "bg-[#18D043] !text-white !border-white dark:!border-white [&_svg]:!text-white h-8"
                     : "border-gray-300 dark:border-gray-600 h-8"
                 }
               >
