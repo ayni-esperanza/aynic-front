@@ -947,8 +947,8 @@ export const RegistroList: React.FC = () => {
             icon={FileText}
             className={
               showReports
-                ? "bg-orange-500 text-white border-orange-500"
-                : "border-orange-300 dark:border-orange-700 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30"
+                ? "bg-emerald-600 text-white border-white dark:bg-emerald-500 dark:text-white dark:border-white"
+                : "border-emerald-300 dark:border-emerald-700 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30"
             }
           >
             Reportes
@@ -1088,17 +1088,17 @@ export const RegistroList: React.FC = () => {
 
       {/* Controles y filtros */}
       <Card className="border border-gray-200 dark:border-gray-700 shadow-sm bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-800">
-        <div className="p-2.5">
-          <div className="flex items-center justify-between mb-1.5">
+        <div className="p-2">
+          <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">
               <Filter className="w-4 h-4 text-[#18D043]" />
               Filtros rápidos
             </div>
           </div>
           {/* Top bar: filtros + botones */}
-          <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-2">
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-1.5">
             {/* Contenedor de inputs de filtro */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-1 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-1 gap-1.5">
               {/* Código */}
               <div className="flex-1 min-w-0">
                 <div className="relative">
@@ -1112,7 +1112,7 @@ export const RegistroList: React.FC = () => {
                     placeholder="Código..."
                     value={searchTerm}
                     onChange={handleTextFilterChange("codigo", setSearchTerm)}
-                    className="h-9 pl-8 text-sm border-gray-300 dark:border-gray-600 focus:border-[#18D043] focus:ring-[#18D043]/20"
+                    className="h-8 pl-8 text-sm border-gray-300 dark:border-gray-600 focus:border-[#18D043] focus:ring-[#18D043]/20"
                   />
                 </div>
               </div>
@@ -1133,7 +1133,7 @@ export const RegistroList: React.FC = () => {
                       "codigo_placa",
                       setCodigoPlacaFilter
                     )}
-                    className="h-9 pl-8 text-sm border-gray-300 dark:border-gray-600 focus:border-[#18D043] focus:ring-[#18D043]/20"
+                    className="h-8 pl-8 text-sm border-gray-300 dark:border-gray-600 focus:border-[#18D043] focus:ring-[#18D043]/20"
                   />
                 </div>
               </div>
@@ -1154,7 +1154,7 @@ export const RegistroList: React.FC = () => {
                       "empresa",
                       setEmpresaFilter
                     )}
-                    className="h-9 pl-8 text-sm border-gray-300 dark:border-gray-600 focus:border-[#18D043] focus:ring-[#18D043]/20"
+                    className="h-8 pl-8 text-sm border-gray-300 dark:border-gray-600 focus:border-[#18D043] focus:ring-[#18D043]/20"
                   />
                 </div>
               </div>
@@ -1172,14 +1172,14 @@ export const RegistroList: React.FC = () => {
                     placeholder="Área..."
                     value={areaFilter}
                     onChange={handleTextFilterChange("area", setAreaFilter)}
-                    className="h-9 pl-8 text-sm border-gray-300 dark:border-gray-600 focus:border-[#18D043] focus:ring-[#18D043]/20"
+                    className="h-8 pl-8 text-sm border-gray-300 dark:border-gray-600 focus:border-[#18D043] focus:ring-[#18D043]/20"
                   />
                 </div>
               </div>
             </div>
 
             {/* Botonera derecha */}
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center gap-1.5 flex-shrink-0">
               <Button
                 type="button"
                 variant="outline"
@@ -1188,8 +1188,8 @@ export const RegistroList: React.FC = () => {
                 icon={showFilters ? SlidersHorizontal : Filter}
                 className={
                   showFilters
-                    ? "bg-[#18D043] text-white border-[#18D043] h-9"
-                    : "border-gray-300 dark:border-gray-600 h-9"
+                    ? "bg-[#18D043] text-white border-[#18D043] h-8"
+                    : "border-gray-300 dark:border-gray-600 h-8"
                 }
               >
                 Filtros
@@ -1286,27 +1286,27 @@ export const RegistroList: React.FC = () => {
           {/* Panel de filtros */}
           <div
             className={`overflow-hidden transition-[max-height] duration-300 ease-in-out ${
-              showFilters ? "max-h-[1200px] mt-4" : "max-h-0"
+              showFilters ? "max-h-[1200px] mt-2" : "max-h-0"
             }`}
             aria-hidden={!showFilters}
           >
             <div
-              className={`pt-4 border-t border-gray-200 dark:border-gray-700 transition-all duration-300 ${
+              className={`pt-2 border-t border-gray-200 dark:border-gray-700 transition-all duration-300 ${
                 showFilters
                   ? "opacity-100 translate-y-0"
                   : "opacity-0 -translate-y-2 pointer-events-none"
               }`}
             >
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
                 {/* Estado */}
                 <div>
-                  <label className="block mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
+                  <label className="block mb-0.5 text-xs font-semibold text-gray-700 dark:text-gray-300">
                     Estado
                   </label>
                   <Select
                     value={statusFilter}
                     onChange={handleStatusFilterChange}
-                    className="h-10"
+                    className="h-8"
                     options={[
                       { value: "", label: "Todos los estados" },
                       { value: "activo", label: "Activo" },
@@ -1320,7 +1320,7 @@ export const RegistroList: React.FC = () => {
 
                 {/* Equipo */}
                 <div>
-                  <label className="block mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
+                  <label className="block mb-0.5 text-xs font-semibold text-gray-700 dark:text-gray-300">
                     Equipo
                   </label>
                   <Input
@@ -1329,13 +1329,13 @@ export const RegistroList: React.FC = () => {
                     onChange={handleExpandedFilterChange(
                       setEquipoFilter
                     )}
-                    className="h-10 border-gray-300 dark:border-gray-600"
+                    className="h-8 border-gray-300 dark:border-gray-600"
                   />
                 </div>
 
                 {/* Ubicación */}
                 <div>
-                  <label className="block mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
+                  <label className="block mb-0.5 text-xs font-semibold text-gray-700 dark:text-gray-300">
                     Ubicación
                   </label>
                   <Input
@@ -1344,19 +1344,19 @@ export const RegistroList: React.FC = () => {
                     onChange={handleExpandedFilterChange(
                       setUbicacionFilter
                     )}
-                    className="h-10 border-gray-300 dark:border-gray-600"
+                    className="h-8 border-gray-300 dark:border-gray-600"
                   />
                 </div>
 
                 {/* Tipo de Anclaje */}
                 <div>
-                  <label className="block mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
+                  <label className="block mb-0.5 text-xs font-semibold text-gray-700 dark:text-gray-300">
                     Tipo de Anclaje
                   </label>
                   <Select
                     value={anclajeTipoFilter}
                     onChange={handleAnclajeTipoFilterChange}
-                    className="h-10"
+                    className="h-8"
                     options={[
                       { value: "", label: "Todos los tipos" },
                       { value: "anclaje_terminal", label: "Anclaje Terminal" },
@@ -1372,34 +1372,34 @@ export const RegistroList: React.FC = () => {
 
                 {/* Fechas */}
                 <div>
-                  <label className="block mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
+                  <label className="block mb-0.5 text-xs font-semibold text-gray-700 dark:text-gray-300">
                     Fecha instalación (desde)
                   </label>
                   <Input
                     type="date"
                     value={installDateFrom}
                     onChange={handleInstallDateFromChange}
-                    className="h-10 border-gray-300 dark:border-gray-600"
+                    className="h-8 border-gray-300 dark:border-gray-600"
                     max={installDateTo || undefined}
                   />
                 </div>
 
                 <div>
-                  <label className="block mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
+                  <label className="block mb-0.5 text-xs font-semibold text-gray-700 dark:text-gray-300">
                     Fecha instalación (hasta)
                   </label>
                   <Input
                     type="date"
                     value={installDateTo}
                     onChange={handleInstallDateToChange}
-                    className="h-10 border-gray-300 dark:border-gray-600"
+                    className="h-8 border-gray-300 dark:border-gray-600"
                     min={installDateFrom || undefined}
                   />
                 </div>
               </div>
 
                 {/* Acciones */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 mt-4">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 mt-2">
                   {(searchTerm ||
                     codigoPlacaFilter ||
                     equipoFilter ||
@@ -1412,7 +1412,7 @@ export const RegistroList: React.FC = () => {
                       <Button
                         type="button"
                         variant="ghost"
-                        className="h-10 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
+                        className="h-8 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
                         onClick={async () => {
                           setSearchTerm("");
                           setCodigoPlacaFilter("");

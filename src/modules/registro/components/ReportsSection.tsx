@@ -11,6 +11,7 @@ import {
   Calendar,
   MapPin,
   Building,
+  AlertCircle,
 } from "lucide-react";
 import { apiClient } from '../../../shared/services/apiClient';
 
@@ -133,34 +134,34 @@ export const ReportsSection: React.FC = () => {
   );
 
   return (
-    <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100">
-      <div className="p-4 sm:p-6">
-        <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-6">
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-orange-200 rounded-xl">
-              <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
+    <Card className="border-emerald-200 dark:border-emerald-700/50 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-gray-800 dark:to-gray-900">
+      <div className="p-2 sm:p-3">
+        <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-2">
+          <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-emerald-200 dark:bg-emerald-900/50 rounded-xl">
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 dark:text-emerald-300" />
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="text-base sm:text-lg font-semibold text-orange-900">
+              <h3 className="text-sm sm:text-base font-semibold text-emerald-900 dark:text-emerald-100">
                 Reporte de Líneas Vencidas
               </h3>
-              <p className="text-sm sm:text-base text-orange-600">
+              <p className="text-xs sm:text-sm text-emerald-600 dark:text-emerald-300">
                 Genera un PDF con las líneas de vida vencidas en formato de
                 tarjetas
               </p>
             </div>
           </div>
 
-          <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3">
+          <div className="flex flex-col space-y-1.5 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-2">
             <Button
               variant="outline"
               size="sm"
               onClick={() => setShowFilters(!showFilters)}
               icon={showFilters ? X : Filter}
-              className={`w-full sm:w-auto ${
+              className={`w-full sm:w-auto h-8 ${
                 showFilters
-                  ? "bg-orange-600 text-white border-orange-600"
-                  : "border-orange-300 text-orange-600 hover:bg-orange-50"
+                  ? "bg-emerald-600 dark:bg-emerald-600 text-white border-emerald-600 dark:border-emerald-600"
+                  : "border-emerald-300 dark:border-emerald-600 text-emerald-600 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/40"
               }`}
             >
               {showFilters ? "Ocultar" : "Filtros"}
@@ -170,7 +171,7 @@ export const ReportsSection: React.FC = () => {
               onClick={generateReport}
               loading={loading}
               icon={Download}
-              className="w-full sm:w-auto bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800"
+              className="w-full sm:w-auto h-8 bg-gradient-to-r from-emerald-600 to-emerald-700 dark:from-emerald-500 dark:to-emerald-600 hover:from-emerald-700 hover:to-emerald-800 dark:hover:from-emerald-600 dark:hover:to-emerald-700"
             >
               {loading ? "Generando..." : "Generar PDF"}
             </Button>
@@ -179,11 +180,11 @@ export const ReportsSection: React.FC = () => {
 
         {/* Filtros */}
         {showFilters && (
-          <div className="p-3 sm:p-4 mb-6 border border-orange-200 bg-white/50 rounded-xl">
-            <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="p-2 sm:p-2.5 mb-2 border border-emerald-200 dark:border-emerald-700/50 bg-white/50 dark:bg-gray-800/80 rounded-xl">
+            <div className="grid grid-cols-1 gap-2 sm:gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
               <div>
-                <label className="block mb-2 text-sm font-medium text-orange-700">
-                  <Building className="inline w-4 h-4 mr-1" />
+                <label className="block mb-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                  <Building className="inline w-3.5 h-3.5 mr-1" />
                   Cliente
                 </label>
                 <Input
@@ -192,13 +193,13 @@ export const ReportsSection: React.FC = () => {
                   onChange={(e) =>
                     handleFilterChange("cliente", e.target.value)
                   }
-                  className="border-orange-200 focus:border-orange-400 focus:ring-orange-400/20"
+                  className="h-8 text-sm border-emerald-200 dark:border-emerald-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 focus:border-emerald-400 dark:focus:border-emerald-400 focus:ring-emerald-400/20"
                 />
               </div>
 
               <div>
-                <label className="block mb-2 text-sm font-medium text-orange-700">
-                  <MapPin className="inline w-4 h-4 mr-1" />
+                <label className="block mb-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                  <MapPin className="inline w-3.5 h-3.5 mr-1" />
                   Ubicación
                 </label>
                 <Input
@@ -207,26 +208,26 @@ export const ReportsSection: React.FC = () => {
                   onChange={(e) =>
                     handleFilterChange("ubicacion", e.target.value)
                   }
-                  className="border-orange-200 focus:border-orange-400 focus:ring-orange-400/20"
+                  className="h-8 text-sm border-emerald-200 dark:border-emerald-700 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 focus:border-emerald-400 dark:focus:border-emerald-500 focus:ring-emerald-400/20"
                 />
               </div>
 
               <div>
-                <label className="block mb-2 text-sm font-medium text-orange-700">
-                  <FileText className="inline w-4 h-4 mr-1" />
+                <label className="block mb-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                  <FileText className="inline w-3.5 h-3.5 mr-1" />
                   Código
                 </label>
                 <Input
                   placeholder="Filtrar por código..."
                   value={filters.codigo || ""}
                   onChange={(e) => handleFilterChange("codigo", e.target.value)}
-                  className="border-orange-200 focus:border-orange-400 focus:ring-orange-400/20"
+                  className="h-8 text-sm border-emerald-200 dark:border-emerald-700 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 focus:border-emerald-400 dark:focus:border-emerald-500 focus:ring-emerald-400/20"
                 />
               </div>
 
               <div>
-                <label className="block mb-2 text-sm font-medium text-orange-700">
-                  <Calendar className="inline w-4 h-4 mr-1" />
+                <label className="block mb-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                  <Calendar className="inline w-3.5 h-3.5 mr-1" />
                   Fecha vencimiento (desde)
                 </label>
                 <Input
@@ -238,13 +239,13 @@ export const ReportsSection: React.FC = () => {
                       e.target.value
                     )
                   }
-                  className="border-orange-200 focus:border-orange-400 focus:ring-orange-400/20"
+                  className="h-8 text-sm border-emerald-200 dark:border-emerald-700 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 focus:border-emerald-400 dark:focus:border-emerald-500 focus:ring-emerald-400/20"
                 />
               </div>
 
               <div>
-                <label className="block mb-2 text-sm font-medium text-orange-700">
-                  <Calendar className="inline w-4 h-4 mr-1" />
+                <label className="block mb-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                  <Calendar className="inline w-3.5 h-3.5 mr-1" />
                   Fecha vencimiento (hasta)
                 </label>
                 <Input
@@ -256,7 +257,7 @@ export const ReportsSection: React.FC = () => {
                       e.target.value
                     )
                   }
-                  className="border-orange-200 focus:border-orange-400 focus:ring-orange-400/20"
+                  className="h-8 text-sm border-emerald-200 dark:border-emerald-700 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 focus:border-emerald-400 dark:focus:border-emerald-500 focus:ring-emerald-400/20"
                 />
               </div>
 
@@ -266,7 +267,7 @@ export const ReportsSection: React.FC = () => {
                     type="button"
                     variant="ghost"
                     onClick={clearFilters}
-                    className="w-full text-orange-600 hover:bg-orange-100"
+                    className="w-full h-8 text-sm text-emerald-600 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50"
                   >
                     Limpiar filtros
                   </Button>
@@ -278,8 +279,8 @@ export const ReportsSection: React.FC = () => {
 
         {/* Indicadores de filtros activos */}
         {hasActiveFilters && (
-          <div className="flex flex-wrap gap-2 mb-4">
-            <span className="text-xs sm:text-sm font-medium text-orange-600">
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            <span className="text-xs sm:text-sm font-medium text-emerald-600 dark:text-emerald-300">
               Filtros activos:
             </span>
             {Object.entries(filters).map(([key, value]) => {
@@ -296,7 +297,7 @@ export const ReportsSection: React.FC = () => {
               return (
                 <span
                   key={key}
-                  className="inline-flex items-center px-2 sm:px-3 py-1 text-xs font-medium text-orange-800 bg-orange-200 rounded-full max-w-full"
+                  className="inline-flex items-center px-2 sm:px-3 py-1 text-xs font-medium text-emerald-800 dark:text-emerald-100 bg-emerald-200 dark:bg-emerald-800/60 rounded-full max-w-full"
                 >
                   <span className="truncate">
                     {labels[key]}: {value}
@@ -305,7 +306,7 @@ export const ReportsSection: React.FC = () => {
                     onClick={() =>
                       handleFilterChange(key as keyof ReportFilters, "")
                     }
-                    className="ml-1 hover:text-orange-900 flex-shrink-0"
+                    className="ml-1 hover:text-emerald-900 dark:hover:text-emerald-100 flex-shrink-0"
                   >
                     ×
                   </button>
@@ -315,27 +316,30 @@ export const ReportsSection: React.FC = () => {
           </div>
         )}
 
-        {/* Información adicional */}
-        <div className="p-3 sm:p-4 border border-orange-200 bg-white/30 rounded-xl">
-          <h4 className="mb-2 text-xs sm:text-sm font-medium text-orange-800">
-            ℹ️ Información del reporte
-          </h4>
-          <ul className="space-y-1 text-xs sm:text-sm text-orange-700">
-            <li>
-              • Se generarán tarjetas solo para líneas de vida con estado
-              "VENCIDO"
-            </li>
-            <li>
-              • Cada tarjeta incluye: código, cliente, ubicación, fecha de
-              vencimiento y días vencidos
-            </li>
-            <li>• El PDF incluirá fecha de generación y filtros aplicados</li>
-            <li>
-              • Si no hay líneas vencidas, se generará un reporte indicando "sin
-              datos"
-            </li>
-          </ul>
-        </div>
+        {/* Información adicional - Solo se muestra cuando hay filtros activos */}
+        {hasActiveFilters && (
+          <div className="p-2 sm:p-2.5 border border-emerald-200 dark:border-emerald-700/50 bg-white/30 dark:bg-gray-800/60 rounded-xl">
+            <h4 className="mb-1.5 text-xs font-medium text-emerald-800 dark:text-emerald-200 flex items-center gap-1.5">
+              <AlertCircle className="w-3.5 h-3.5" />
+              Información del reporte
+            </h4>
+            <ul className="space-y-0.5 text-xs text-emerald-700 dark:text-emerald-300">
+              <li>
+                • Se generarán tarjetas solo para líneas de vida con estado
+                "VENCIDO"
+              </li>
+              <li>
+                • Cada tarjeta incluye: código, cliente, ubicación, fecha de
+                vencimiento y días vencidos
+              </li>
+              <li>• El PDF incluirá fecha de generación y filtros aplicados</li>
+              <li>
+                • Si no hay líneas vencidas, se generará un reporte indicando "sin
+                datos"
+              </li>
+            </ul>
+          </div>
+        )}
       </div>
     </Card>
   );
