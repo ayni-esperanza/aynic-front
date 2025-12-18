@@ -13,7 +13,6 @@ import {
   Building,
   AlertCircle,
 } from "lucide-react";
-import { apiClient } from '../../../shared/services/apiClient';
 
 interface ReportFilters {
   cliente?: string;

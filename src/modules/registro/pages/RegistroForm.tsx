@@ -398,29 +398,19 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose, onSuccess }
     const e: Record<string, string> = {};
     if (step === 1) {
       if (!formData.codigo.trim()) e.codigo = "Requerido";
-      if (!formData.cliente.trim()) e.cliente = "Requerido";
-      if (!formData.equipo.trim()) e.equipo = "Requerido";
-      if (!formData.seccion.trim()) e.seccion = "Requerido";
-      if (!formData.area.trim()) e.area = "Requerido";
-      if (!formData.planta.trim()) e.planta = "Requerido";
       if (formData.codigo_placa && formData.codigo_placa.length > 50) {
         e.codigo_placa = "No puede exceder 50 caracteres";
       }
     }
     if (step === 2) {
-      if (!formData.tipo_linea) e.tipo_linea = "Requerido";
-      if (!formData.ubicacion.trim()) e.ubicacion = "Requerido";
       const val = parseFloat(String(formData.longitud));
-      if (isNaN(val) || val <= 0) e.longitud = "Mayor a 0";
+      if (formData.longitud && (isNaN(val) || val <= 0)) e.longitud = "Mayor a 0";
       if (formData.anclaje_equipos && formData.anclaje_equipos.length > 100) {
         e.anclaje_equipos = "No puede exceder 100 caracteres";
       }
-      if (!formData.anclaje_tipo) e.anclaje_tipo = "Requerido"; // Validar anclaje_tipo
     }
     if (step === 3) {
-      if (!formData.fecha_instalacion) {
-        e.fecha_instalacion = "Requerido";
-      } else {
+      if (formData.fecha_instalacion) {
         const fechaInstalacion = new Date(formData.fecha_instalacion);
         const fechaActual = new Date();
         fechaActual.setHours(23, 59, 59, 999); // Fin del día actual
@@ -433,19 +423,20 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose, onSuccess }
           e.fecha_instalacion = "La fecha de instalación no puede ser futura";
         }
       }
-      if (!formData.fecha_caducidad) e.fecha_caducidad = "Requerido";
 
       // Validación corregida para años
       if (formData.fv_anios < 0) e.fv_anios = "No negativo";
 
       // Validación corregida para meses
       const meses = Number(formData.fv_meses);
-      if (isNaN(meses)) {
-        e.fv_meses = "Debe ser un número válido";
-      } else if (meses < 0 || meses > 11) {
-        e.fv_meses = "Debe estar entre 0 y 11 meses";
-      } else if (!Number.isInteger(meses)) {
-        e.fv_meses = "Debe ser un número entero";
+      if (formData.fv_meses !== undefined && formData.fv_meses !== null && formData.fv_meses !== '') {
+        if (isNaN(meses)) {
+          e.fv_meses = "Debe ser un número válido";
+        } else if (meses < 0 || meses > 11) {
+          e.fv_meses = "Debe estar entre 0 y 11 meses";
+        } else if (!Number.isInteger(meses)) {
+          e.fv_meses = "Debe ser un número entero";
+        }
       }
 
       const inst = new Date(formData.fecha_instalacion);
@@ -825,7 +816,6 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose, onSuccess }
                   <div>
                     <label className={`block mb-2 font-semibold text-gray-700 dark:text-gray-300 ${clienteLabelClass}`}>
                       Cliente
-                      <span className="ml-1 text-red-500">*</span>
                     </label>
                     <div className="flex gap-2">
                       <div className="flex-1">
@@ -859,7 +849,6 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose, onSuccess }
                     onChange={(e) => handleChange("equipo", e.target.value)}
                     error={errors.equipo}
                     placeholder="Equipo-A1"
-                    required
                     className={inputHeightClass}
                   />
                   <Input
@@ -868,7 +857,6 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose, onSuccess }
                     onChange={(e) => handleChange("seccion", e.target.value)}
                     error={errors.seccion}
                     placeholder="Sección A"
-                    required
                     className={inputHeightClass}
                   />
                   <Input
@@ -877,7 +865,6 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose, onSuccess }
                     onChange={(e) => handleChange("area", e.target.value)}
                     error={errors.area}
                     placeholder="Área 1"
-                    required
                     className={inputHeightClass}
                   />
                   <Input
@@ -886,7 +873,6 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose, onSuccess }
                     onChange={(e) => handleChange("planta", e.target.value)}
                     error={errors.planta}
                     placeholder="Planta 1"
-                    required
                     className={inputHeightClass}
                   />
                 </div>
@@ -900,7 +886,6 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose, onSuccess }
                     value={formData.tipo_linea}
                     onChange={(value) => handleChange("tipo_linea", value)}
                     error={errors.tipo_linea}
-                    required
                   />
                 </div>
 
@@ -909,7 +894,6 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose, onSuccess }
                   <div className="space-y-4">
                     <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Tipo de Anclaje
-                      <span className="ml-1 text-red-500">*</span>
                     </label>
                     
                     {/* Opciones para Línea de Vida Horizontal */}
@@ -1001,7 +985,6 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose, onSuccess }
                     onChange={(e) => handleChange("longitud", e.target.value)}
                     error={errors.longitud}
                     placeholder="100.50"
-                    required
                     inputMode="decimal"
                     pattern="[0-9]*[.]?[0-9]*"
                     className={inputHeightClass}
@@ -1012,7 +995,6 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose, onSuccess }
                     onChange={(e) => handleChange("ubicacion", e.target.value)}
                     error={errors.ubicacion}
                     placeholder="Dirección o coordenadas"
-                    required
                     className={inputHeightClass}
                   />
                 </div>
@@ -1069,7 +1051,6 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose, onSuccess }
                       hoy.setDate(hoy.getDate() - 1); // Ayer como máximo
                       return hoy.toISOString().split('T')[0];
                     })()}
-                    required
                     icon={Calendar}
                     iconPosition="right"
                     className={inputHeightClass}
@@ -1080,7 +1061,6 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose, onSuccess }
                     value={formData.fecha_caducidad}
                     onChange={(e) => handleChange("fecha_caducidad", e.target.value)}
                     error={errors.fecha_caducidad}
-                    required
                     icon={Calendar}
                     iconPosition="right"
                     className={inputHeightClass}
@@ -1109,7 +1089,6 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose, onSuccess }
                     min={0}
                     max={50}
                     step={1}
-                    required
                     className={inputHeightClass}
                   />
                   <Input
@@ -1130,7 +1109,6 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose, onSuccess }
                     min={0}
                     max={11}
                     maxLength={2}
-                    required
                     className={inputHeightClass}
                   />
                   <Select
@@ -1181,14 +1159,14 @@ export const RegistroForm: React.FC<RegistroFormProps> = ({ onClose, onSuccess }
                     />
                   </div>
                 ) : (
-                  <div className="p-8 text-center border border-yellow-200 bg-yellow-50 rounded-xl">
-                    <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-yellow-100 rounded-full">
-                      <Info className="w-8 h-8 text-yellow-600" />
+                  <div className="p-8 text-center border border-yellow-200 dark:border-yellow-700 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl">
+                    <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-yellow-100 dark:bg-yellow-900/40 rounded-full">
+                      <Info className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
                     </div>
-                    <h3 className="mb-2 text-lg font-medium text-yellow-900">
+                    <h3 className="mb-2 text-lg font-medium text-yellow-900 dark:text-yellow-100">
                       Primero guarda el registro
                     </h3>
-                    <p className="text-yellow-700">
+                    <p className="text-yellow-700 dark:text-yellow-300">
                       Para agregar una imagen, primero debes completar y guardar
                       la información básica del registro.
                     </p>
